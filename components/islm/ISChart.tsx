@@ -115,7 +115,12 @@ export default function ISChart({ params }: ISChartProps) {
                   <Label value="r (Interest Rate)" angle={-90} position="left" />
                 </YAxis>
                 <Tooltip
-                  formatter={(value) => [`${value.toFixed(2)}`, ""]}
+                  formatter={(value) => {
+                    if (typeof value === "number") {
+                      return [`${value.toFixed(2)}`, ""];
+                    }
+                    return [value ?? "", ""];
+                  }}
                   labelFormatter={(value) => `I,S: ${value}`}
                 />
                 <Legend verticalAlign="top" height={36} />
