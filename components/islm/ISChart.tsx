@@ -24,18 +24,27 @@ interface ISChartProps {
   };
 }
 
+interface ChartDataPoint {
+  x: number;
+  investmentY: number;
+  savingsY: number;
+}
+
+interface EquilibriumPoint {
+  x: number;
+  y: number;
+}
+
 export default function ISChart({ params }: ISChartProps) {
-  const [chartData, setChartData] = useState<
-    { x: number; investmentY: number; savingsY: number }[]
-  >([]);
-  const [equilibrium, setEquilibrium] = useState<{ x: number; y: number } | null>(null);
+  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  const [equilibrium, setEquilibrium] = useState<EquilibriumPoint | null>(null);
 
   // Compute chart data based on parameters
   useEffect(() => {
     const investmentShift = (params.investment - 50) * 0.2; // Convert to shift range of ±10
     const savingsShift = (50 - params.savings) * 0.2; // Inverted: lower slider = higher savings curve
 
-    const newData = [];
+    const newData: ChartDataPoint[] = [];
     const isSlope = -0.15;
     const sSlope = 0.15;
 
@@ -153,9 +162,10 @@ export default function ISChart({ params }: ISChartProps) {
                     label={
                       <Label
                         content={({ viewBox }) => {
-                          if (!viewBox) return null; // Handle cases where viewBox is undefined
-                          const cx = viewBox.x + viewBox.width / 2;
-                          const cy = viewBox.y + viewBox.height / 2;
+                          if (!viewBox || !("x" in viewBox) || !("y" in viewBox)) return null; // Ensure viewBox has x and y properties
+                          const { x = 0, y = 0, width = 0, height = 0 } = viewBox as { x: number; y: number; width: number; height: number };
+                          const cx = x + width / 2;
+                          const cy = y + height / 2;
                           return (
                             <g>
                               <circle cx={cx} cy={cy} r={6} fill="#047857" />

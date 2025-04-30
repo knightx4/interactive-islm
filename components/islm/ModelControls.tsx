@@ -1,107 +1,107 @@
+"use client";
 
 import React, { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { CardContent } from "@/components/ui/card";
-import { CardHeader } from "@/components/ui/card";
-import { CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function ModelControls({ params, updateParam, equilibriumOutput }) {
+interface Params {
+  investment: number;
+  savings: number;
+  futureY: number;
+  wealth: number;
+  govSavings: number;
+  futureMPK: number;
+  moneySupply: number;
+  moneyDemand: number;
+  mdWealth: number;
+  expectedInflation: number;
+  riskiness: number;
+  liquidity: number;
+  fullEmployment: number;
+  centralBankSupply: number;
+  priceLevel: number;
+  productivity: number;
+  capital: number;
+  labor: number;
+}
+
+interface ModelControlsProps {
+  params: Params; // Use the shared Params type
+  updateParam: (key: keyof Params, value: number) => void; // Updated type
+  equilibriumOutput: number | null;
+}
+
+export default function ModelControls({
+  params,
+  updateParam,
+  equilibriumOutput,
+}: ModelControlsProps) {
   const [showSavingsComponents, setShowSavingsComponents] = useState(false);
   const [showInvestmentComponents, setShowInvestmentComponents] = useState(false);
   const [showMoneySupplyComponents, setShowMoneySupplyComponents] = useState(false);
   const [showMoneyDemandComponents, setShowMoneyDemandComponents] = useState(false);
   const [showFullEmploymentComponents, setShowFullEmploymentComponents] = useState(false);
 
-  // Update individual savings component and recalculate overall savings
-  const updateSavingsComponent = (component, value) => {
-    // Get current values of all components
+  const updateSavingsComponent = (component: keyof Params, value: number) => {
     const futureY = component === "futureY" ? value : params.futureY || 50;
     const wealth = component === "wealth" ? value : params.wealth || 50;
     const govSavings = component === "govSavings" ? value : params.govSavings || 50;
-    
-    // Calculate new savings value - weighted average with individual effects
-    // futureY and wealth decrease savings (inverse relationship)
-    // govSavings increases savings (direct relationship)
+
     const newSavings = Math.round(
       ((100 - futureY) + (100 - wealth) + govSavings) / 3
     );
-    
-    // Update both the component and the overall savings
+
     updateParam(component, value);
     updateParam("savings", newSavings);
   };
 
-  // Update investment components and recalculate overall investment
-  const updateInvestmentComponent = (component, value) => {
-    // Get current value
+  const updateInvestmentComponent = (component: keyof Params, value: number) => {
     const futureMPK = component === "futureMPK" ? value : params.futureMPK || 50;
-    
-    // Calculate new investment value - direct relationship
-    // Higher expected MPK increases investment
+
     const newInvestment = futureMPK;
-    
-    // Update both the component and the overall investment
+
     updateParam(component, value);
     updateParam("investment", newInvestment);
   };
 
-  const updateMoneySupplyComponent = (component, value) => {
-    // Get current values
+  const updateMoneySupplyComponent = (component: keyof Params, value: number) => {
     const centralBankSupply = component === "centralBankSupply" ? value : params.centralBankSupply || 50;
     const priceLevel = component === "priceLevel" ? value : params.priceLevel || 50;
-    
-    // Calculate new money supply value
-    // Higher central bank supply increases money supply
-    // Higher price level decreases money supply (Ms/P)
+
     const newMoneySupply = Math.round(
       (centralBankSupply * (100 - priceLevel)) / 50
     );
-    
-    // Update both the component and the overall money supply
+
     updateParam(component, value);
     updateParam("moneySupply", newMoneySupply);
   };
 
-  // Add moneyDemand component update function
-  const updateMoneyDemandComponent = (component, value) => {
-    // Get current values of all components
+  const updateMoneyDemandComponent = (component: keyof Params, value: number) => {
     const mdWealth = component === "mdWealth" ? value : params.mdWealth || 50;
     const expectedInflation = component === "expectedInflation" ? value : params.expectedInflation || 50;
     const riskiness = component === "riskiness" ? value : params.riskiness || 50;
     const liquidity = component === "liquidity" ? value : params.liquidity || 50;
-    
-    // Calculate new money demand value
-    // mdWealth increases money demand
-    // expectedInflation decreases money demand
-    // riskiness increases money demand (flight to safety)
-    // liquidity decreases money demand (substitution effect)
+
     const newMoneyDemand = Math.round(
       (mdWealth + (100 - expectedInflation) + riskiness + (100 - liquidity)) / 4
     );
-    
-    // Update both the component and the overall money demand
+
     updateParam(component, value);
     updateParam("moneyDemand", newMoneyDemand);
   };
 
-  // Add fullEmployment component update function
-  const updateFullEmploymentComponent = (component, value) => {
-    // Get current values of all components
+  const updateFullEmploymentComponent = (component: keyof Params, value: number) => {
     const productivity = component === "productivity" ? value : params.productivity || 50;
     const capital = component === "capital" ? value : params.capital || 50;
     const labor = component === "labor" ? value : params.labor || 50;
-    
-    // Calculate new full employment value (average of all factors)
-    // All factors have a positive relationship with full employment
+
     const newFullEmployment = Math.round(
       (productivity + capital + labor) / 3
     );
-    
-    // Update both the component and the overall full employment
+
     updateParam(component, value);
     updateParam("fullEmployment", newFullEmployment);
   };
@@ -112,25 +112,25 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
         <CardTitle>Model Parameters</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col h-full">
-        {/* All sliders sections */}
         <div className="space-y-6 flex-grow">
-          {/* Investment section */}
+          {/* Investment Section */}
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-1">
                 <Label htmlFor="investment" className="text-sm font-medium">
                   Investment (I)
                 </Label>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="h-6 w-6 p-0 rounded-full"
                   onClick={() => setShowInvestmentComponents(!showInvestmentComponents)}
                 >
-                  {showInvestmentComponents ? 
-                    <ChevronUp className="h-4 w-4 text-gray-500" /> : 
+                  {showInvestmentComponents ? (
+                    <ChevronUp className="h-4 w-4 text-gray-500" />
+                  ) : (
                     <ChevronDown className="h-4 w-4 text-gray-500" />
-                  }
+                  )}
                 </Button>
               </div>
               <span className="text-sm font-semibold bg-blue-100 text-blue-800 px-2 py-1 rounded">
@@ -149,7 +149,7 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
             <p className="text-xs text-gray-500">
               Higher = Investment curve shifts up
             </p>
-            
+
             {/* Investment Components */}
             {showInvestmentComponents && (
               <div className="mt-2 pl-4 border-l-2 border-blue-200 space-y-4">
@@ -179,23 +179,24 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
             )}
           </div>
 
-          {/* Savings section */}
+          {/* Savings Section */}
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-1">
                 <Label htmlFor="savings" className="text-sm font-medium">
                   Savings (S)
                 </Label>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="h-6 w-6 p-0 rounded-full"
                   onClick={() => setShowSavingsComponents(!showSavingsComponents)}
                 >
-                  {showSavingsComponents ? 
-                    <ChevronUp className="h-4 w-4 text-gray-500" /> : 
+                  {showSavingsComponents ? (
+                    <ChevronUp className="h-4 w-4 text-gray-500" />
+                  ) : (
                     <ChevronDown className="h-4 w-4 text-gray-500" />
-                  }
+                  )}
                 </Button>
               </div>
               <span className="text-sm font-semibold bg-green-100 text-green-800 px-2 py-1 rounded">
@@ -212,12 +213,13 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
               className="cursor-pointer"
             />
             <p className="text-xs text-gray-500">
-              Higher = Savings curve shifts down
+              Higher = Savings curve shifts up
             </p>
 
             {/* Savings Components */}
             {showSavingsComponents && (
               <div className="mt-2 pl-4 border-l-2 border-green-200 space-y-4">
+                {/* Current Income */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label className="text-xs font-medium">
@@ -232,10 +234,11 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
                   </p>
                 </div>
 
+                {/* Future Income */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="futureY" className="text-xs font-medium">
-                      Expected Future Income (Yf)
+                      Expected Future Income (Y')
                     </Label>
                     <span className="text-xs font-semibold bg-green-50 text-green-700 px-1.5 py-0.5 rounded">
                       {params.futureY || 50}
@@ -255,6 +258,7 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
                   </p>
                 </div>
 
+                {/* Wealth */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="wealth" className="text-xs font-medium">
@@ -278,6 +282,7 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
                   </p>
                 </div>
 
+                {/* Government Savings */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="govSavings" className="text-xs font-medium">
@@ -297,7 +302,7 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
                     className="cursor-pointer"
                   />
                   <p className="text-xs text-gray-500">
-                    Higher govt savings increases total savings
+                    Higher government savings increases total savings
                   </p>
                 </div>
               </div>
@@ -311,16 +316,17 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
                 <Label htmlFor="moneySupply" className="text-sm font-medium">
                   Money Supply (Ms/P)
                 </Label>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="h-6 w-6 p-0 rounded-full"
                   onClick={() => setShowMoneySupplyComponents(!showMoneySupplyComponents)}
                 >
-                  {showMoneySupplyComponents ? 
-                    <ChevronUp className="h-4 w-4 text-gray-500" /> : 
+                  {showMoneySupplyComponents ? (
+                    <ChevronUp className="h-4 w-4 text-gray-500" />
+                  ) : (
                     <ChevronDown className="h-4 w-4 text-gray-500" />
-                  }
+                  )}
                 </Button>
               </div>
               <span className="text-sm font-semibold bg-purple-100 text-purple-800 px-2 py-1 rounded">
@@ -343,6 +349,7 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
             {/* Money Supply Components */}
             {showMoneySupplyComponents && (
               <div className="mt-2 pl-4 border-l-2 border-purple-200 space-y-4">
+                {/* Central Bank Supply */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="centralBankSupply" className="text-xs font-medium">
@@ -362,10 +369,11 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
                     className="cursor-pointer"
                   />
                   <p className="text-xs text-gray-500">
-                    Higher central bank supply increases real money supply
+                    Higher central bank supply increases real money supply.
                   </p>
                 </div>
 
+                {/* Price Level */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="priceLevel" className="text-xs font-medium">
@@ -385,7 +393,7 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
                     className="cursor-pointer"
                   />
                   <p className="text-xs text-gray-500">
-                    Higher price level reduces real money supply (Ms/P)
+                    Higher price level reduces real money supply (Ms/P).
                   </p>
                 </div>
               </div>
@@ -399,16 +407,17 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
                 <Label htmlFor="moneyDemand" className="text-sm font-medium">
                   Money Demand (L)
                 </Label>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="h-6 w-6 p-0 rounded-full"
                   onClick={() => setShowMoneyDemandComponents(!showMoneyDemandComponents)}
                 >
-                  {showMoneyDemandComponents ? 
-                    <ChevronUp className="h-4 w-4 text-gray-500" /> : 
+                  {showMoneyDemandComponents ? (
+                    <ChevronUp className="h-4 w-4 text-gray-500" />
+                  ) : (
                     <ChevronDown className="h-4 w-4 text-gray-500" />
-                  }
+                  )}
                 </Button>
               </div>
               <span className="text-sm font-semibold bg-amber-100 text-amber-800 px-2 py-1 rounded">
@@ -427,24 +436,11 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
             <p className="text-xs text-gray-500">
               Shifts Money Demand curve up/down
             </p>
-            
+
             {/* Money Demand Components */}
             {showMoneyDemandComponents && (
               <div className="mt-2 pl-4 border-l-2 border-amber-200 space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label className="text-xs font-medium">
-                      Current Income (Y)
-                    </Label>
-                    <span className="text-xs font-semibold bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded">
-                      {equilibriumOutput ? equilibriumOutput.toFixed(1) : "50.0"}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    Higher income increases money demand (transactions motive)
-                  </p>
-                </div>
-
+                {/* Wealth */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="mdWealth" className="text-xs font-medium">
@@ -464,10 +460,11 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
                     className="cursor-pointer"
                   />
                   <p className="text-xs text-gray-500">
-                    Higher wealth increases money demand
+                    Higher wealth increases money demand.
                   </p>
                 </div>
 
+                {/* Expected Inflation */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="expectedInflation" className="text-xs font-medium">
@@ -487,53 +484,7 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
                     className="cursor-pointer"
                   />
                   <p className="text-xs text-gray-500">
-                    Higher expected inflation decreases money demand
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="riskiness" className="text-xs font-medium">
-                      Riskiness of Other Assets
-                    </Label>
-                    <span className="text-xs font-semibold bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded">
-                      {params.riskiness || 50}
-                    </span>
-                  </div>
-                  <Slider
-                    id="riskiness"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={[params.riskiness || 50]}
-                    onValueChange={(val) => updateMoneyDemandComponent("riskiness", val[0])}
-                    className="cursor-pointer"
-                  />
-                  <p className="text-xs text-gray-500">
-                    Higher riskiness increases money demand (safety)
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="liquidity" className="text-xs font-medium">
-                      Liquidity of Other Assets
-                    </Label>
-                    <span className="text-xs font-semibold bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded">
-                      {params.liquidity || 50}
-                    </span>
-                  </div>
-                  <Slider
-                    id="liquidity"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={[params.liquidity || 50]}
-                    onValueChange={(val) => updateMoneyDemandComponent("liquidity", val[0])}
-                    className="cursor-pointer"
-                  />
-                  <p className="text-xs text-gray-500">
-                    Higher liquidity decreases money demand (substitution)
+                    Higher expected inflation decreases money demand.
                   </p>
                 </div>
               </div>
@@ -547,16 +498,17 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
                 <Label htmlFor="fullEmployment" className="text-sm font-medium">
                   Full Employment (FE)
                 </Label>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="h-6 w-6 p-0 rounded-full"
                   onClick={() => setShowFullEmploymentComponents(!showFullEmploymentComponents)}
                 >
-                  {showFullEmploymentComponents ? 
-                    <ChevronUp className="h-4 w-4 text-gray-500" /> : 
+                  {showFullEmploymentComponents ? (
+                    <ChevronUp className="h-4 w-4 text-gray-500" />
+                  ) : (
                     <ChevronDown className="h-4 w-4 text-gray-500" />
-                  }
+                  )}
                 </Button>
               </div>
               <span className="text-sm font-semibold bg-red-100 text-red-800 px-2 py-1 rounded">
@@ -575,10 +527,11 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
             <p className="text-xs text-gray-500">
               Shifts Full Employment line left/right
             </p>
-            
+
             {/* Full Employment Components */}
             {showFullEmploymentComponents && (
               <div className="mt-2 pl-4 border-l-2 border-red-200 space-y-4">
+                {/* Productivity */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="productivity" className="text-xs font-medium">
@@ -598,10 +551,11 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
                     className="cursor-pointer"
                   />
                   <p className="text-xs text-gray-500">
-                    Higher productivity increases full employment output
+                    Higher productivity increases full employment output.
                   </p>
                 </div>
 
+                {/* Capital */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="capital" className="text-xs font-medium">
@@ -621,10 +575,11 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
                     className="cursor-pointer"
                   />
                   <p className="text-xs text-gray-500">
-                    Higher capital increases full employment output
+                    Higher capital increases full employment output.
                   </p>
                 </div>
 
+                {/* Labor */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="labor" className="text-xs font-medium">
@@ -644,7 +599,7 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
                     className="cursor-pointer"
                   />
                   <p className="text-xs text-gray-500">
-                    Higher labor increases full employment output
+                    Higher labor increases full employment output.
                   </p>
                 </div>
               </div>
@@ -652,11 +607,10 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
           </div>
         </div>
 
-        {/* Reset Button now in separate div at bottom */}
         <div className="pt-4 mt-auto border-t border-gray-200">
-          <Button 
-            variant="outline" 
-            className="w-full" 
+          <Button
+            variant="outline"
+            className="w-full"
             onClick={() => {
               const defaultParams = {
                 investment: 50,
@@ -678,11 +632,11 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
                 capital: 50,
                 labor: 50,
               };
-              
-              Object.keys(defaultParams).forEach(key => {
+
+              (Object.keys(defaultParams) as Array<keyof typeof defaultParams>).forEach((key) => {
                 updateParam(key, defaultParams[key]);
               });
-              
+
               setShowSavingsComponents(false);
               setShowInvestmentComponents(false);
               setShowMoneySupplyComponents(false);

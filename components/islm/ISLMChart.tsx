@@ -214,13 +214,15 @@ const ISLMChart: React.FC<ISLMChartProps> = ({ params, onEquilibriumChange }) =>
                     >
                       <Label
                         content={({ viewBox }) => {
-                          const { x, y } = viewBox!;
+                          if (!viewBox || !("x" in viewBox) || !("y" in viewBox)) return null; // Ensure viewBox has x and y properties
+                          const cx = (viewBox.x ?? 0) + (viewBox.width ?? 0) / 2;
+                          const cy = (viewBox.y ?? 0) + (viewBox.height ?? 0) / 2;
                           return (
                             <g>
-                              <circle cx={x} cy={y} r={6} fill="#047857" />
+                              <circle cx={cx} cy={cy} r={6} fill="#047857" />
                               <text
-                                x={x + 8}
-                                y={y - 8}
+                                x={cx + 8}
+                                y={cy - 8}
                                 textAnchor="start"
                                 fill="#047857"
                                 fontSize={12}
