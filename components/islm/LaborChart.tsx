@@ -141,7 +141,7 @@ export default function LaborChart({ params }: LaborChartProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[300px]">
+          <div className="h-[200px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={chartData}

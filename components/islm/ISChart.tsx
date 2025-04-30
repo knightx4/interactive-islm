@@ -100,7 +100,7 @@ export default function ISChart({ params }: ISChartProps) {
           <CardTitle className="text-lg">Investment & Savings (IS)</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[300px]">
+          <div className="h-[200px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={chartData}
