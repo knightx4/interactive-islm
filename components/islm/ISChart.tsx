@@ -177,7 +177,7 @@ export default function ISChart({ params }: ISChartProps) {
                                 fontSize={12}
                                 fontWeight="bold"
                               >
-                                Equilibrium
+
                               </text>
                             </g>
                           );

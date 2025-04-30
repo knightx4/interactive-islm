@@ -238,7 +238,7 @@ export default function ModelControls({
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="futureY" className="text-xs font-medium">
-                      Expected Future Income (Y')
+                      Expected Future Income (Yf)
                     </Label>
                     <span className="text-xs font-semibold bg-green-50 text-green-700 px-1.5 py-0.5 rounded">
                       {params.futureY || 50}
