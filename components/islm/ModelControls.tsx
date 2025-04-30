@@ -106,17 +106,6 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
     updateParam("fullEmployment", newFullEmployment);
   };
 
-  // Function to calculate price level based on output gap
-  const getPrice = (fullEmployment, equilibriumOutput) => {
-    if (!equilibriumOutput) return "1.00";
-    
-    const outputGap = equilibriumOutput - fullEmployment;
-    // Price increases when output > full employment (inflationary gap)
-    // Price decreases when output < full employment (recessionary gap)
-    const priceAdjustment = 1 + (outputGap / 100);
-    return priceAdjustment.toFixed(2);
-  };
-
   return (
     <Card className="sticky top-6 h-full flex flex-col">
       <CardHeader className="pb-4">
@@ -246,7 +235,7 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="futureY" className="text-xs font-medium">
-                      Expected Future Income (Y')
+                      Expected Future Income (Yf)
                     </Label>
                     <span className="text-xs font-semibold bg-green-50 text-green-700 px-1.5 py-0.5 rounded">
                       {params.futureY || 50}
