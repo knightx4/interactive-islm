@@ -23,6 +23,6 @@
     },
     "noImplicitAny": true
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "components/islm/ISChart.jsx", "components/islm/ISLMChart.tsx", "components/islm/LMChart.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "components/islm/ISChart.tsx", "components/islm/ISLMChart.tsx", "components/islm/LMChart.tsx"],
   "exclude": ["node_modules"]
 }

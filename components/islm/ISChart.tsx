@@ -120,6 +120,28 @@ export default function ISChart({ params }) {
                     x={equilibrium.x}
                     stroke="#6b7280"
                     strokeDasharray="3 3"
+                    label={
+                      <Label
+                        content={({ viewBox }) => {
+                          const { cx, cy } = viewBox!;
+                          return (
+                            <g>
+                              <circle cx={cx} cy={cy} r={6} fill="#047857" />
+                              <text
+                                x={cx + 8}
+                                y={cy - 8}
+                                textAnchor="start"
+                                fill="#047857"
+                                fontSize={12}
+                                fontWeight="bold"
+                              >
+                                Equilibrium
+                              </text>
+                            </g>
+                          );
+                        }}
+                      />
+                    }
                   />
                 )}
                 
