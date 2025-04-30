@@ -159,31 +159,6 @@ export default function ISChart({ params }: ISChartProps) {
                     x={equilibrium.x}
                     stroke="#6b7280"
                     strokeDasharray="3 3"
-                    label={
-                      <Label
-                        content={({ viewBox }) => {
-                          if (!viewBox || !("x" in viewBox) || !("y" in viewBox)) return null; // Ensure viewBox has x and y properties
-                          const { x = 0, y = 0, width = 0, height = 0 } = viewBox as { x: number; y: number; width: number; height: number };
-                          const cx = x + width / 2;
-                          const cy = y + height / 2;
-                          return (
-                            <g>
-                              <circle cx={cx} cy={cy} r={6} fill="#047857" />
-                              <text
-                                x={cx + 8}
-                                y={cy - 8}
-                                textAnchor="start"
-                                fill="#047857"
-                                fontSize={12}
-                                fontWeight="bold"
-                              >
-
-                              </text>
-                            </g>
-                          );
-                        }}
-                      />
-                    }
                   />
                 )}
 
