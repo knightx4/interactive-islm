@@ -39,7 +39,7 @@ export default function HomePage() {
   return (
     <div
       style={{
-        transform: "scale(0.8)", // Adjust the scale factor (e.g., 0.9 = 90% size)
+        transform: "scale(0.75)", // Adjust the scale factor (e.g., 0.9 = 90% size)
         transformOrigin: "top left", // Set the origin for scaling
       }}
     >
