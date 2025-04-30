@@ -22,6 +22,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "components/islm/ISChart.jsx", "components/islm/ISLMChart.jsx", "components/islm/LMChart.jsx"],
   "exclude": ["node_modules"]
 }
