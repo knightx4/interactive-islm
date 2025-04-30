@@ -153,7 +153,9 @@ export default function ISChart({ params }: ISChartProps) {
                     label={
                       <Label
                         content={({ viewBox }) => {
-                          const { cx, cy } = viewBox!;
+                          if (!viewBox) return null; // Handle cases where viewBox is undefined
+                          const cx = viewBox.x + viewBox.width / 2;
+                          const cy = viewBox.y + viewBox.height / 2;
                           return (
                             <g>
                               <circle cx={cx} cy={cy} r={6} fill="#047857" />
