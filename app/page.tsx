@@ -71,7 +71,7 @@ export default function HomePage() {
               <div>
                 <ISLMChart
                   params={params}
-                  onEquilibriumChange={(output: number) => setEquilibriumOutput(output)}
+                  onEquilibriumChange={(output: number | null) => setEquilibriumOutput(output)}
                 />
               </div>
               <div>
