@@ -1,3 +1,4 @@
+"use client";
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -119,11 +120,6 @@ export default function ISChart({ params }) {
                     x={equilibrium.x}
                     stroke="#6b7280"
                     strokeDasharray="3 3"
-                    label={{
-                      value: `Equilibrium`,
-                      position: 'insideBottomRight',
-                      fontSize: 11
-                    }}
                   />
                 )}
                 

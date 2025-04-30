@@ -1,4 +1,4 @@
-
+"use client";
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
@@ -7,7 +7,7 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function ISLMChart({ params }) {
+export default function ISLMChart({ params, onEquilibriumChange }) {
   const [chartData, setChartData] = useState([]);
   const [equilibrium, setEquilibrium] = useState(null);
   const [outputGap, setOutputGap] = useState(null);
@@ -18,7 +18,11 @@ export default function ISLMChart({ params }) {
     // Convert slider values to shifts
     // Invert savings for consistency with IS chart
     const isShift = ((params.investment + (100 - params.savings)) / 2 - 50) * 0.2;  // Combined IS shift
-    const lmShift = ((params.moneySupply + params.moneyDemand) / 2 - 50) * 0.2; // Combined LM shift
+    
+    // FIXED: Money supply should shift LM curve right (inverse relationship)
+    // Higher money supply = LM curve shifts right
+    // Higher money demand = LM curve shifts left
+    const lmShift = ((params.moneyDemand - params.moneySupply) / 2) * 0.2; // Corrected LM shift
     
     // Fixed slopes for both curves
     const isSlope = -0.15;  // Negative slope for IS
@@ -58,11 +62,15 @@ export default function ISLMChart({ params }) {
       // Calculate output gap
       const outputGap = equilibriumX - params.fullEmployment;
       setOutputGap(outputGap);
+      
+      // Pass equilibrium output back to parent
+      onEquilibriumChange(equilibriumX);
     } else {
       setEquilibrium(null);
       setOutputGap(null);
+      onEquilibriumChange(null);
     }
-  }, [params.investment, params.savings, params.moneySupply, params.moneyDemand, params.fullEmployment]);
+  }, [params.investment, params.savings, params.moneySupply, params.moneyDemand, params.fullEmployment, onEquilibriumChange]);
 
   return (
     <motion.div

@@ -1,4 +1,4 @@
-
+"use client";
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
@@ -90,7 +90,7 @@ export default function LMChart({ params }) {
                   name="Money Demand L(Y)"
                   type="monotone"
                   dataKey="moneyDemandY"
-                  stroke="#f59e0b"  // Amber color to match moneyDemand parameter
+                  stroke="#f59e0b"
                   strokeWidth={2}
                   dot={false}
                   animationDuration={500}
@@ -99,7 +99,7 @@ export default function LMChart({ params }) {
                 {/* Money Supply (Ms/P) - vertical line */}
                 <ReferenceLine
                   x={params.moneySupply}
-                  stroke="#8b5cf6"  // Purple color to match moneySupply parameter
+                  stroke="#8b5cf6"
                   strokeWidth={2}
                   label={{
                     value: "Money Supply (Ms/P)",
@@ -108,27 +108,20 @@ export default function LMChart({ params }) {
                   }}
                 />
 
-                {/* Equilibrium point - horizontal line */}
+                {/* Equilibrium lines without text */}
                 {equilibrium && (
-                  <ReferenceLine
-                    y={equilibrium.y}
-                    stroke="#6b7280"
-                    strokeDasharray="3 3"
-                    label={{
-                      value: `Equilibrium r = ${equilibrium.y.toFixed(2)}`,
-                      position: 'insideLeft',
-                      fontSize: 10
-                    }}
-                  />
-                )}
-
-                {/* Equilibrium point - vertical line to show intersection */}
-                {equilibrium && (
-                  <ReferenceLine
-                    x={equilibrium.x}
-                    stroke="#6b7280"
-                    strokeDasharray="3 3"
-                  />
+                  <>
+                    <ReferenceLine
+                      y={equilibrium.y}
+                      stroke="#6b7280"
+                      strokeDasharray="3 3"
+                    />
+                    <ReferenceLine
+                      x={equilibrium.x}
+                      stroke="#6b7280"
+                      strokeDasharray="3 3"
+                    />
+                  </>
                 )}
               </LineChart>
             </ResponsiveContainer>

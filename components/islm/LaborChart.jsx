@@ -1,4 +1,4 @@
-
+"use client";
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
@@ -153,9 +153,6 @@ export default function LaborChart({ params }) {
                 )}
               </LineChart>
             </ResponsiveContainer>
-          </div>
-          <div className="text-center mt-2 text-sm text-gray-500">
-            {equilibrium && `Equilibrium Wage: ${equilibrium.y.toFixed(2)}, Labor: ${equilibrium.x.toFixed(2)}`}
           </div>
         </CardContent>
       </Card>
