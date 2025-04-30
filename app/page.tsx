@@ -30,7 +30,7 @@ export default function HomePage() {
     labor: 50,
   });
 
-  const [equilibriumOutput, setEquilibriumOutput] = useState(50);
+  const [equilibriumOutput, setEquilibriumOutput] = useState<number | null>(50);
 
   const updateParam = (key: keyof typeof params, value: number) => {
     setParams((p) => ({ ...p, [key]: value }));
