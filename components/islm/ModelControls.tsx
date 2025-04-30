@@ -707,4 +707,4 @@ export default function ModelControls({ params, updateParam, equilibriumOutput }
       </CardContent>
     </Card>
   );
-
+}
