@@ -7,7 +7,12 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function ISLMChart({ params, onEquilibriumChange }) {
+interface ISLMChartProps {
+  params: any; // Replace `any` with the actual type
+  onEquilibriumChange: (output: number) => void; // Replace `number` with the correct type
+}
+
+const ISLMChart: React.FC<ISLMChartProps> = ({ params, onEquilibriumChange }) => {
   const [chartData, setChartData] = useState([]);
   const [equilibrium, setEquilibrium] = useState(null);
   const [outputGap, setOutputGap] = useState(null);
@@ -209,4 +214,6 @@ export default function ISLMChart({ params, onEquilibriumChange }) {
       </Card>
     </motion.div>
   );
-}
+};
+
+export default ISLMChart;
