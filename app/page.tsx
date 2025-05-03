@@ -48,6 +48,7 @@ export default function HomePage() {
           <header className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Interactive ISLM Economic Model</h1>
             <p className="text-gray-600 mt-2">
+              BEST USED ON A COMPUTER. NOT YET MOBILE COMPATIBLE. 
               Adjust the sliders to see real-time changes in the macroeconomic equilibrium. Use the dropdown to adjust the components of each curve.
             </p>
           </header>
