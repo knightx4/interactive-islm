@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   LineChart,
   Line,
@@ -8,13 +8,18 @@ import {
   YAxis,
   Tooltip,
   Legend,
-  ResponsiveContainer,
   ReferenceLine,
   Scatter,
   Label,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
+import ChartFrame from "@/components/islm/layout/ChartFrame";
+import { cn } from "@/lib/utils";
+import {
+  AllViewLegendItem,
+  AllViewLegendRow,
+} from "@/components/islm/layout/AllViewChartLegend";
 import {
   buildIslmSeries,
   computeIslmEquilibrium,
@@ -28,6 +33,9 @@ import {
 interface ISLMChartProps {
   params: IslmCoreParams;
   onEquilibriumChange: (output: number | null) => void;
+  compact?: boolean;
+  /** Stretch to fill the “All” view left column so it lines up with the stacked thumbnails */
+  allViewLayout?: boolean;
 }
 
 interface EquilibriumPoint {
@@ -35,7 +43,15 @@ interface EquilibriumPoint {
   y: number;
 }
 
-const ISLMChart: React.FC<ISLMChartProps> = ({ params, onEquilibriumChange }) => {
+const ISLM_CHART_MARGIN_ALL = { top: 0, right: 2, left: 26, bottom: 14 };
+const ISLM_CHART_MARGIN_STANDALONE = { top: 6, right: 12, left: 40, bottom: 26 };
+
+const ISLMChart: React.FC<ISLMChartProps> = ({
+  params,
+  onEquilibriumChange,
+  compact = false,
+  allViewLayout = false,
+}) => {
   const [chartData, setChartData] = useState<IslmChartPoint[]>([]);
   const [equilibrium, setEquilibrium] = useState<EquilibriumPoint | null>(null);
   const [outputGap, setOutputGap] = useState<number | null>(null);
@@ -62,19 +78,56 @@ const ISLMChart: React.FC<ISLMChartProps> = ({ params, onEquilibriumChange }) =>
     }
   }, [params, onEquilibriumChange]);
 
+  const chartMargin = allViewLayout
+    ? ISLM_CHART_MARGIN_ALL
+    : ISLM_CHART_MARGIN_STANDALONE;
+
+  const yDomainAllView = useMemo<[number, number]>(() => {
+    if (!chartData.length) return [0, 20];
+    let minY = Number.POSITIVE_INFINITY;
+    let maxY = Number.NEGATIVE_INFINITY;
+    for (const point of chartData) {
+      minY = Math.min(minY, point.isY, point.lmY);
+      maxY = Math.max(maxY, point.isY, point.lmY);
+    }
+    const paddedMin = Math.max(0, minY - 1.2);
+    const paddedMax = Math.min(20, maxY + 1.2);
+    if (paddedMin >= paddedMax) return [0, 20];
+    return [paddedMin, paddedMax];
+  }, [chartData]);
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={allViewLayout ? false : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: allViewLayout ? 0 : 0.5 }}
+      className="flex h-full min-h-0 w-full flex-1 flex-col"
     >
-      <Card className="h-full">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg flex justify-between items-center">
+      <Card
+        className={
+          allViewLayout
+            ? "flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden border shadow-sm"
+            : "flex h-full min-h-0 flex-1 flex-col overflow-hidden"
+        }
+      >
+        <CardHeader
+          className={
+            allViewLayout
+              ? "shrink-0 pb-0 pt-0.5 px-2"
+              : "shrink-0 flex items-center justify-between gap-1 px-3 pt-1 pb-1"
+          }
+        >
+          <CardTitle
+            className={`${
+              allViewLayout ? "text-sm" : compact ? "text-base" : "text-lg"
+            } flex justify-between items-center gap-2`}
+          >
             <span>IS-LM Model</span>
             {outputGap !== null && (
               <span
-                className={`text-xs px-2 py-1 rounded ${
+                className={`rounded ${
+                  allViewLayout ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-1 text-xs"
+                } ${
                   Math.abs(outputGap) < OUTPUT_GAP_TOLERANCE
                     ? "bg-green-100 text-green-800"
                     : outputGap > 0
@@ -84,43 +137,67 @@ const ISLMChart: React.FC<ISLMChartProps> = ({ params, onEquilibriumChange }) =>
                 title={`Full employment band: within ±${OUTPUT_GAP_TOLERANCE} index units of Y*`}
               >
                 {Math.abs(outputGap) < OUTPUT_GAP_TOLERANCE
-                  ? `Near full employment (gap ${outputGap > 0 ? "+" : ""}${outputGap.toFixed(1)} index)`
+                  ? allViewLayout
+                    ? "Near Y*"
+                    : `Near full employment (gap ${outputGap > 0 ? "+" : ""}${outputGap.toFixed(1)} index)`
                   : outputGap > 0
-                  ? `Inflationary gap: +${outputGap.toFixed(1)} (index)`
-                  : `Recessionary gap: ${outputGap.toFixed(1)} (index)`}
+                  ? allViewLayout
+                    ? "Y > Y*"
+                    : `Inflationary gap: +${outputGap.toFixed(1)} (index)`
+                  : allViewLayout
+                    ? "Y < Y*"
+                    : `Recessionary gap: ${outputGap.toFixed(1)} (index)`}
               </span>
             )}
           </CardTitle>
+          {allViewLayout && (
+            <AllViewLegendRow>
+              <AllViewLegendItem color="#3b82f6" label="IS" />
+              <AllViewLegendItem color="#8b5cf6" label="LM" />
+            </AllViewLegendRow>
+          )}
         </CardHeader>
-        <CardContent>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
+        <CardContent
+          className={cn(
+            "flex min-h-0 flex-1 flex-col overflow-hidden",
+            allViewLayout && "px-1 pb-1 pt-0"
+          )}
+        >
+          <ChartFrame compact={allViewLayout ? false : compact} fill={allViewLayout}>
               <LineChart
                 data={chartData}
-                margin={{ top: 5, right: 20, left: 10, bottom: 25 }}
+                margin={chartMargin}
               >
                 <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                 <XAxis
                   dataKey="x"
                   type="number"
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: allViewLayout ? 10 : 12 }}
                   domain={[0, 100]}
                   allowDataOverflow={true}
+                  height={allViewLayout ? 16 : compact ? 28 : 36}
                 >
-                  <Label value="Y (output, index)" position="bottom" offset={5} />
+                  {!allViewLayout && (
+                    <Label value="Y (output, index)" position="bottom" offset={5} />
+                  )}
                 </XAxis>
                 <YAxis
-                  tick={{ fontSize: 12 }}
-                  domain={[0, 20]}
+                  tick={{ fontSize: allViewLayout ? 10 : 12 }}
+                  domain={allViewLayout ? yDomainAllView : [0, 20]}
                   allowDataOverflow={true}
+                  width={allViewLayout ? 30 : compact ? 44 : 56}
                 >
-                  <Label value="r (interest rate, index)" angle={-90} position="left" />
+                  {!allViewLayout && (
+                    <Label value="r (interest rate, index)" angle={-90} position="left" />
+                  )}
                 </YAxis>
                 <Tooltip
                   formatter={(value: number) => [`${value.toFixed(2)}`, ""]}
                   labelFormatter={(value: number) => `Output (index): ${value}`}
                 />
-                <Legend verticalAlign="top" height={36} />
+                {!allViewLayout && (
+                  <Legend verticalAlign="top" height={32} wrapperStyle={{ paddingBottom: 4 }} />
+                )}
                 <Line
                   name="IS Curve"
                   type="monotone"
@@ -143,11 +220,19 @@ const ISLMChart: React.FC<ISLMChartProps> = ({ params, onEquilibriumChange }) =>
                   x={params.fullEmployment}
                   stroke="#ef4444"
                   strokeWidth={2}
-                  label={{
-                    value: "Full employment Y*",
-                    position: "insideTopRight",
-                    fontSize: 11,
-                  }}
+                  label={
+                    allViewLayout
+                      ? {
+                          value: "Y*",
+                          position: "insideTopRight",
+                          fontSize: 10,
+                        }
+                      : {
+                          value: "Full employment Y*",
+                          position: "insideTopRight",
+                          fontSize: 11,
+                        }
+                  }
                 />
                 {equilibrium && (
                   <>
@@ -193,8 +278,7 @@ const ISLMChart: React.FC<ISLMChartProps> = ({ params, onEquilibriumChange }) =>
                   </>
                 )}
               </LineChart>
-            </ResponsiveContainer>
-          </div>
+          </ChartFrame>
         </CardContent>
       </Card>
     </motion.div>
