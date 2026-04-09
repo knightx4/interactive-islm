@@ -15,19 +15,18 @@ import {
   Label,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  buildIsChartSeries,
+  computeInvestmentShift,
+  computeIsPanelEquilibrium,
+  computeSavingsShift,
+} from "@/lib/islmModel";
 
-// Define the type for the params prop
 interface ISChartProps {
   params: {
     investment: number;
     savings: number;
   };
-}
-
-interface ChartDataPoint {
-  x: number;
-  investmentY: number;
-  savingsY: number;
 }
 
 interface EquilibriumPoint {
@@ -36,57 +35,16 @@ interface EquilibriumPoint {
 }
 
 export default function ISChart({ params }: ISChartProps) {
-  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  const [chartData, setChartData] = useState<
+    { x: number; investmentY: number; savingsY: number }[]
+  >([]);
   const [equilibrium, setEquilibrium] = useState<EquilibriumPoint | null>(null);
 
-  // Compute chart data based on parameters
   useEffect(() => {
-    const investmentShift = (params.investment - 50) * 0.2; // Convert to shift range of ±10
-    const savingsShift = (50 - params.savings) * 0.2; // Inverted: lower slider = higher savings curve
-
-    const newData: ChartDataPoint[] = [];
-    const isSlope = -0.15;
-    const sSlope = 0.15;
-
-    // Calculate intercepts to meet at (50, 10) when parameters are neutral
-    const isBaseIntercept = 10 - isSlope * 50; // Solve: 10 = slope * 50 + b
-    const sBaseIntercept = 10 - sSlope * 50; // Solve: 10 = slope * 50 + b
-
-    for (let x = 0; x <= 100; x += 5) {
-      // Investment curve - fixed negative slope, shifting up/down
-      const investmentY = isBaseIntercept + investmentShift + isSlope * x;
-
-      // Savings curve - fixed positive slope, shifting up/down
-      const savingsY = sBaseIntercept + savingsShift + sSlope * x;
-
-      newData.push({
-        x: x,
-        investmentY: Math.max(0, Math.min(20, investmentY)),
-        savingsY: Math.max(0, Math.min(20, savingsY)),
-      });
-    }
-
-    setChartData(newData);
-
-    // Calculate equilibrium
-    const equilibriumX =
-      (isBaseIntercept + investmentShift - (sBaseIntercept + savingsShift)) /
-      (sSlope - isSlope);
-    const equilibriumY = isBaseIntercept + investmentShift + isSlope * equilibriumX;
-
-    if (
-      equilibriumX >= 0 &&
-      equilibriumX <= 100 &&
-      equilibriumY >= 0 &&
-      equilibriumY <= 20
-    ) {
-      setEquilibrium({
-        x: equilibriumX,
-        y: equilibriumY,
-      });
-    } else {
-      setEquilibrium(null);
-    }
+    const investmentShift = computeInvestmentShift(params.investment);
+    const savingsShift = computeSavingsShift(params.savings);
+    setChartData(buildIsChartSeries(investmentShift, savingsShift));
+    setEquilibrium(computeIsPanelEquilibrium(investmentShift, savingsShift));
   }, [params.investment, params.savings]);
 
   return (
@@ -98,6 +56,10 @@ export default function ISChart({ params }: ISChartProps) {
       <Card className="h-full">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg">Investment & Savings (IS)</CardTitle>
+          <p className="text-xs text-muted-foreground font-normal">
+            Fiscal policy (G, T) shifts the combined IS curve in the IS-LM panel below, not these
+            decomposed schedules.
+          </p>
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
@@ -114,14 +76,14 @@ export default function ISChart({ params }: ISChartProps) {
                   domain={[0, 100]}
                   allowDataOverflow={true}
                 >
-                  <Label value="I, S" position="bottom" offset={5} />
+                  <Label value="Activity (index)" position="bottom" offset={5} />
                 </XAxis>
                 <YAxis
                   tick={{ fontSize: 12 }}
                   domain={[0, 20]}
                   allowDataOverflow={true}
                 >
-                  <Label value="r (Interest Rate)" angle={-90} position="left" />
+                  <Label value="r (interest rate, index)" angle={-90} position="left" />
                 </YAxis>
                 <Tooltip
                   formatter={(value) => {
@@ -130,7 +92,7 @@ export default function ISChart({ params }: ISChartProps) {
                     }
                     return [value ?? "", ""];
                   }}
-                  labelFormatter={(value) => `I,S: ${value}`}
+                  labelFormatter={(value) => `Index: ${value}`}
                 />
                 <Legend verticalAlign="top" height={36} />
 
@@ -153,7 +115,6 @@ export default function ISChart({ params }: ISChartProps) {
                   animationDuration={500}
                 />
 
-                {/* Vertical equilibrium line */}
                 {equilibrium && (
                   <ReferenceLine
                     x={equilibrium.x}
@@ -162,7 +123,6 @@ export default function ISChart({ params }: ISChartProps) {
                   />
                 )}
 
-                {/* Horizontal equilibrium line */}
                 {equilibrium && (
                   <ReferenceLine
                     y={equilibrium.y}

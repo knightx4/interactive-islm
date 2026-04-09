@@ -6,31 +6,11 @@ import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-interface Params {
-  investment: number;
-  savings: number;
-  futureY: number;
-  wealth: number;
-  govSavings: number;
-  futureMPK: number;
-  moneySupply: number;
-  moneyDemand: number;
-  mdWealth: number;
-  expectedInflation: number;
-  riskiness: number;
-  liquidity: number;
-  fullEmployment: number;
-  centralBankSupply: number;
-  priceLevel: number;
-  productivity: number;
-  capital: number;
-  labor: number;
-}
+import type { ModelParams } from "@/lib/islmModel";
 
 interface ModelControlsProps {
-  params: Params; // Use the shared Params type
-  updateParam: (key: keyof Params, value: number) => void; // Updated type
+  params: ModelParams;
+  updateParam: (key: keyof ModelParams, value: number) => void;
   equilibriumOutput: number | null;
 }
 
@@ -45,7 +25,7 @@ export default function ModelControls({
   const [showMoneyDemandComponents, setShowMoneyDemandComponents] = useState(false);
   const [showFullEmploymentComponents, setShowFullEmploymentComponents] = useState(false);
 
-  const updateSavingsComponent = (component: keyof Params, value: number) => {
+  const updateSavingsComponent = (component: keyof ModelParams, value: number) => {
     const futureY = component === "futureY" ? value : params.futureY || 50;
     const wealth = component === "wealth" ? value : params.wealth || 50;
     const govSavings = component === "govSavings" ? value : params.govSavings || 50;
@@ -58,7 +38,7 @@ export default function ModelControls({
     updateParam("savings", newSavings);
   };
 
-  const updateInvestmentComponent = (component: keyof Params, value: number) => {
+  const updateInvestmentComponent = (component: keyof ModelParams, value: number) => {
     const futureMPK = component === "futureMPK" ? value : params.futureMPK || 50;
 
     const newInvestment = futureMPK;
@@ -67,7 +47,7 @@ export default function ModelControls({
     updateParam("investment", newInvestment);
   };
 
-  const updateMoneySupplyComponent = (component: keyof Params, value: number) => {
+  const updateMoneySupplyComponent = (component: keyof ModelParams, value: number) => {
     const centralBankSupply = component === "centralBankSupply" ? value : params.centralBankSupply || 50;
     const priceLevel = component === "priceLevel" ? value : params.priceLevel || 50;
 
@@ -79,7 +59,7 @@ export default function ModelControls({
     updateParam("moneySupply", newMoneySupply);
   };
 
-  const updateMoneyDemandComponent = (component: keyof Params, value: number) => {
+  const updateMoneyDemandComponent = (component: keyof ModelParams, value: number) => {
     const mdWealth = component === "mdWealth" ? value : params.mdWealth || 50;
     const expectedInflation = component === "expectedInflation" ? value : params.expectedInflation || 50;
     const riskiness = component === "riskiness" ? value : params.riskiness || 50;
@@ -93,7 +73,7 @@ export default function ModelControls({
     updateParam("moneyDemand", newMoneyDemand);
   };
 
-  const updateFullEmploymentComponent = (component: keyof Params, value: number) => {
+  const updateFullEmploymentComponent = (component: keyof ModelParams, value: number) => {
     const productivity = component === "productivity" ? value : params.productivity || 50;
     const capital = component === "capital" ? value : params.capital || 50;
     const labor = component === "labor" ? value : params.labor || 50;
@@ -307,6 +287,55 @@ export default function ModelControls({
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Fiscal policy — shifts combined IS in IS-LM */}
+          <div className="space-y-3">
+            <div className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+              Fiscal policy
+            </div>
+            <p className="text-xs text-gray-500">
+              Higher government spending shifts the IS curve right; higher taxes shift it left (this
+              toy model).
+            </p>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <Label htmlFor="governmentSpending" className="text-sm font-medium">
+                  Government spending (G)
+                </Label>
+                <span className="text-sm font-semibold bg-orange-100 text-orange-900 px-2 py-1 rounded">
+                  {params.governmentSpending}
+                </span>
+              </div>
+              <Slider
+                id="governmentSpending"
+                min={0}
+                max={100}
+                step={1}
+                value={[params.governmentSpending]}
+                onValueChange={(val) => updateParam("governmentSpending", val[0])}
+                className="cursor-pointer"
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <Label htmlFor="taxes" className="text-sm font-medium">
+                  Taxes (T)
+                </Label>
+                <span className="text-sm font-semibold bg-orange-100 text-orange-900 px-2 py-1 rounded">
+                  {params.taxes}
+                </span>
+              </div>
+              <Slider
+                id="taxes"
+                min={0}
+                max={100}
+                step={1}
+                value={[params.taxes]}
+                onValueChange={(val) => updateParam("taxes", val[0])}
+                className="cursor-pointer"
+              />
+            </div>
           </div>
 
           {/* Money Supply section */}
@@ -612,7 +641,7 @@ export default function ModelControls({
             variant="outline"
             className="w-full"
             onClick={() => {
-              const defaultParams = {
+              const defaultParams: ModelParams = {
                 investment: 50,
                 savings: 50,
                 futureY: 50,
@@ -631,9 +660,11 @@ export default function ModelControls({
                 productivity: 50,
                 capital: 50,
                 labor: 50,
+                governmentSpending: 50,
+                taxes: 50,
               };
 
-              (Object.keys(defaultParams) as Array<keyof typeof defaultParams>).forEach((key) => {
+              (Object.keys(defaultParams) as Array<keyof ModelParams>).forEach((key) => {
                 updateParam(key, defaultParams[key]);
               });
 
