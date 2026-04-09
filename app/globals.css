@@ -44,6 +44,12 @@
 }
 
 :root {
+  --controls-zone-height: min(48vh, 520px);
+  --chart-zone-height: min(56vh, 620px);
+  --desktop-pane-height: calc(100vh - 10rem);
+  --pane-min-width: 320px;
+  --pane-max-width: 540px;
+  --controls-density-gap: 1rem;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -78,6 +84,21 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+@media (max-height: 820px) {
+  :root {
+    --controls-zone-height: 40vh;
+    --chart-zone-height: 54vh;
+    --desktop-pane-height: calc(100vh - 8.5rem);
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --controls-zone-height: var(--desktop-pane-height);
+    --chart-zone-height: var(--desktop-pane-height);
+  }
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -110,6 +131,24 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+@media (max-height: 860px) {
+  :root {
+    --controls-zone-height: min(46vh, 460px);
+    --chart-zone-height: min(58vh, 560px);
+    --desktop-pane-height: calc(100vh - 8.75rem);
+    --controls-density-gap: 0.75rem;
+  }
+}
+
+/* Only reset below md (768px); tablet/desktop keep numeric pane heights for layout math */
+@media (max-width: 767px) {
+  :root {
+    --controls-zone-height: auto;
+    --chart-zone-height: auto;
+    --desktop-pane-height: auto;
+  }
 }
 
 @layer base {

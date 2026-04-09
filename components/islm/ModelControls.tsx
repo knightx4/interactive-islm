@@ -7,17 +7,28 @@ import { Label } from "@/components/ui/label";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ModelParams } from "@/lib/islmModel";
+import { cn } from "@/lib/utils";
+
+/** Nested driver lists: fixed cap + scroll so expanding doesn’t resize the whole controls card */
+function expandPanelClassName(borderClass: string) {
+  return cn(
+    "mt-1.5 max-h-[min(220px,42svh)] space-y-3 overflow-y-auto overflow-x-hidden overscroll-contain border-l-2 pl-3 pr-0.5 [scrollbar-gutter:stable]",
+    borderClass
+  );
+}
 
 interface ModelControlsProps {
   params: ModelParams;
   updateParam: (key: keyof ModelParams, value: number) => void;
   equilibriumOutput: number | null;
+  compact?: boolean;
 }
 
 export default function ModelControls({
   params,
   updateParam,
   equilibriumOutput,
+  compact = false,
 }: ModelControlsProps) {
   const [showSavingsComponents, setShowSavingsComponents] = useState(false);
   const [showInvestmentComponents, setShowInvestmentComponents] = useState(false);
@@ -87,14 +98,29 @@ export default function ModelControls({
   };
 
   return (
-    <Card className="sticky top-6 h-full flex flex-col">
-      <CardHeader className="pb-4">
-        <CardTitle>Model Parameters</CardTitle>
+    <Card className="flex w-full max-w-full min-h-0 flex-col gap-1.5 overflow-visible py-2.5 shadow-sm sm:gap-2.5 sm:py-3 sm:h-full sm:max-h-full sm:flex-1 sm:overflow-hidden">
+      <CardHeader className="shrink-0 px-3.5 pb-0 pt-0 sm:px-4">
+        <CardTitle className="text-[15px] sm:text-base">Model Parameters</CardTitle>
+        <p className="text-[11px] leading-snug text-muted-foreground sm:text-xs">
+          Core sliders are always visible. Expand sections for detailed drivers.
+        </p>
       </CardHeader>
-      <CardContent className="flex flex-col h-full">
-        <div className="space-y-6 flex-grow">
+      <CardContent
+        className={
+          compact
+            ? "flex min-h-[min(340px,52svh)] flex-col overflow-x-hidden overflow-y-auto px-3.5 pb-2.5 pt-0 sm:min-h-0 sm:flex-1 sm:basis-0 sm:overflow-hidden"
+            : "flex min-h-[min(380px,58svh)] flex-col overflow-x-hidden overflow-y-auto px-3.5 pb-2.5 pt-1 sm:min-h-0 sm:flex-1 sm:basis-0 sm:overflow-hidden"
+        }
+      >
+        <div
+          className={
+            compact
+              ? "space-y-2 pr-0.5 sm:min-h-0 sm:flex-1 sm:basis-0 sm:overflow-y-auto sm:overscroll-contain"
+              : "space-y-2.5 pr-0.5 sm:min-h-0 sm:flex-1 sm:basis-0 sm:overflow-y-auto sm:overscroll-contain"
+          }
+        >
           {/* Investment Section */}
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-1">
                 <Label htmlFor="investment" className="text-sm font-medium">
@@ -132,7 +158,7 @@ export default function ModelControls({
 
             {/* Investment Components */}
             {showInvestmentComponents && (
-              <div className="mt-2 pl-4 border-l-2 border-blue-200 space-y-4">
+              <div className={expandPanelClassName("border-blue-200")}>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="futureMPK" className="text-xs font-medium">
@@ -160,7 +186,7 @@ export default function ModelControls({
           </div>
 
           {/* Savings Section */}
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-1">
                 <Label htmlFor="savings" className="text-sm font-medium">
@@ -198,7 +224,7 @@ export default function ModelControls({
 
             {/* Savings Components */}
             {showSavingsComponents && (
-              <div className="mt-2 pl-4 border-l-2 border-green-200 space-y-4">
+              <div className={expandPanelClassName("border-green-200")}>
                 {/* Current Income */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
@@ -290,7 +316,7 @@ export default function ModelControls({
           </div>
 
           {/* Fiscal policy — shifts combined IS in IS-LM */}
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
               Fiscal policy
             </div>
@@ -339,7 +365,7 @@ export default function ModelControls({
           </div>
 
           {/* Money Supply section */}
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-1">
                 <Label htmlFor="moneySupply" className="text-sm font-medium">
@@ -377,7 +403,7 @@ export default function ModelControls({
 
             {/* Money Supply Components */}
             {showMoneySupplyComponents && (
-              <div className="mt-2 pl-4 border-l-2 border-purple-200 space-y-4">
+              <div className={expandPanelClassName("border-purple-200")}>
                 {/* Central Bank Supply */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
@@ -430,7 +456,7 @@ export default function ModelControls({
           </div>
 
           {/* Money Demand section */}
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-1">
                 <Label htmlFor="moneyDemand" className="text-sm font-medium">
@@ -468,7 +494,7 @@ export default function ModelControls({
 
             {/* Money Demand Components */}
             {showMoneyDemandComponents && (
-              <div className="mt-2 pl-4 border-l-2 border-amber-200 space-y-4">
+              <div className={expandPanelClassName("border-amber-200")}>
                 {/* Wealth */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
@@ -521,7 +547,7 @@ export default function ModelControls({
           </div>
 
           {/* Full Employment section */}
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-1">
                 <Label htmlFor="fullEmployment" className="text-sm font-medium">
@@ -559,7 +585,7 @@ export default function ModelControls({
 
             {/* Full Employment Components */}
             {showFullEmploymentComponents && (
-              <div className="mt-2 pl-4 border-l-2 border-red-200 space-y-4">
+              <div className={expandPanelClassName("border-red-200")}>
                 {/* Productivity */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
@@ -636,7 +662,7 @@ export default function ModelControls({
           </div>
         </div>
 
-        <div className="pt-4 mt-auto border-t border-gray-200">
+        <div className="shrink-0 border-t border-gray-200 pt-2">
           <Button
             variant="outline"
             className="w-full"
