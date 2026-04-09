@@ -15,22 +15,19 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
+import {
+  buildIslmSeries,
+  computeIslmEquilibrium,
+  computeIsShift,
+  computeLmShift,
+  OUTPUT_GAP_TOLERANCE,
+  type IslmChartPoint,
+  type IslmCoreParams,
+} from "@/lib/islmModel";
 
 interface ISLMChartProps {
-  params: {
-    investment: number;
-    savings: number;
-    moneySupply: number;
-    moneyDemand: number;
-    fullEmployment: number;
-  };
+  params: IslmCoreParams;
   onEquilibriumChange: (output: number | null) => void;
-}
-
-interface ChartDataPoint {
-  x: number;
-  isY: number;
-  lmY: number;
 }
 
 interface EquilibriumPoint {
@@ -39,74 +36,31 @@ interface EquilibriumPoint {
 }
 
 const ISLMChart: React.FC<ISLMChartProps> = ({ params, onEquilibriumChange }) => {
-  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  const [chartData, setChartData] = useState<IslmChartPoint[]>([]);
   const [equilibrium, setEquilibrium] = useState<EquilibriumPoint | null>(null);
   const [outputGap, setOutputGap] = useState<number | null>(null);
 
   useEffect(() => {
-    const newData: ChartDataPoint[] = [];
+    const isShift = computeIsShift(
+      params.investment,
+      params.savings,
+      params.governmentSpending,
+      params.taxes
+    );
+    const lmShift = computeLmShift(params.moneyDemand, params.moneySupply);
+    setChartData(buildIslmSeries(isShift, lmShift));
 
-    // Convert slider values to shifts
-    const isShift =
-      ((params.investment + (100 - params.savings)) / 2 - 50) * 0.2; // Combined IS shift
-    const lmShift =
-      ((params.moneyDemand - params.moneySupply) / 2) * 0.2; // Corrected LM shift
-
-    // Fixed slopes for both curves
-    const isSlope = -0.15; // Negative slope for IS
-    const lmSlope = 0.15; // Positive slope for LM
-
-    // Calculate intercepts to meet at (50, 10) when parameters are neutral
-    const isBaseIntercept = 10 - isSlope * 50; // Solve: 10 = slope * 50 + b
-    const lmBaseIntercept = 10 - lmSlope * 50; // Solve: 10 = slope * 50 + b
-
-    // Generate points
-    for (let x = 0; x <= 100; x += 2) {
-      const isY = isBaseIntercept + isShift + isSlope * x;
-      const lmY = lmBaseIntercept + lmShift + lmSlope * x;
-
-      newData.push({
-        x: x,
-        isY: Math.max(0, Math.min(20, isY)),
-        lmY: Math.max(0, Math.min(20, lmY)),
-      });
-    }
-
-    setChartData(newData);
-
-    // Calculate equilibrium (intersection of IS and LM)
-    const equilibriumX =
-      (isBaseIntercept + isShift - (lmBaseIntercept + lmShift)) /
-      (lmSlope - isSlope);
-    const equilibriumY = isBaseIntercept + isShift + isSlope * equilibriumX;
-
-    if (
-      equilibriumX >= 0 &&
-      equilibriumX <= 100 &&
-      equilibriumY >= 0 &&
-      equilibriumY <= 20
-    ) {
-      setEquilibrium({ x: equilibriumX, y: equilibriumY });
-
-      // Calculate output gap
-      const outputGap = equilibriumX - params.fullEmployment;
-      setOutputGap(outputGap);
-
-      // Pass equilibrium output back to parent
-      onEquilibriumChange(equilibriumX);
+    const eq = computeIslmEquilibrium(params);
+    if (eq) {
+      setEquilibrium({ x: eq.equilibriumX, y: eq.equilibriumY });
+      setOutputGap(eq.outputGap);
+      onEquilibriumChange(eq.equilibriumX);
     } else {
       setEquilibrium(null);
       setOutputGap(null);
       onEquilibriumChange(null);
     }
-  }, [
-    params.investment,
-    params.savings,
-    params.moneySupply,
-    params.moneyDemand,
-    params.fullEmployment,
-    onEquilibriumChange,
-  ]);
+  }, [params, onEquilibriumChange]);
 
   return (
     <motion.div
@@ -121,18 +75,19 @@ const ISLMChart: React.FC<ISLMChartProps> = ({ params, onEquilibriumChange }) =>
             {outputGap !== null && (
               <span
                 className={`text-xs px-2 py-1 rounded ${
-                  Math.abs(outputGap) < 5
+                  Math.abs(outputGap) < OUTPUT_GAP_TOLERANCE
                     ? "bg-green-100 text-green-800"
                     : outputGap > 0
                     ? "bg-red-100 text-red-800"
                     : "bg-blue-100 text-blue-800"
                 }`}
+                title={`Full employment band: within ±${OUTPUT_GAP_TOLERANCE} index units of Y*`}
               >
-                {outputGap > 0
-                  ? `Inflationary gap: +${outputGap.toFixed(1)}`
-                  : outputGap < 0
-                  ? `Recessionary gap: ${outputGap.toFixed(1)}`
-                  : "At full employment"}
+                {Math.abs(outputGap) < OUTPUT_GAP_TOLERANCE
+                  ? `Near full employment (gap ${outputGap > 0 ? "+" : ""}${outputGap.toFixed(1)} index)`
+                  : outputGap > 0
+                  ? `Inflationary gap: +${outputGap.toFixed(1)} (index)`
+                  : `Recessionary gap: ${outputGap.toFixed(1)} (index)`}
               </span>
             )}
           </CardTitle>
@@ -152,18 +107,18 @@ const ISLMChart: React.FC<ISLMChartProps> = ({ params, onEquilibriumChange }) =>
                   domain={[0, 100]}
                   allowDataOverflow={true}
                 >
-                  <Label value="Y (Output)" position="bottom" offset={5} />
+                  <Label value="Y (output, index)" position="bottom" offset={5} />
                 </XAxis>
                 <YAxis
                   tick={{ fontSize: 12 }}
                   domain={[0, 20]}
                   allowDataOverflow={true}
                 >
-                  <Label value="r (Interest Rate)" angle={-90} position="left" />
+                  <Label value="r (interest rate, index)" angle={-90} position="left" />
                 </YAxis>
                 <Tooltip
                   formatter={(value: number) => [`${value.toFixed(2)}`, ""]}
-                  labelFormatter={(value: number) => `Output: ${value}`}
+                  labelFormatter={(value: number) => `Output (index): ${value}`}
                 />
                 <Legend verticalAlign="top" height={36} />
                 <Line
@@ -189,7 +144,7 @@ const ISLMChart: React.FC<ISLMChartProps> = ({ params, onEquilibriumChange }) =>
                   stroke="#ef4444"
                   strokeWidth={2}
                   label={{
-                    value: "Full Employment",
+                    value: "Full employment Y*",
                     position: "insideTopRight",
                     fontSize: 11,
                   }}
@@ -214,7 +169,7 @@ const ISLMChart: React.FC<ISLMChartProps> = ({ params, onEquilibriumChange }) =>
                     >
                       <Label
                         content={({ viewBox }) => {
-                          if (!viewBox || !("x" in viewBox) || !("y" in viewBox)) return null; // Ensure viewBox has x and y properties
+                          if (!viewBox || !("x" in viewBox) || !("y" in viewBox)) return null;
                           const cx = (viewBox.x ?? 0) + (viewBox.width ?? 0) / 2;
                           const cy = (viewBox.y ?? 0) + (viewBox.height ?? 0) / 2;
                           return (

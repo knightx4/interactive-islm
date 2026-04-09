@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Interactive IS-LM model
 
-## Getting Started
+A small [Next.js](https://nextjs.org/) app for teaching the **IS-LM** framework: goods market (IS), money market (LM), combined **(Y, r)** equilibrium, and a simple link to a stylized labor market. Sliders drive **linear, index-only** curves—they are **not** calibrated to real GDP or interest rates.
 
-First, run the development server:
+## Run locally
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). The layout is aimed at desktop or tablet; values on the axes are **model index units**.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## What the sliders do
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Investment / savings** (and optional subcomponents): move the private **I** and **S** schedules in the top-left panel and feed the combined **IS** shift in the IS-LM diagram.
+- **Fiscal (G, T)**: shifts the combined **IS** curve in the IS-LM view (higher **G** shifts IS right, higher **T** shifts IS left in this toy).
+- **Money supply / demand** (and subcomponents): move the money-market panel and the **LM** curve.
+- **Full employment Y*** (and subcomponents): vertical reference in the IS-LM chart; used with equilibrium **Y** to describe output gaps.
 
-## Learn More
+Core math lives in [`lib/islmModel.ts`](lib/islmModel.ts) so all charts stay consistent.
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Command        | Action                |
+| -------------- | --------------------- |
+| `npm run dev`  | Development server    |
+| `npm run build`| Production build      |
+| `npm run test` | Vitest unit tests     |
+| `npm run lint` | ESLint                |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+ISC (see `package.json`).

@@ -15,21 +15,16 @@ import {
   Label,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  buildLaborSeries,
+  computeIslmAlgebraicIntersection,
+  computeLaborEquilibrium,
+  OUTPUT_GAP_TOLERANCE,
+  type IslmCoreParams,
+} from "@/lib/islmModel";
 
 interface LaborChartProps {
-  params: {
-    investment: number;
-    savings: number;
-    moneySupply: number;
-    moneyDemand: number;
-    fullEmployment: number;
-  };
-}
-
-interface ChartDataPoint {
-  x: number;
-  supplyY: number;
-  demandY: number;
+  params: IslmCoreParams;
 }
 
 interface EquilibriumPoint {
@@ -39,77 +34,16 @@ interface EquilibriumPoint {
 }
 
 export default function LaborChart({ params }: LaborChartProps) {
-  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  const [chartData, setChartData] = useState<
+    { x: number; supplyY: number; demandY: number }[]
+  >([]);
   const [equilibrium, setEquilibrium] = useState<EquilibriumPoint | null>(null);
 
   useEffect(() => {
-    // Get output from ISLM model
-    const isShift = ((params.investment + (100 - params.savings)) / 2 - 50) * 0.2;
-    const lmShift = ((params.moneySupply + params.moneyDemand) / 2 - 50) * 0.2;
-
-    // Calculate ISLM equilibrium output
-    const isBaseIntercept = 17.5;
-    const lmBaseIntercept = 2.5;
-    const isSlope = -0.15;
-    const lmSlope = 0.15;
-
-    const islmOutput =
-      (isBaseIntercept + isShift - (lmBaseIntercept + lmShift)) /
-      (lmSlope - isSlope);
-    const outputGap = islmOutput - params.fullEmployment;
-    const laborDemandShift = outputGap * 0.1;
-
-    // Define curve parameters for centered equilibrium at (50, 10)
-    const supplySlope = 0.15; // Slope of supply curve
-    const demandSlope = -0.15; // Slope of demand curve, matching supply slope magnitude
-
-    // Calculate intercepts that will make curves cross at (50, 10) when in equilibrium
-    const supplyIntercept = 10 - supplySlope * 50; // Solve: 10 = slope * 50 + b
-    const demandIntercept = 10 - demandSlope * 50; // Solve: 10 = slope * 50 + b
-
-    // Generate chart data points
-    const newData: ChartDataPoint[] = [];
-    for (let x = 0; x <= 100; x += 5) {
-      const supplyY = supplySlope * x + supplyIntercept;
-      const demandY = demandSlope * x + demandIntercept + laborDemandShift;
-
-      newData.push({
-        x: x,
-        supplyY: Math.max(0, Math.min(20, supplyY)),
-        demandY: Math.max(0, Math.min(20, demandY)),
-      });
-    }
-
-    setChartData(newData);
-
-    // Calculate equilibrium
-    const equilibriumX =
-      (demandIntercept + laborDemandShift - supplyIntercept) /
-      (supplySlope - demandSlope);
-    const equilibriumY = supplySlope * equilibriumX + supplyIntercept;
-
-    // Set equilibrium if it's within valid range
-    if (
-      equilibriumX >= 0 &&
-      equilibriumX <= 100 &&
-      equilibriumY >= 0 &&
-      equilibriumY <= 20
-    ) {
-      setEquilibrium({
-        x: equilibriumX,
-        y: equilibriumY,
-        gap: outputGap,
-      });
-    } else {
-      setEquilibrium(null);
-    }
-  }, [
-    params.investment,
-    params.savings,
-    params.moneySupply,
-    params.moneyDemand,
-    params.fullEmployment,
-  ]);
+    const { outputGap } = computeIslmAlgebraicIntersection(params);
+    setChartData(buildLaborSeries(outputGap));
+    setEquilibrium(computeLaborEquilibrium(outputGap));
+  }, [params]);
 
   return (
     <motion.div
@@ -124,18 +58,19 @@ export default function LaborChart({ params }: LaborChartProps) {
             {equilibrium && (
               <span
                 className={`text-xs px-2 py-1 rounded ${
-                  Math.abs(equilibrium.gap) < 5
+                  Math.abs(equilibrium.gap) < OUTPUT_GAP_TOLERANCE
                     ? "bg-green-100 text-green-800"
                     : equilibrium.gap > 0
                     ? "bg-red-100 text-red-800"
                     : "bg-blue-100 text-blue-800"
                 }`}
+                title={`Aligned with IS-LM output gap; band ±${OUTPUT_GAP_TOLERANCE} index units`}
               >
-                {equilibrium.gap > 0
-                  ? "Excess Labor Demand"
-                  : equilibrium.gap < 0
-                  ? "Excess Labor Supply"
-                  : "Labor Market Equilibrium"}
+                {Math.abs(equilibrium.gap) < OUTPUT_GAP_TOLERANCE
+                  ? "Near full employment (labor market, index)"
+                  : equilibrium.gap > 0
+                  ? "Excess labor demand (positive output gap)"
+                  : "Excess labor supply (negative output gap)"}
               </span>
             )}
           </CardTitle>
@@ -155,14 +90,14 @@ export default function LaborChart({ params }: LaborChartProps) {
                   domain={[0, 100]}
                   allowDataOverflow={true}
                 >
-                  <Label value="L (Labor)" position="bottom" offset={5} />
+                  <Label value="L (labor, index)" position="bottom" offset={5} />
                 </XAxis>
                 <YAxis
                   tick={{ fontSize: 12 }}
                   domain={[0, 20]}
                   allowDataOverflow={true}
                 >
-                  <Label value="w (Real Wage)" angle={-90} position="left" />
+                  <Label value="w (real wage, index)" angle={-90} position="left" />
                 </YAxis>
                 <Tooltip
                   formatter={(value) => {
@@ -171,7 +106,7 @@ export default function LaborChart({ params }: LaborChartProps) {
                     }
                     return [value ?? "", ""];
                   }}
-                  labelFormatter={(value) => `Labor: ${value}`}
+                  labelFormatter={(value) => `Labor (index): ${value}`}
                 />
                 <Legend verticalAlign="top" height={36} />
 
@@ -194,7 +129,6 @@ export default function LaborChart({ params }: LaborChartProps) {
                   animationDuration={500}
                 />
 
-                {/* Equilibrium lines */}
                 {equilibrium && (
                   <>
                     <ReferenceLine

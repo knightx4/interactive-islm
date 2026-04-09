@@ -15,6 +15,11 @@ import {
   Label,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  buildLmChartSeries,
+  computeLmMoneyMarketEquilibrium,
+  computeMoneyDemandShift,
+} from "@/lib/islmModel";
 
 interface LMChartProps {
   params: {
@@ -23,53 +28,21 @@ interface LMChartProps {
   };
 }
 
-interface ChartDataPoint {
-  x: number;
-  moneyDemandY: number;
-}
-
 interface EquilibriumPoint {
   x: number;
   y: number;
 }
 
 export default function LMChart({ params }: LMChartProps) {
-  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  const [chartData, setChartData] = useState<{ x: number; moneyDemandY: number }[]>([]);
   const [equilibrium, setEquilibrium] = useState<EquilibriumPoint | null>(null);
 
   useEffect(() => {
-    const moneySupplyShift = params.moneySupply; // Direct position for vertical line
-    const moneyDemandShift = (params.moneyDemand - 50) * 0.2; // Convert to shift range of ±10
-
-    const newData: ChartDataPoint[] = [];
-    const lSlope = -0.15;
-
-    // Calculate intercept to pass through (50, 10) when parameters are neutral
-    const lBaseIntercept = 10 - lSlope * 50; // Solve: 10 = slope * 50 + b
-
-    for (let x = 0; x <= 100; x += 5) {
-      // Money Demand curve - fixed negative slope, shifting up/down
-      const moneyDemandY = lBaseIntercept + moneyDemandShift + lSlope * x;
-
-      newData.push({
-        x: x,
-        moneyDemandY: Math.max(0, Math.min(20, moneyDemandY)),
-      });
-    }
-
-    setChartData(newData);
-
-    // Calculate equilibrium
-    const equilibriumY = lBaseIntercept + moneyDemandShift + lSlope * moneySupplyShift;
-
-    if (equilibriumY >= 0 && equilibriumY <= 20) {
-      setEquilibrium({
-        x: moneySupplyShift,
-        y: equilibriumY,
-      });
-    } else {
-      setEquilibrium(null);
-    }
+    const moneyDemandShift = computeMoneyDemandShift(params.moneyDemand);
+    setChartData(buildLmChartSeries(moneyDemandShift));
+    setEquilibrium(
+      computeLmMoneyMarketEquilibrium(params.moneySupply, moneyDemandShift)
+    );
   }, [params.moneySupply, params.moneyDemand]);
 
   return (
@@ -81,6 +54,10 @@ export default function LMChart({ params }: LMChartProps) {
       <Card className="h-full">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg">Money Market (LM)</CardTitle>
+          <p className="text-xs text-muted-foreground font-normal">
+            This panel is the money market: vertical real money supply Ms/P and money demand L(r,
+            Y). The IS-LM diagram below plots the LM curve in (Y, r) space instead.
+          </p>
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
@@ -97,14 +74,14 @@ export default function LMChart({ params }: LMChartProps) {
                   domain={[0, 100]}
                   allowDataOverflow={true}
                 >
-                  <Label value="Ms/P, L(Y)" position="bottom" offset={5} />
+                  <Label value="Ms/P, L (index)" position="bottom" offset={5} />
                 </XAxis>
                 <YAxis
                   tick={{ fontSize: 12 }}
                   domain={[0, 20]}
                   allowDataOverflow={true}
                 >
-                  <Label value="r (Interest Rate)" angle={-90} position="left" />
+                  <Label value="r (interest rate, index)" angle={-90} position="left" />
                 </YAxis>
                 <Tooltip
                   formatter={(value) => {
@@ -113,7 +90,7 @@ export default function LMChart({ params }: LMChartProps) {
                     }
                     return [value ?? "", ""];
                   }}
-                  labelFormatter={(value) => `Value: ${value}`}
+                  labelFormatter={(value) => `Index: ${value}`}
                 />
                 <Legend verticalAlign="top" height={36} />
 
@@ -127,7 +104,6 @@ export default function LMChart({ params }: LMChartProps) {
                   animationDuration={500}
                 />
 
-                {/* Money Supply (Ms/P) - vertical line */}
                 <ReferenceLine
                   x={params.moneySupply}
                   stroke="#8b5cf6"
@@ -139,7 +115,6 @@ export default function LMChart({ params }: LMChartProps) {
                   }}
                 />
 
-                {/* Equilibrium lines */}
                 {equilibrium && (
                   <>
                     <ReferenceLine
