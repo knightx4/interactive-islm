@@ -266,7 +266,7 @@ export default function LMChart({
                 />
                 {!allView && <Legend verticalAlign="top" height={28} />}
 
-                {baselineChartData && (
+                {baselineParams && baselineChartData && (
                   <>
                     <ReferenceLine
                       x={baselineParams.moneySupply}
