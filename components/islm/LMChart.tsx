@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   LineChart,
   Line,
+  Customized,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -15,12 +16,14 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import InfoHint from "@/components/islm/layout/InfoHint";
 import {
   ALL_VIEW_MARGIN,
   ALL_VIEW_TICK,
   ALL_VIEW_X_TICKS,
   ALL_VIEW_Y_TICKS,
+  CHART_BASELINE_STROKE,
+  CHART_BASELINE_STROKE_DASHARRAY,
+  STANDALONE_CHART_MARGIN,
 } from "@/components/islm/chartAllView";
 import ChartFrame from "@/components/islm/layout/ChartFrame";
 import {
@@ -29,43 +32,146 @@ import {
 } from "@/components/islm/layout/AllViewChartLegend";
 import {
   buildLmChartSeries,
-  computeLmMoneyMarketEquilibrium,
   computeMoneyDemandShift,
 } from "@/lib/islmModel";
 
+type LmDriverParams = { moneySupply: number; moneyDemand: number };
+
 interface LMChartProps {
-  params: {
-    moneySupply: number;
-    moneyDemand: number;
-  };
+  params: LmDriverParams;
+  baselineParams?: LmDriverParams | null;
+  showEquilibriumGuides?: boolean;
   compact?: boolean;
   frameClassName?: string;
   allView?: boolean;
 }
 
-interface EquilibriumPoint {
+type LmChartRow = { x: number; moneyDemandY: number };
+type BaselinePoint = { x: number; y: number };
+type BaselineSeries = { id: string; points: BaselinePoint[] };
+
+function BaselinePaths({
+  series,
+  xAxisMap,
+  yAxisMap,
+}: {
+  series: BaselineSeries[];
+  xAxisMap?: Record<string, { scale?: (v: number) => number }>;
+  yAxisMap?: Record<string, { scale?: (v: number) => number }>;
+}) {
+  const xAxis = xAxisMap?.["0"] ?? Object.values(xAxisMap ?? {})[0];
+  const yAxis = yAxisMap?.["0"] ?? Object.values(yAxisMap ?? {})[0];
+  if (!xAxis?.scale || !yAxis?.scale) return null;
+
+  return (
+    <g>
+      {series.map((s) => {
+        if (s.points.length < 2) return null;
+        const d = s.points
+          .map((p, i) => `${i === 0 ? "M" : "L"} ${xAxis.scale!(p.x)} ${yAxis.scale!(p.y)}`)
+          .join(" ");
+        return (
+          <path
+            key={s.id}
+            d={d}
+            fill="none"
+            stroke={CHART_BASELINE_STROKE}
+            strokeWidth={2}
+            strokeDasharray={CHART_BASELINE_STROKE_DASHARRAY}
+          />
+        );
+      })}
+    </g>
+  );
+}
+
+function EquilibriumGuides({
+  x,
+  y,
+  xAxisMap,
+  yAxisMap,
+}: {
   x: number;
   y: number;
+  xAxisMap?: Record<string, { scale?: (v: number) => number }>;
+  yAxisMap?: Record<string, { scale?: (v: number) => number }>;
+}) {
+  const xAxis = xAxisMap?.["0"] ?? Object.values(xAxisMap ?? {})[0];
+  const yAxis = yAxisMap?.["0"] ?? Object.values(yAxisMap ?? {})[0];
+  if (!xAxis?.scale || !yAxis?.scale) return null;
+  const xScale = xAxis.scale;
+  const yScale = yAxis.scale;
+
+  const xCoord = xScale(Math.max(0, Math.min(100, x)));
+  const yCoord = yScale(Math.max(0, Math.min(20, y)));
+  const xMin = Math.min(xScale(0), xScale(100));
+  const xMax = Math.max(xScale(0), xScale(100));
+  const yMin = Math.min(yScale(0), yScale(20));
+  const yMax = Math.max(yScale(0), yScale(20));
+
+  return (
+    <g>
+      <path
+        d={`M ${xCoord} ${yMin} L ${xCoord} ${yMax}`}
+        fill="none"
+        stroke="#6b7280"
+        strokeWidth={1.5}
+        strokeDasharray="3 3"
+      />
+      <path
+        d={`M ${xMin} ${yCoord} L ${xMax} ${yCoord}`}
+        fill="none"
+        stroke="#6b7280"
+        strokeWidth={1.5}
+        strokeDasharray="3 3"
+      />
+    </g>
+  );
 }
 
 export default function LMChart({
   params,
+  baselineParams = null,
+  showEquilibriumGuides = true,
   compact = false,
   frameClassName,
   allView = false,
 }: LMChartProps) {
-  const [chartData, setChartData] = useState<{ x: number; moneyDemandY: number }[]>([]);
-  const [equilibrium, setEquilibrium] = useState<EquilibriumPoint | null>(null);
+  const moneyDemandShift = computeMoneyDemandShift(params.moneyDemand);
 
-  useEffect(() => {
-    const moneyDemandShift = computeMoneyDemandShift(params.moneyDemand);
-    setChartData(buildLmChartSeries(moneyDemandShift));
-    setEquilibrium(
-      computeLmMoneyMarketEquilibrium(params.moneySupply, moneyDemandShift)
-    );
-  }, [params.moneySupply, params.moneyDemand]);
+  const chartData = useMemo(
+    (): LmChartRow[] => buildLmChartSeries(moneyDemandShift),
+    [moneyDemandShift]
+  );
 
-  const chartMargin = allView ? ALL_VIEW_MARGIN : { top: 6, right: 12, left: 40, bottom: 26 };
+  const baselineChartData = useMemo((): LmChartRow[] | null => {
+    if (!baselineParams) {
+      return null;
+    }
+    const bShift = computeMoneyDemandShift(baselineParams.moneyDemand);
+    return buildLmChartSeries(bShift);
+  }, [baselineParams]);
+
+  const baselineSeries = useMemo((): BaselineSeries[] => {
+    if (!baselineChartData) return [];
+    return [
+      {
+        id: "baseline-md",
+        points: baselineChartData.map((p) => ({ x: p.x, y: p.moneyDemandY })),
+      },
+    ];
+  }, [baselineChartData]);
+
+  const guidePoint = useMemo(() => {
+    const denseSeries = buildLmChartSeries(moneyDemandShift, 1);
+    const row =
+      denseSeries[params.moneySupply] ??
+      denseSeries.find((entry) => entry.x === params.moneySupply);
+    if (!row) return null;
+    return { x: params.moneySupply, y: row.moneyDemandY };
+  }, [params.moneySupply, moneyDemandShift]);
+
+  const chartMargin = allView ? ALL_VIEW_MARGIN : STANDALONE_CHART_MARGIN;
 
   return (
     <motion.div
@@ -84,7 +190,7 @@ export default function LMChart({
         <CardHeader
           className={
             allView
-              ? "flex flex-row flex-wrap items-center justify-between gap-x-1 gap-y-0.5 space-y-0 px-1 pb-0 pt-0"
+              ? "flex flex-row flex-wrap items-center justify-between gap-x-1 gap-y-0.5 space-y-0 px-2 pb-0 pt-1"
               : "shrink-0 flex items-center justify-between gap-1 px-3 pt-1 pb-1"
           }
         >
@@ -105,17 +211,11 @@ export default function LMChart({
               <AllViewLegendItem color="#8b5cf6" label="Ms/P" vertical />
             </AllViewLegendRow>
           )}
-          {!allView && (
-            <InfoHint
-              text="This panel is the money market: vertical real money supply Ms/P and money demand L(r, Y). The IS-LM diagram below plots the LM curve in (Y, r) space instead."
-              className="ml-auto"
-            />
-          )}
         </CardHeader>
         <CardContent
           className={cn(
             "flex min-h-0 flex-1 flex-col overflow-hidden",
-            allView && "px-0.5 pb-0 pt-0"
+            allView && "px-2 pb-1.5 pt-1"
           )}
         >
           <ChartFrame
@@ -166,7 +266,19 @@ export default function LMChart({
                 />
                 {!allView && <Legend verticalAlign="top" height={28} />}
 
+                {baselineChartData && (
+                  <>
+                    <ReferenceLine
+                      x={baselineParams.moneySupply}
+                      stroke={CHART_BASELINE_STROKE}
+                      strokeWidth={allView ? 1.5 : 2}
+                      strokeDasharray={CHART_BASELINE_STROKE_DASHARRAY}
+                    />
+                  </>
+                )}
+
                 <Line
+                  key="live-md"
                   name={allView ? "Md" : "Money Demand L(Y)"}
                   type="monotone"
                   dataKey="moneyDemandY"
@@ -175,6 +287,9 @@ export default function LMChart({
                   dot={false}
                   animationDuration={500}
                 />
+                {baselineSeries.length > 0 && (
+                  <Customized component={<BaselinePaths series={baselineSeries} />} />
+                )}
 
                 <ReferenceLine
                   x={params.moneySupply}
@@ -196,19 +311,15 @@ export default function LMChart({
                   }
                 />
 
-                {equilibrium && (
-                  <>
-                    <ReferenceLine
-                      y={equilibrium.y}
-                      stroke="#6b7280"
-                      strokeDasharray="3 3"
-                    />
-                    <ReferenceLine
-                      x={equilibrium.x}
-                      stroke="#6b7280"
-                      strokeDasharray="3 3"
-                    />
-                  </>
+                {showEquilibriumGuides && guidePoint && (
+                  <Customized
+                    component={
+                      <EquilibriumGuides
+                        x={guidePoint.x}
+                        y={guidePoint.y}
+                      />
+                    }
+                  />
                 )}
               </LineChart>
           </ChartFrame>

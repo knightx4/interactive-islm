@@ -13,6 +13,7 @@ import PrimaryChartPanel, {
   type ActiveChart,
 } from "@/components/islm/layout/PrimaryChartPanel";
 import WorkspaceShell from "@/components/islm/layout/WorkspaceShell";
+import ExpenditureIdentityCard from "@/components/islm/ExpenditureIdentityCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type ModelParams } from "@/lib/islmModel";
 
@@ -21,11 +22,9 @@ const defaultParams: ModelParams = {
   savings: 50,
   futureY: 50,
   wealth: 50,
-  govSavings: 50,
   futureMPK: 50,
   moneySupply: 50,
   moneyDemand: 50,
-  mdWealth: 50,
   expectedInflation: 50,
   riskiness: 50,
   liquidity: 50,
@@ -35,16 +34,18 @@ const defaultParams: ModelParams = {
   productivity: 50,
   capital: 50,
   labor: 50,
-  governmentSpending: 50,
-  taxes: 50,
+  governmentSpending: 0,
+  netExports: 0,
 };
 
 export default function HomePage() {
   const [params, setParams] = useState<ModelParams>(defaultParams);
   const [activeChart, setActiveChart] = useState<ActiveChart>("all");
   const [isCompactControls, setIsCompactControls] = useState(false);
+  const [showEquilibriumGuides, setShowEquilibriumGuides] = useState(true);
 
   const [equilibriumOutput, setEquilibriumOutput] = useState<number | null>(50);
+  const [baselineParams, setBaselineParams] = useState<ModelParams | null>(null);
 
   const updateParam = (key: keyof ModelParams, value: number) => {
     setParams((p) => ({ ...p, [key]: value }));
@@ -69,16 +70,44 @@ export default function HomePage() {
       return (
         <AllChartsView
           params={params}
+          baselineParams={baselineParams}
+          showEquilibriumGuides={showEquilibriumGuides}
           onEquilibriumChange={handleEquilibriumChange}
         />
       );
     }
-    if (activeChart === "is") return <ISChart params={params} compact />;
-    if (activeChart === "lm") return <LMChart params={params} compact />;
-    if (activeChart === "labor") return <LaborChart params={params} compact />;
+    if (activeChart === "is")
+      return (
+        <ISChart
+          params={params}
+          baselineParams={baselineParams}
+          showEquilibriumGuides={showEquilibriumGuides}
+          compact
+        />
+      );
+    if (activeChart === "lm")
+      return (
+        <LMChart
+          params={params}
+          baselineParams={baselineParams}
+          showEquilibriumGuides={showEquilibriumGuides}
+          compact
+        />
+      );
+    if (activeChart === "labor")
+      return (
+        <LaborChart
+          params={params}
+          baselineParams={baselineParams}
+          showEquilibriumGuides={showEquilibriumGuides}
+          compact
+        />
+      );
     return (
       <ISLMChart
         params={params}
+        baselineParams={baselineParams}
+        showEquilibriumGuides={showEquilibriumGuides}
         onEquilibriumChange={handleEquilibriumChange}
         compact
       />
@@ -94,7 +123,10 @@ export default function HomePage() {
           </h1>
           <p className="mt-2 max-w-3xl text-gray-600">
             Best used on a larger screen. All horizontal and vertical values are{" "}
-            <strong>model index units</strong>, not real-world billions or percentage points. Adjust
+            <strong>model index units</strong>, not real-world billions or percentage points. The
+            open-economy goods market uses{" "}
+            <strong className="font-semibold">I + NX = S</strong>; the expenditure box below the
+            charts shows <strong>Y = C + I + G + NX</strong> with implied <strong>C</strong>. Adjust
             the sliders to see how equilibrium moves; use the chevrons to open component sliders.
           </p>
         </header>
@@ -110,6 +142,8 @@ export default function HomePage() {
                   updateParam={updateParam}
                   equilibriumOutput={equilibriumOutput}
                   compact={isCompactControls}
+                  onSetBaseline={() => setBaselineParams({ ...params })}
+                  onAfterReset={() => setBaselineParams(null)}
                 />
               </ControlsRail>
             }
@@ -117,11 +151,14 @@ export default function HomePage() {
               <PrimaryChartPanel
                 activeChart={activeChart}
                 onActiveChartChange={setActiveChart}
+                showEquilibriumGuides={showEquilibriumGuides}
+                onToggleEquilibriumGuides={() =>
+                  setShowEquilibriumGuides((visible) => !visible)
+                }
                 feedbackBar={
                   <MacroFeedbackBar
                     equilibriumOutput={equilibriumOutput}
                     fullEmployment={params.fullEmployment}
-                    activeChart={activeChart}
                   />
                 }
               >
@@ -131,6 +168,11 @@ export default function HomePage() {
           />
         </div>
 
+        <ExpenditureIdentityCard
+          params={params}
+          equilibriumOutput={equilibriumOutput}
+        />
+
         <div className="mt-6 shrink-0 pb-4 md:mt-8">
           <Card>
             <CardHeader className="py-3 md:py-4">
@@ -138,22 +180,24 @@ export default function HomePage() {
             </CardHeader>
             <CardContent className="space-y-3 text-gray-700 md:space-y-4">
               <p>
-                The <strong>IS curve</strong> summarizes goods-market equilibrium (planned spending
-                equals income): higher autonomous demand shifts IS right. The <strong>LM curve</strong>{" "}
-                summarizes money-market equilibrium for a given price level: higher real money supply
-                shifts LM right/down in (Y, r) space.
+                The <strong>IS curve</strong> summarizes open-economy goods-market equilibrium in{" "}
+                <strong>(Y, r)</strong> space: planned spending meets income with{" "}
+                <strong>I + NX = S</strong> (net exports <strong>NX</strong> shifts the schedule
+                with investment). The <strong>LM curve</strong> summarizes money-market equilibrium
+                for a given price level: higher real money supply shifts LM right/down.
               </p>
               <p>
-                The <strong>money market</strong> panel above shows a vertical real money supply{" "}
+                The <strong>money market</strong> panel shows a vertical real money supply{" "}
                 <code className="rounded bg-gray-100 px-1 text-xs">Ms/P</code> and a downward-sloping
                 money demand curve in (quantity, interest rate) space. The <strong>IS-LM</strong>{" "}
-                diagram instead plots the upward-sloping LM curve in <strong>(Y, r)</strong> space;
-                both are consistent stories at different levels of detail.
+                diagram plots IS and LM in <strong>(Y, r)</strong> space; the <strong>IS</strong>{" "}
+                thumbnail plots <strong>I + NX</strong> against <strong>S</strong>.
               </p>
               <p>
                 Axes are <strong>index or model units</strong> for teaching, not calibrated data.
-                Fiscal sliders (G, T) move the combined IS schedule in the IS-LM view; the
-                investment–savings panel shows private I and S only (see note on that card).
+                Fiscal <strong>G</strong> and components under Savings still move the combined IS
+                schedule in the IS-LM view; use <strong>Net exports</strong> under Investment for{" "}
+                <strong>NX</strong>.
               </p>
             </CardContent>
           </Card>

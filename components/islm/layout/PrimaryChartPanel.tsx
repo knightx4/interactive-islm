@@ -3,14 +3,15 @@
 import type { ReactNode } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import InfoHint from "@/components/islm/layout/InfoHint";
-
 export type ActiveChart = "all" | "islm" | "is" | "lm" | "labor";
 
 interface PrimaryChartPanelProps {
   activeChart: ActiveChart;
   onActiveChartChange: (chart: ActiveChart) => void;
+  showEquilibriumGuides: boolean;
+  onToggleEquilibriumGuides: () => void;
   feedbackBar: ReactNode;
   children: ReactNode;
   className?: string;
@@ -24,18 +25,11 @@ const chartTabs: Array<{ id: ActiveChart; label: string }> = [
   { id: "labor", label: "Labor" },
 ];
 
-const chartMicrocopy: Record<ActiveChart, string> = {
-  all: "",
-  islm: "IS right or LM right typically raises Y in this linear toy model.",
-  is: "Observe how investment and savings schedules move equilibrium in the goods market.",
-  lm: "LM money-market shifts alter the interest rate for a given liquidity position.",
-  labor:
-    "Labor demand here is linked to the IS-LM output gap to connect macro and labor outcomes.",
-};
-
 export default function PrimaryChartPanel({
   activeChart,
   onActiveChartChange,
+  showEquilibriumGuides,
+  onToggleEquilibriumGuides,
   feedbackBar,
   children,
   className,
@@ -63,9 +57,15 @@ export default function PrimaryChartPanel({
                 ))}
               </TabsList>
             </Tabs>
-            {chartMicrocopy[activeChart] && (
-              <InfoHint text={chartMicrocopy[activeChart]} className="mt-1 shrink-0" />
-            )}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onToggleEquilibriumGuides}
+              className="shrink-0 whitespace-nowrap"
+            >
+              {showEquilibriumGuides ? "Hide eq guides" : "Show eq guides"}
+            </Button>
           </div>
           {feedbackBar}
         </CardContent>

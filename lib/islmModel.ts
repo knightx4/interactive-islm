@@ -22,11 +22,9 @@ export interface ModelParams {
   savings: number;
   futureY: number;
   wealth: number;
-  govSavings: number;
   futureMPK: number;
   moneySupply: number;
   moneyDemand: number;
-  mdWealth: number;
   expectedInflation: number;
   riskiness: number;
   liquidity: number;
@@ -36,8 +34,13 @@ export interface ModelParams {
   productivity: number;
   capital: number;
   labor: number;
+  /**
+   * Government savings balance (T-G), index; -50..50 with 0 = balanced budget.
+   * Positive means surplus (lower G), negative means deficit (higher G).
+   */
   governmentSpending: number;
-  taxes: number;
+  /** Net exports (X−M), index; −50…50 with 0 = balanced trade. */
+  netExports: number;
 }
 
 /** Subset used for IS-LM equilibrium and labor bridge. */
@@ -49,7 +52,7 @@ export type IslmCoreParams = Pick<
   | "moneyDemand"
   | "fullEmployment"
   | "governmentSpending"
-  | "taxes"
+  | "netExports"
 >;
 
 export function computeInvestmentShift(investment: number): number {
@@ -61,19 +64,28 @@ export function computeSavingsShift(savings: number): number {
 }
 
 /**
- * Combined IS shift (IS-LM panel) + fiscal: higher G shifts IS right, higher T shifts IS left.
+ * Combined IS shift (IS-LM panel): open-economy goods market bundles **I + NX** vs saving,
+ * plus government spending (fiscal).
  */
 export function computeIsShift(
   investment: number,
   savings: number,
-  governmentSpending: number,
-  taxes: number
+  governmentSavings: number,
+  netExports: number
 ): number {
   const privatePart =
-    ((investment + (100 - savings)) / 2 - 50) * SHIFT_SCALE;
-  const fiscalPart =
-    ((governmentSpending - 50) - (taxes - 50)) * (SHIFT_SCALE / 2);
+    ((investment + netExports + (100 - savings)) / 2 - 50) * SHIFT_SCALE;
+  // Slider stores government savings (T-G). Higher savings => lower G => leftward IS shift.
+  const fiscalPart = -governmentSavings * (SHIFT_SCALE / 2);
   return privatePart + fiscalPart;
+}
+
+/** Shift for the IS decomposition chart: planned spending side is I + NX vs S. */
+export function computeOpenEconomyInvestmentSideShift(
+  investment: number,
+  netExports: number
+): number {
+  return computeInvestmentShift(investment + netExports);
 }
 
 export function computeLmShift(moneyDemand: number, moneySupply: number): number {
@@ -96,7 +108,7 @@ export function computeIslmAlgebraicIntersection(
     params.investment,
     params.savings,
     params.governmentSpending,
-    params.taxes
+    params.netExports
   );
   const lmShift = computeLmShift(params.moneyDemand, params.moneySupply);
 

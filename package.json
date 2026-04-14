@@ -9,6 +9,7 @@
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "extract:macro-slides": "node scripts/extract-macro-slides-for-analysis.mjs",
     "build:css": "tailwindcss -i ./styles/globals.css -o ./public/output.css",
     "watch:css": "tailwindcss -i ./styles/globals.css -o ./public/output.css --watch"
   },
