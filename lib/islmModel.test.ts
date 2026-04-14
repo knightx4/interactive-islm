@@ -27,6 +27,27 @@ describe("computeLmShift", () => {
   });
 });
 
+describe("computeIsShift", () => {
+  it("matches prior closed economy when netExports is 0 and gov savings is neutral", () => {
+    const nx0 = computeIsShift(55, 45, 0, 0);
+    const legacyPrivate = ((55 + (100 - 45)) / 2 - 50) * SHIFT_SCALE;
+    const fiscal = 0;
+    expect(nx0).toBeCloseTo(legacyPrivate + fiscal);
+  });
+
+  it("shifts IS right when netExports increases (same I, S, G)", () => {
+    const base = computeIsShift(50, 50, 0, 0);
+    const higherNx = computeIsShift(50, 50, 0, 20);
+    expect(higherNx).toBeGreaterThan(base);
+  });
+
+  it("shifts IS left when netExports is negative", () => {
+    const base = computeIsShift(50, 50, 0, 0);
+    const lowerNx = computeIsShift(50, 50, 0, -20);
+    expect(lowerNx).toBeLessThan(base);
+  });
+});
+
 describe("computeIslmAlgebraicIntersection", () => {
   it("matches closed-form intersection of IS and LM lines", () => {
     const params = {
@@ -35,15 +56,15 @@ describe("computeIslmAlgebraicIntersection", () => {
       moneySupply: 45,
       moneyDemand: 55,
       fullEmployment: 48,
-      governmentSpending: 52,
-      taxes: 48,
+      governmentSpending: 2,
+      netExports: 0,
     };
     const alg = computeIslmAlgebraicIntersection(params);
     const isShift = computeIsShift(
       params.investment,
       params.savings,
       params.governmentSpending,
-      params.taxes
+      params.netExports
     );
     const lmShift = computeLmShift(params.moneyDemand, params.moneySupply);
     const x =

@@ -90,9 +90,11 @@ export default function WorkspaceShell({
         </div>
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-rows-[clamp(440px,56svh,620px)_auto] gap-2 overflow-visible sm:hidden">
-        <div className="flex h-full min-h-0 overflow-hidden [&>*]:h-full [&>*]:min-h-0 [&>*]:flex-1">{chartArea}</div>
-        <div className="shrink-0">{controls}</div>
+      <div className="grid min-h-0 flex-1 grid-rows-[minmax(200px,min(52svh,560px))_minmax(0,1fr)] gap-2 overflow-hidden sm:hidden">
+        <div className="flex min-h-0 overflow-hidden [&>*]:min-h-0 [&>*]:h-full [&>*]:flex-1">
+          {chartArea}
+        </div>
+        <div className="flex min-h-0 flex-col overflow-hidden">{controls}</div>
       </div>
     </div>
   );

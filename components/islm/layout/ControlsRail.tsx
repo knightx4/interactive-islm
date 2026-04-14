@@ -13,7 +13,8 @@ export default function ControlsRail({ children, className }: ControlsRailProps)
     <section
       className={cn(
         "overscroll-contain",
-        "max-sm:min-h-[min(46svh,480px)] max-sm:max-h-[min(64svh,720px)] max-sm:overflow-y-auto max-sm:rounded-lg max-sm:border max-sm:border-border max-sm:bg-card max-sm:p-1.5 max-sm:shadow-sm",
+        // Mobile / vertical stack: fill the grid row and scroll parameters inside this pane
+        "max-sm:flex max-sm:min-h-0 max-sm:flex-1 max-sm:flex-col max-sm:overflow-y-auto max-sm:rounded-lg max-sm:border max-sm:border-border max-sm:bg-card max-sm:p-1.5 max-sm:shadow-sm",
         "sm:flex sm:h-full sm:min-h-0 sm:max-h-full sm:flex-1 sm:flex-col sm:overflow-y-auto sm:overscroll-contain",
         className
       )}
