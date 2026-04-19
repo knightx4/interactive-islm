@@ -30,11 +30,9 @@ import {
   STANDALONE_CHART_MARGIN,
 } from "@/components/islm/chartAllView";
 import {
-  buildIslmSeries,
+  buildStructuralIslmSeries,
   computeIslmAlgebraicIntersection,
   computeIslmEquilibrium,
-  computeIsShift,
-  computeLmShift,
   OUTPUT_GAP_TOLERANCE,
   type IslmChartPoint,
   type IslmCoreParams,
@@ -47,7 +45,7 @@ interface ISLMChartProps {
   /** Dotted comparison curves from “Set baseline”; same shape as `params`. */
   baselineParams?: IslmCoreParams | null;
   showEquilibriumGuides?: boolean;
-  onEquilibriumChange: (output: number | null) => void;
+  onEquilibriumChange: (equilibrium: { output: number; rate: number } | null) => void;
   compact?: boolean;
   /** Stretch to fill the “All” view left column so it lines up with the stacked thumbnails */
   allViewLayout?: boolean;
@@ -150,32 +148,16 @@ const ISLMChart: React.FC<ISLMChartProps> = ({
   compact = false,
   allViewLayout = false,
 }) => {
-  const chartData = useMemo((): IslmChartRow[] => {
-    const isShift = computeIsShift(
-      params.investment,
-      params.savings,
-      params.governmentSpending,
-      params.netExports ?? 0
-    );
-    const lmShift = computeLmShift(params.moneyDemand, params.moneySupply);
-    return buildIslmSeries(isShift, lmShift);
-  }, [params]);
+  const chartData = useMemo(
+    (): IslmChartRow[] => buildStructuralIslmSeries(params),
+    [params]
+  );
 
   const baselineChartData = useMemo((): IslmChartRow[] | null => {
     if (!baselineParams) {
       return null;
     }
-    const bIs = computeIsShift(
-      baselineParams.investment,
-      baselineParams.savings,
-      baselineParams.governmentSpending,
-      baselineParams.netExports ?? 0
-    );
-    const bLm = computeLmShift(
-      baselineParams.moneyDemand,
-      baselineParams.moneySupply
-    );
-    return buildIslmSeries(bIs, bLm);
+    return buildStructuralIslmSeries(baselineParams);
   }, [baselineParams]);
 
   const baselineSeries = useMemo((): BaselineSeries[] => {
@@ -203,15 +185,16 @@ const ISLMChart: React.FC<ISLMChartProps> = ({
   }, [params]);
 
   useEffect(() => {
+    const alg = computeIslmAlgebraicIntersection(params);
+    onEquilibriumChange({ output: alg.equilibriumX, rate: alg.equilibriumY });
+
     const eq = computeIslmEquilibrium(params);
     if (eq) {
       setEquilibrium({ x: eq.equilibriumX, y: eq.equilibriumY });
       setOutputGap(eq.outputGap);
-      onEquilibriumChange(eq.equilibriumX);
     } else {
       setEquilibrium(null);
       setOutputGap(null);
-      onEquilibriumChange(null);
     }
   }, [params, onEquilibriumChange]);
 

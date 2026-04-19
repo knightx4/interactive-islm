@@ -15,7 +15,13 @@ import PrimaryChartPanel, {
 import WorkspaceShell from "@/components/islm/layout/WorkspaceShell";
 import ExpenditureIdentityCard from "@/components/islm/ExpenditureIdentityCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { type ModelParams } from "@/lib/islmModel";
+import {
+  computeIslmAlgebraicIntersection,
+  computeIslmEquilibrium,
+  type ModelParams,
+} from "@/lib/islmModel";
+
+type SolvedEquilibrium = { output: number; rate: number };
 
 const defaultParams: ModelParams = {
   investment: 50,
@@ -44,16 +50,40 @@ export default function HomePage() {
   const [isCompactControls, setIsCompactControls] = useState(false);
   const [showEquilibriumGuides, setShowEquilibriumGuides] = useState(true);
 
-  const [equilibriumOutput, setEquilibriumOutput] = useState<number | null>(50);
+  const [solvedEquilibrium, setSolvedEquilibrium] =
+    useState<SolvedEquilibrium | null>({
+      output: 50,
+      rate: 10,
+    });
   const [baselineParams, setBaselineParams] = useState<ModelParams | null>(null);
 
   const updateParam = (key: keyof ModelParams, value: number) => {
     setParams((p) => ({ ...p, [key]: value }));
   };
 
-  const handleEquilibriumChange = useCallback((output: number | null) => {
-    setEquilibriumOutput(output);
-  }, []);
+  const handleEquilibriumChange = useCallback(
+    (equilibrium: SolvedEquilibrium | null) => {
+      setSolvedEquilibrium(equilibrium);
+    },
+    []
+  );
+
+  useEffect(() => {
+    const bounded = computeIslmEquilibrium(params);
+    if (bounded) {
+      setSolvedEquilibrium({
+        output: bounded.equilibriumX,
+        rate: bounded.equilibriumY,
+      });
+      return;
+    }
+
+    const algebraic = computeIslmAlgebraicIntersection(params);
+    setSolvedEquilibrium({
+      output: algebraic.equilibriumX,
+      rate: algebraic.equilibriumY,
+    });
+  }, [params]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -73,6 +103,7 @@ export default function HomePage() {
           baselineParams={baselineParams}
           showEquilibriumGuides={showEquilibriumGuides}
           onEquilibriumChange={handleEquilibriumChange}
+          solvedEquilibrium={solvedEquilibrium}
         />
       );
     }
@@ -82,6 +113,7 @@ export default function HomePage() {
           params={params}
           baselineParams={baselineParams}
           showEquilibriumGuides={showEquilibriumGuides}
+          equilibrium={solvedEquilibrium}
           compact
         />
       );
@@ -91,6 +123,7 @@ export default function HomePage() {
           params={params}
           baselineParams={baselineParams}
           showEquilibriumGuides={showEquilibriumGuides}
+          equilibrium={solvedEquilibrium}
           compact
         />
       );
@@ -140,7 +173,7 @@ export default function HomePage() {
                 <ModelControls
                   params={params}
                   updateParam={updateParam}
-                  equilibriumOutput={equilibriumOutput}
+                  equilibriumOutput={solvedEquilibrium?.output ?? null}
                   compact={isCompactControls}
                   onSetBaseline={() => setBaselineParams({ ...params })}
                   onAfterReset={() => setBaselineParams(null)}
@@ -157,7 +190,7 @@ export default function HomePage() {
                 }
                 feedbackBar={
                   <MacroFeedbackBar
-                    equilibriumOutput={equilibriumOutput}
+                    equilibriumOutput={solvedEquilibrium?.output ?? null}
                     fullEmployment={params.fullEmployment}
                   />
                 }
@@ -170,7 +203,7 @@ export default function HomePage() {
 
         <ExpenditureIdentityCard
           params={params}
-          equilibriumOutput={equilibriumOutput}
+          equilibriumOutput={solvedEquilibrium?.output ?? null}
         />
 
         <div className="mt-6 shrink-0 pb-4 md:mt-8">

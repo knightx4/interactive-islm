@@ -32,15 +32,24 @@ import {
 } from "@/components/islm/layout/AllViewChartLegend";
 import {
   buildLmChartSeries,
-  computeMoneyDemandShift,
+  computeIslmAlgebraicIntersection,
 } from "@/lib/islmModel";
 
-type LmDriverParams = { moneySupply: number; moneyDemand: number };
+type LmDriverParams = {
+  investment: number;
+  savings: number;
+  moneySupply: number;
+  moneyDemand: number;
+  governmentSpending: number;
+  netExports: number;
+  fullEmployment?: number;
+};
 
 interface LMChartProps {
   params: LmDriverParams;
   baselineParams?: LmDriverParams | null;
   showEquilibriumGuides?: boolean;
+  equilibrium?: { output: number; rate: number } | null;
   compact?: boolean;
   frameClassName?: string;
   allView?: boolean;
@@ -133,24 +142,35 @@ export default function LMChart({
   params,
   baselineParams = null,
   showEquilibriumGuides = true,
+  equilibrium = null,
   compact = false,
   frameClassName,
   allView = false,
 }: LMChartProps) {
-  const moneyDemandShift = computeMoneyDemandShift(params.moneyDemand);
-
   const chartData = useMemo(
-    (): LmChartRow[] => buildLmChartSeries(moneyDemandShift),
-    [moneyDemandShift]
+    (): LmChartRow[] =>
+      buildLmChartSeries(
+        {
+          ...params,
+          fullEmployment: params.fullEmployment ?? 50,
+        },
+        equilibrium?.output ?? 50
+      ),
+    [equilibrium?.output, params]
   );
 
   const baselineChartData = useMemo((): LmChartRow[] | null => {
     if (!baselineParams) {
       return null;
     }
-    const bShift = computeMoneyDemandShift(baselineParams.moneyDemand);
-    return buildLmChartSeries(bShift);
-  }, [baselineParams]);
+    return buildLmChartSeries(
+      {
+        ...baselineParams,
+        fullEmployment: baselineParams.fullEmployment ?? 50,
+      },
+      equilibrium?.output ?? 50
+    );
+  }, [baselineParams, equilibrium?.output]);
 
   const baselineSeries = useMemo((): BaselineSeries[] => {
     if (!baselineChartData) return [];
@@ -163,13 +183,30 @@ export default function LMChart({
   }, [baselineChartData]);
 
   const guidePoint = useMemo(() => {
-    const denseSeries = buildLmChartSeries(moneyDemandShift, 1);
+    if (equilibrium) {
+      return {
+        x: params.moneySupply,
+        y: Math.max(0, Math.min(20, equilibrium.rate)),
+      };
+    }
+    const derivedEq = computeIslmAlgebraicIntersection({
+      ...params,
+      fullEmployment: params.fullEmployment ?? 50,
+    });
+    const denseSeries = buildLmChartSeries(
+      {
+        ...params,
+        fullEmployment: params.fullEmployment ?? 50,
+      },
+      derivedEq.equilibriumX,
+      1
+    );
     const row =
       denseSeries[params.moneySupply] ??
       denseSeries.find((entry) => entry.x === params.moneySupply);
     if (!row) return null;
     return { x: params.moneySupply, y: row.moneyDemandY };
-  }, [params.moneySupply, moneyDemandShift]);
+  }, [equilibrium, params]);
 
   const chartMargin = allView ? ALL_VIEW_MARGIN : STANDALONE_CHART_MARGIN;
 

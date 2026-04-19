@@ -9,7 +9,7 @@ import {
 
 interface ExpenditureIdentityCardProps {
   params: IslmCoreParams;
-  /** IS–LM equilibrium output on the chart, or null when off-chart. */
+  /** IS–LM equilibrium output on the graph in index units. */
   equilibriumOutput: number | null;
 }
 
@@ -36,15 +36,12 @@ export default function ExpenditureIdentityCard({
     algebraicEq.equilibriumX;
   const rIndex = algebraicEq.equilibriumY;
 
-  // Accounting layer uses scaled units so baseline composition is realistic.
-  const OUTPUT_UNIT_SCALE = 2;
-  const COMPONENT_UNIT_SCALE = 0.2;
-
-  const Y = YIndex * OUTPUT_UNIT_SCALE;
-  const I = params.investment * COMPONENT_UNIT_SCALE;
-  const savingsInput = params.savings * COMPONENT_UNIT_SCALE;
-  const governmentSavings = params.governmentSpending * COMPONENT_UNIT_SCALE;
-  const NX = (params.netExports ?? 0) * COMPONENT_UNIT_SCALE;
+  // Keep accounting in the same index units shown on the graph so Y always matches.
+  const Y = YIndex;
+  const I = params.investment;
+  const savingsInput = params.savings;
+  const governmentSavings = params.governmentSpending;
+  const NX = params.netExports ?? 0;
   const taxRate = 0.2;
   // Start from chart equilibrium output:
   // Y = C + I + G + NX  =>  C + G = Y - I - NX
@@ -60,8 +57,8 @@ export default function ExpenditureIdentityCard({
   const methodologyText =
     "Start from chart equilibrium Y = C + I + G + NX, so C + G = Y - I - NX. " +
     "Then split with T = 0.2C and slider (T-G); thus G = T - (T-G). " +
-    `Savings S below is implied national saving (Y - C - G), while the savings slider is an IS-shift input shown in accounting units as ${savingsInput.toFixed(1)}. ` +
-    "Values are displayed in accounting units (scaled from index sliders) and anchored to equilibrium Y from the IS–LM block (algebraic Y when the dot is off-chart).";
+    `Savings S below is implied national saving (Y - C - G), while the savings slider is an IS-shift input shown here in index units as ${savingsInput.toFixed(1)}. ` +
+    "Values are displayed in the same index units as the IS–LM graph and anchored to equilibrium Y from the IS–LM block (algebraic Y when the dot is off-chart).";
 
   const usingAlgebraic = equilibriumOutput === null;
 
@@ -70,7 +67,7 @@ export default function ExpenditureIdentityCard({
       <CardHeader className="py-3 md:py-4">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-base md:text-lg">
-            Expenditure accounting (index units)
+            Expenditure accounting (graph index units)
           </CardTitle>
           <div className="group relative inline-flex">
             <button

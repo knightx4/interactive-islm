@@ -30,22 +30,26 @@ import {
   STANDALONE_CHART_MARGIN,
 } from "@/components/islm/chartAllView";
 import {
-  buildIsChartSeries,
-  computeIsPanelEquilibrium,
-  computeOpenEconomyInvestmentSideShift,
-  computeSavingsShift,
+  IS_PANEL_IS_SLOPE,
+  IS_PANEL_S_SLOPE,
+  computeIslmAlgebraicIntersection,
 } from "@/lib/islmModel";
 
 type IsChartDriverParams = {
   investment: number;
   savings: number;
+  moneySupply: number;
+  moneyDemand: number;
+  governmentSpending: number;
   netExports: number;
+  fullEmployment?: number;
 };
 
 interface ISChartProps {
   params: IsChartDriverParams;
   baselineParams?: IsChartDriverParams | null;
   showEquilibriumGuides?: boolean;
+  equilibrium?: { output: number; rate: number } | null;
   compact?: boolean;
   /** Merged into ChartFrame (e.g. tighter sidebar layout in “All” view). */
   frameClassName?: string;
@@ -141,55 +145,88 @@ type IsChartRow = {
   savingsY: number;
 };
 
+function buildSavingsInvestmentRows(
+  equilibriumX: number,
+  equilibriumY: number,
+  step = 5
+): IsChartRow[] {
+  const data: IsChartRow[] = [];
+  for (let x = 0; x <= 100; x += step) {
+    const investmentY = equilibriumY + IS_PANEL_IS_SLOPE * (x - equilibriumX);
+    const savingsY = equilibriumY + IS_PANEL_S_SLOPE * (x - equilibriumX);
+    data.push({
+      x,
+      investmentY: Math.max(0, Math.min(20, investmentY)),
+      savingsY: Math.max(0, Math.min(20, savingsY)),
+    });
+  }
+  return data;
+}
+
 export default function ISChart({
   params,
   baselineParams = null,
   showEquilibriumGuides = true,
+  equilibrium = null,
   compact = false,
   frameClassName,
   allView = false,
 }: ISChartProps) {
-  const investmentShift = computeOpenEconomyInvestmentSideShift(
-    params.investment,
-    params.netExports ?? 0
+  const panelEquilibrium = useMemo(
+    () =>
+      computeIslmAlgebraicIntersection({
+        ...params,
+        fullEmployment: params.fullEmployment ?? 50,
+      }),
+    [params]
   );
-  const savingsShift = computeSavingsShift(params.savings);
 
   const chartData = useMemo(
-    (): IsChartRow[] => buildIsChartSeries(investmentShift, savingsShift),
-    [investmentShift, savingsShift]
+    (): IsChartRow[] =>
+      buildSavingsInvestmentRows(
+        panelEquilibrium.equilibriumX,
+        panelEquilibrium.equilibriumY
+      ),
+    [panelEquilibrium.equilibriumX, panelEquilibrium.equilibriumY]
   );
 
   const baselineChartData = useMemo((): IsChartRow[] | null => {
     if (!baselineParams) {
       return null;
     }
-    const bInv = computeOpenEconomyInvestmentSideShift(
-      baselineParams.investment,
-      baselineParams.netExports ?? 0
+    const baselineEq = computeIslmAlgebraicIntersection({
+      ...baselineParams,
+      fullEmployment: baselineParams.fullEmployment ?? 50,
+    });
+    return buildSavingsInvestmentRows(
+      baselineEq.equilibriumX,
+      baselineEq.equilibriumY
     );
-    const bSav = computeSavingsShift(baselineParams.savings);
-    return buildIsChartSeries(bInv, bSav);
   }, [baselineParams]);
 
   const baselineSeries = useMemo((): BaselineSeries[] => {
     if (!baselineChartData) return [];
     return [
       {
-        id: "baseline-i-plus-nx",
+        id: "baseline-investment",
         points: baselineChartData.map((p) => ({ x: p.x, y: p.investmentY })),
       },
       {
-        id: "baseline-s",
+        id: "baseline-savings",
         points: baselineChartData.map((p) => ({ x: p.x, y: p.savingsY })),
       },
     ];
   }, [baselineChartData]);
 
-  const equilibrium = useMemo(
-    () => computeIsPanelEquilibrium(investmentShift, savingsShift),
-    [investmentShift, savingsShift]
-  );
+  const guidePoint = equilibrium
+    ? {
+        x: Math.max(0, Math.min(100, equilibrium.output)),
+        y: Math.max(0, Math.min(20, equilibrium.rate)),
+      }
+    : {
+        x: Math.max(0, Math.min(100, panelEquilibrium.equilibriumX)),
+        y: Math.max(0, Math.min(20, panelEquilibrium.equilibriumY)),
+      };
 
   const chartMargin = allView ? ALL_VIEW_MARGIN : STANDALONE_CHART_MARGIN;
 
@@ -223,7 +260,7 @@ export default function ISChart({
                   : "text-lg"
             }
           >
-            I + NX and S (IS)
+            Investment and Savings (IS)
           </CardTitle>
           {allView && (
             <AllViewLegendRow>
@@ -283,8 +320,8 @@ export default function ISChart({
                     if (typeof value === "number") {
                       if (allView) {
                         const series =
-                          name === "I+NX" || name === "I"
-                            ? "I + NX (planned)"
+                          name === "I+NX"
+                            ? "Investment (I + NX)"
                             : name === "S"
                               ? "Savings (S)"
                               : String(name ?? "");
@@ -304,8 +341,8 @@ export default function ISChart({
                   <Customized component={<BaselinePaths series={baselineSeries} />} />
                 )}
                 <Line
-                  key="live-i-plus-nx"
-                  name={allView ? "I+NX" : "I + NX (planned)"}
+                  key="live-investment"
+                  name={allView ? "I+NX" : "Investment (I + NX)"}
                   type="monotone"
                   dataKey="investmentY"
                   stroke="#3b82f6"
@@ -314,7 +351,7 @@ export default function ISChart({
                   animationDuration={500}
                 />
                 <Line
-                  key="live-s"
+                  key="live-savings"
                   name={allView ? "S" : "Savings (S)"}
                   type="monotone"
                   dataKey="savingsY"
@@ -324,12 +361,12 @@ export default function ISChart({
                   animationDuration={500}
                 />
 
-                {showEquilibriumGuides && equilibrium && (
+                {showEquilibriumGuides && guidePoint && (
                   <Customized
                     component={
                       <EquilibriumGuides
-                        x={equilibrium.x}
-                        y={equilibrium.y}
+                        x={guidePoint.x}
+                        y={guidePoint.y}
                       />
                     }
                   />
