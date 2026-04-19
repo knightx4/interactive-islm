@@ -5,17 +5,25 @@
 export const SHIFT_SCALE = 0.2;
 export const OUTPUT_GAP_TOLERANCE = 5;
 
-export const IS_SLOPE = -0.15;
-export const LM_SLOPE = 0.15;
-export const LM_MONEY_DEMAND_SLOPE = -0.15;
+const BASE_OUTPUT = 50;
+const BASE_RATE = 10;
+const BASE_C = 0.5;
+const BASE_B = 2;
+const BASE_H = 20 / 3; // ~6.67
+const BASE_K = (BASE_H * BASE_RATE) / BASE_OUTPUT; // 1.333..., so k/h = 0.2
+const BASE_MOVERP = 50;
+const BASE_MONEY_DEMAND_INTERCEPT = 50; // L0
+const BASE_IS_AUTONOMOUS = BASE_B * BASE_RATE + (1 - BASE_C) * BASE_OUTPUT; // 45
 
-/** Slopes for the decomposed Investment–Savings panel (I vs S). */
-export const IS_PANEL_IS_SLOPE = -0.15;
-export const IS_PANEL_S_SLOPE = 0.15;
-
-/** Intercepts so IS and LM meet at (50, 10) when shifts are zero at baseline. */
-export const IS_BASE_INTERCEPT = 10 - IS_SLOPE * 50;
-export const LM_BASE_INTERCEPT = 10 - LM_SLOPE * 50;
+export const IS_SLOPE = -(1 - BASE_C) / BASE_B;
+export const LM_SLOPE = BASE_K / BASE_H;
+export const IS_BASE_INTERCEPT = BASE_IS_AUTONOMOUS / BASE_B;
+export const LM_BASE_INTERCEPT =
+  (BASE_MONEY_DEMAND_INTERCEPT - BASE_MOVERP) / BASE_H;
+export const LM_MONEY_DEMAND_SLOPE = -(1 / BASE_H);
+export const LM_TRANSACTIONS_Y_SENSITIVITY = BASE_K / BASE_H;
+export const IS_PANEL_IS_SLOPE = IS_SLOPE;
+export const IS_PANEL_S_SLOPE = -IS_SLOPE;
 
 export interface ModelParams {
   investment: number;
@@ -55,32 +63,88 @@ export type IslmCoreParams = Pick<
   | "netExports"
 >;
 
-export function computeInvestmentShift(investment: number): number {
-  return (investment - 50) * SHIFT_SCALE;
+export interface StructuralIslmParams {
+  a: number;
+  c: number;
+  i0: number;
+  b: number;
+  t: number;
+  g: number;
+  k: number;
+  h: number;
+  l0: number;
+  mOverP: number;
+  autonomousDemand: number;
+  isSlope: number;
+  isIntercept: number;
+  lmSlope: number;
+  lmIntercept: number;
 }
 
-export function computeSavingsShift(savings: number): number {
-  return (50 - savings) * SHIFT_SCALE;
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
 }
 
 /**
- * Combined IS shift (IS-LM panel): open-economy goods market bundles **I + NX** vs saving,
- * plus government spending (fiscal).
+ * Maps the existing UI controls to a structural linear IS-LM system:
+ * C = a + c(Y-T), I = I0 - br, and M/P = L0 + kY - hr.
  */
-export function computeIsShift(
-  investment: number,
-  savings: number,
-  governmentSavings: number,
-  netExports: number
-): number {
-  const privatePart =
-    ((investment + netExports + (100 - savings)) / 2 - 50) * SHIFT_SCALE;
-  // Slider stores government savings (T-G). Higher savings => lower G => leftward IS shift.
-  const fiscalPart = -governmentSavings * (SHIFT_SCALE / 2);
-  return privatePart + fiscalPart;
+export function mapControlsToStructuralParams(
+  params: IslmCoreParams
+): StructuralIslmParams {
+  const savingsDeviation = params.savings - BASE_OUTPUT;
+  const investmentDeviation = params.investment - BASE_OUTPUT;
+  const nxDeviation = params.netExports;
+  const governmentSavingsDeviation = params.governmentSpending;
+  const moneyDemandDeviation = params.moneyDemand - BASE_OUTPUT;
+  const moneySupplyDeviation = params.moneySupply - BASE_OUTPUT;
+
+  const c = clamp(BASE_C - savingsDeviation * 0.004, 0.2, 0.85);
+  const b = BASE_B;
+  const h = BASE_H;
+  const k = BASE_K;
+  const t = 0;
+  const g = 0;
+  const i0 = 0;
+  const a = 0;
+
+  const autonomousDemand =
+    BASE_IS_AUTONOMOUS +
+    0.45 * investmentDeviation +
+    0.35 * nxDeviation -
+    0.4 * savingsDeviation -
+    0.35 * governmentSavingsDeviation;
+
+  const l0 = BASE_MONEY_DEMAND_INTERCEPT + 0.8 * moneyDemandDeviation;
+  const mOverP = BASE_MOVERP + 0.8 * moneySupplyDeviation;
+
+  return {
+    a,
+    c,
+    i0,
+    b,
+    t,
+    g,
+    k,
+    h,
+    l0,
+    mOverP,
+    autonomousDemand,
+    isSlope: -(1 - c) / b,
+    isIntercept: autonomousDemand / b,
+    lmSlope: k / h,
+    lmIntercept: (l0 - mOverP) / h,
+  };
 }
 
-/** Shift for the IS decomposition chart: planned spending side is I + NX vs S. */
+export function computeInvestmentShift(investment: number): number {
+  return (investment - BASE_OUTPUT) * SHIFT_SCALE;
+}
+
+export function computeSavingsShift(savings: number): number {
+  return (BASE_OUTPUT - savings) * SHIFT_SCALE;
+}
+
 export function computeOpenEconomyInvestmentSideShift(
   investment: number,
   netExports: number
@@ -88,8 +152,35 @@ export function computeOpenEconomyInvestmentSideShift(
   return computeInvestmentShift(investment + netExports);
 }
 
+export function computeIsShift(
+  investment: number,
+  savings: number,
+  governmentSavings: number,
+  netExports: number
+): number {
+  const structural = mapControlsToStructuralParams({
+    investment,
+    savings,
+    governmentSpending: governmentSavings,
+    netExports,
+    moneyDemand: BASE_OUTPUT,
+    moneySupply: BASE_OUTPUT,
+    fullEmployment: BASE_OUTPUT,
+  });
+  return structural.isIntercept - IS_BASE_INTERCEPT;
+}
+
 export function computeLmShift(moneyDemand: number, moneySupply: number): number {
-  return ((moneyDemand - moneySupply) / 2) * SHIFT_SCALE;
+  const structural = mapControlsToStructuralParams({
+    investment: BASE_OUTPUT,
+    savings: BASE_OUTPUT,
+    governmentSpending: 0,
+    netExports: 0,
+    moneyDemand,
+    moneySupply,
+    fullEmployment: BASE_OUTPUT,
+  });
+  return structural.lmIntercept - LM_BASE_INTERCEPT;
 }
 
 export interface IslmEquilibriumResult {
@@ -104,20 +195,18 @@ export interface IslmEquilibriumResult {
 export function computeIslmAlgebraicIntersection(
   params: IslmCoreParams
 ): IslmEquilibriumResult {
-  const isShift = computeIsShift(
-    params.investment,
-    params.savings,
-    params.governmentSpending,
-    params.netExports
-  );
-  const lmShift = computeLmShift(params.moneyDemand, params.moneySupply);
-
+  const structural = mapControlsToStructuralParams(params);
+  const denominator = 1 - structural.c + (structural.b * structural.k) / structural.h;
   const equilibriumX =
-    (IS_BASE_INTERCEPT + isShift - (LM_BASE_INTERCEPT + lmShift)) /
-    (LM_SLOPE - IS_SLOPE);
+    (structural.autonomousDemand +
+      (structural.b / structural.h) * (structural.mOverP - structural.l0)) /
+    denominator;
   const equilibriumY =
-    IS_BASE_INTERCEPT + isShift + IS_SLOPE * equilibriumX;
+    (structural.k / structural.h) * equilibriumX +
+    (structural.l0 - structural.mOverP) / structural.h;
   const outputGap = equilibriumX - params.fullEmployment;
+  const isShift = structural.isIntercept - IS_BASE_INTERCEPT;
+  const lmShift = structural.lmIntercept - LM_BASE_INTERCEPT;
 
   return {
     equilibriumX,
@@ -152,14 +241,38 @@ export interface IslmChartPoint {
 }
 
 export function buildIslmSeries(
-  isShift: number,
-  lmShift: number,
+  paramsOrIsShift: IslmCoreParams | number,
+  lmShiftOrStep?: number,
+  maybeStep = 2
+): IslmChartPoint[] {
+  if (typeof paramsOrIsShift === "number") {
+    const isShift = paramsOrIsShift;
+    const lmShift = lmShiftOrStep ?? 0;
+    const step = maybeStep;
+    const data: IslmChartPoint[] = [];
+    for (let x = 0; x <= 100; x += step) {
+      const isY = IS_BASE_INTERCEPT + isShift + IS_SLOPE * x;
+      const lmY = LM_BASE_INTERCEPT + lmShift + LM_SLOPE * x;
+      data.push({
+        x,
+        isY: Math.max(0, Math.min(20, isY)),
+        lmY: Math.max(0, Math.min(20, lmY)),
+      });
+    }
+    return data;
+  }
+  return buildStructuralIslmSeries(paramsOrIsShift, lmShiftOrStep ?? 2);
+}
+
+export function buildStructuralIslmSeries(
+  params: IslmCoreParams,
   step = 2
 ): IslmChartPoint[] {
+  const structural = mapControlsToStructuralParams(params);
   const data: IslmChartPoint[] = [];
   for (let x = 0; x <= 100; x += step) {
-    const isY = IS_BASE_INTERCEPT + isShift + IS_SLOPE * x;
-    const lmY = LM_BASE_INTERCEPT + lmShift + LM_SLOPE * x;
+    const isY = structural.isIntercept + structural.isSlope * x;
+    const lmY = structural.lmIntercept + structural.lmSlope * x;
     data.push({
       x,
       isY: Math.max(0, Math.min(20, isY)),
@@ -176,45 +289,78 @@ export interface IsChartPoint {
 }
 
 export function buildIsChartSeries(
-  investmentShift: number,
-  savingsShift: number,
+  paramsOrInvestmentShift: IslmCoreParams | number,
+  savingsShiftOrStep?: number,
+  maybeStep = 5
+): IsChartPoint[] {
+  if (typeof paramsOrInvestmentShift === "number") {
+    const investmentShift = paramsOrInvestmentShift;
+    const savingsShift = savingsShiftOrStep ?? 0;
+    const step = maybeStep;
+    const isBaseIntercept = 10 - IS_PANEL_IS_SLOPE * 50;
+    const sBaseIntercept = 10 - IS_PANEL_S_SLOPE * 50;
+    const data: IsChartPoint[] = [];
+    for (let x = 0; x <= 100; x += step) {
+      const investmentY =
+        isBaseIntercept + investmentShift + IS_PANEL_IS_SLOPE * x;
+      const savingsY = sBaseIntercept + savingsShift + IS_PANEL_S_SLOPE * x;
+      data.push({
+        x,
+        investmentY: Math.max(0, Math.min(20, investmentY)),
+        savingsY: Math.max(0, Math.min(20, savingsY)),
+      });
+    }
+    return data;
+  }
+  return buildStructuralIsProjectionSeries(paramsOrInvestmentShift, savingsShiftOrStep ?? 5);
+}
+
+export function buildStructuralIsProjectionSeries(
+  params: IslmCoreParams,
   step = 5
 ): IsChartPoint[] {
-  const isBaseIntercept = 10 - IS_PANEL_IS_SLOPE * 50;
-  const sBaseIntercept = 10 - IS_PANEL_S_SLOPE * 50;
+  const structural = mapControlsToStructuralParams(params);
   const data: IsChartPoint[] = [];
   for (let x = 0; x <= 100; x += step) {
-    const investmentY =
-      isBaseIntercept + investmentShift + IS_PANEL_IS_SLOPE * x;
-    const savingsY = sBaseIntercept + savingsShift + IS_PANEL_S_SLOPE * x;
+    const lineValue = structural.isIntercept + structural.isSlope * x;
     data.push({
       x,
-      investmentY: Math.max(0, Math.min(20, investmentY)),
-      savingsY: Math.max(0, Math.min(20, savingsY)),
+      investmentY: Math.max(0, Math.min(20, lineValue)),
+      // Mirror the same structural IS line so the panel remains visually coherent
+      // while keeping the existing chart API shape.
+      savingsY: Math.max(0, Math.min(20, lineValue)),
     });
   }
   return data;
 }
 
 export function computeIsPanelEquilibrium(
-  investmentShift: number,
-  savingsShift: number
+  paramsOrInvestmentShift: IslmCoreParams | number,
+  savingsShift?: number
 ): { x: number; y: number } | null {
-  const isBaseIntercept = 10 - IS_PANEL_IS_SLOPE * 50;
-  const sBaseIntercept = 10 - IS_PANEL_S_SLOPE * 50;
-  const equilibriumX =
-    (isBaseIntercept + investmentShift - (sBaseIntercept + savingsShift)) /
-    (IS_PANEL_S_SLOPE - IS_PANEL_IS_SLOPE);
-  const equilibriumY =
-    isBaseIntercept + investmentShift + IS_PANEL_IS_SLOPE * equilibriumX;
-
-  if (
-    equilibriumX >= 0 &&
-    equilibriumX <= 100 &&
-    equilibriumY >= 0 &&
-    equilibriumY <= 20
-  ) {
-    return { x: equilibriumX, y: equilibriumY };
+  if (typeof paramsOrInvestmentShift === "number") {
+    const investmentShift = paramsOrInvestmentShift;
+    const sShift = savingsShift ?? 0;
+    const isBaseIntercept = 10 - IS_PANEL_IS_SLOPE * 50;
+    const sBaseIntercept = 10 - IS_PANEL_S_SLOPE * 50;
+    const equilibriumX =
+      (isBaseIntercept + investmentShift - (sBaseIntercept + sShift)) /
+      (IS_PANEL_S_SLOPE - IS_PANEL_IS_SLOPE);
+    const equilibriumY =
+      isBaseIntercept + investmentShift + IS_PANEL_IS_SLOPE * equilibriumX;
+    if (
+      equilibriumX >= 0 &&
+      equilibriumX <= 100 &&
+      equilibriumY >= 0 &&
+      equilibriumY <= 20
+    ) {
+      return { x: equilibriumX, y: equilibriumY };
+    }
+    return null;
+  }
+  const eq = computeIslmAlgebraicIntersection(paramsOrInvestmentShift);
+  if (eq.equilibriumX >= 0 && eq.equilibriumX <= 100 && eq.equilibriumY >= 0 && eq.equilibriumY <= 20) {
+    return { x: eq.equilibriumX, y: eq.equilibriumY };
   }
   return null;
 }
@@ -227,17 +373,54 @@ export interface LmChartPoint {
 const LM_CHART_BASE_INTERCEPT = 10 - LM_MONEY_DEMAND_SLOPE * 50;
 
 export function computeMoneyDemandShift(moneyDemand: number): number {
-  return (moneyDemand - 50) * SHIFT_SCALE;
+  return (moneyDemand - BASE_OUTPUT) * SHIFT_SCALE;
+}
+
+export function computeTransactionsMoneyDemandShift(
+  output: number,
+  baselineOutput = BASE_OUTPUT
+): number {
+  return (output - baselineOutput) * LM_TRANSACTIONS_Y_SENSITIVITY;
+}
+
+export function computeEffectiveMoneyDemandShift(
+  moneyDemand: number,
+  output: number,
+  baselineOutput = BASE_OUTPUT
+): number {
+  return (
+    computeMoneyDemandShift(moneyDemand) +
+    computeTransactionsMoneyDemandShift(output, baselineOutput)
+  );
 }
 
 export function buildLmChartSeries(
-  moneyDemandShift: number,
+  input: IslmCoreParams | number,
+  output = BASE_OUTPUT,
   step = 5
 ): LmChartPoint[] {
+  if (typeof input === "number") {
+    const moneyDemandShift = input;
+    const transactionsShift = computeTransactionsMoneyDemandShift(output);
+    const data: LmChartPoint[] = [];
+    for (let x = 0; x <= 100; x += step) {
+      const moneyDemandY =
+        LM_CHART_BASE_INTERCEPT +
+        moneyDemandShift +
+        transactionsShift +
+        LM_MONEY_DEMAND_SLOPE * x;
+      data.push({
+        x,
+        moneyDemandY: Math.max(0, Math.min(20, moneyDemandY)),
+      });
+    }
+    return data;
+  }
+  const structural = mapControlsToStructuralParams(input);
   const data: LmChartPoint[] = [];
   for (let x = 0; x <= 100; x += step) {
     const moneyDemandY =
-      LM_CHART_BASE_INTERCEPT + moneyDemandShift + LM_MONEY_DEMAND_SLOPE * x;
+      (structural.l0 + structural.k * output - x) / structural.h;
     data.push({
       x,
       moneyDemandY: Math.max(0, Math.min(20, moneyDemandY)),
@@ -248,11 +431,14 @@ export function buildLmChartSeries(
 
 export function computeLmMoneyMarketEquilibrium(
   moneySupply: number,
-  moneyDemandShift: number
+  moneyDemandShift: number,
+  output = BASE_OUTPUT
 ): { x: number; y: number } | null {
+  const transactionsShift = computeTransactionsMoneyDemandShift(output);
   const y =
     LM_CHART_BASE_INTERCEPT +
     moneyDemandShift +
+    transactionsShift +
     LM_MONEY_DEMAND_SLOPE * moneySupply;
   if (y >= 0 && y <= 20) {
     return { x: moneySupply, y };

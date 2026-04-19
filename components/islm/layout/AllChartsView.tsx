@@ -11,7 +11,8 @@ interface AllChartsViewProps {
   params: ModelParams;
   baselineParams: ModelParams | null;
   showEquilibriumGuides: boolean;
-  onEquilibriumChange: (output: number | null) => void;
+  onEquilibriumChange: (equilibrium: { output: number; rate: number } | null) => void;
+  solvedEquilibrium: { output: number; rate: number } | null;
 }
 
 export default function AllChartsView({
@@ -19,6 +20,7 @@ export default function AllChartsView({
   baselineParams,
   showEquilibriumGuides,
   onEquilibriumChange,
+  solvedEquilibrium,
 }: AllChartsViewProps) {
   const [wide, setWide] = useState(false);
 
@@ -55,6 +57,7 @@ export default function AllChartsView({
               params={params}
               baselineParams={baselineParams}
               showEquilibriumGuides={showEquilibriumGuides}
+              equilibrium={solvedEquilibrium}
               allView
             />
           </div>
@@ -63,6 +66,7 @@ export default function AllChartsView({
               params={params}
               baselineParams={baselineParams}
               showEquilibriumGuides={showEquilibriumGuides}
+              equilibrium={solvedEquilibrium}
               allView
             />
           </div>
