@@ -17,6 +17,31 @@ function expandPanelClassName(borderClass: string) {
   );
 }
 
+type EffectDirection = "up" | "down";
+
+function EffectArrow({ direction }: { direction: EffectDirection }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center text-[11px] font-semibold",
+        direction === "up" ? "text-emerald-700" : "text-rose-700"
+      )}
+      aria-label={
+        direction === "up"
+          ? "Increasing this raises the parent factor"
+          : "Increasing this lowers the parent factor"
+      }
+      title={
+        direction === "up"
+          ? "Increasing this raises the parent factor"
+          : "Increasing this lowers the parent factor"
+      }
+    >
+      {direction === "up" ? "↑" : "↓"}
+    </span>
+  );
+}
+
 interface ModelControlsProps {
   params: ModelParams;
   updateParam: (key: keyof ModelParams, value: number) => void;
@@ -182,7 +207,10 @@ export default function ModelControls({
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="futureMPK" className="text-xs font-medium">
-                      Future Marginal Productivity of Capital
+                      <span className="inline-flex items-center gap-1">
+                        Future Marginal Productivity of Capital
+                        <EffectArrow direction="up" />
+                      </span>
                     </Label>
                     <span className="text-xs font-semibold bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
                       {params.futureMPK || 50}
@@ -200,7 +228,10 @@ export default function ModelControls({
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <Label htmlFor="netExports" className="text-xs font-medium">
-                        Net exports (NX)
+                        <span className="inline-flex items-center gap-1">
+                          Net exports (NX)
+                          <EffectArrow direction="up" />
+                        </span>
                       </Label>
                       <span className="text-xs font-semibold bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
                         {params.netExports ?? 0}
@@ -277,7 +308,10 @@ export default function ModelControls({
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="futureY" className="text-xs font-medium">
-                      Expected Future Income (Yf)
+                      <span className="inline-flex items-center gap-1">
+                        Expected Future Income (Yf)
+                        <EffectArrow direction="down" />
+                      </span>
                     </Label>
                     <span className="text-xs font-semibold bg-green-50 text-green-700 px-1.5 py-0.5 rounded">
                       {params.futureY || 50}
@@ -298,7 +332,10 @@ export default function ModelControls({
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="wealth" className="text-xs font-medium">
-                      Wealth
+                      <span className="inline-flex items-center gap-1">
+                        Wealth
+                        <EffectArrow direction="down" />
+                      </span>
                     </Label>
                     <span className="text-xs font-semibold bg-green-50 text-green-700 px-1.5 py-0.5 rounded">
                       {params.wealth || 50}
@@ -319,7 +356,10 @@ export default function ModelControls({
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="governmentSpending" className="text-xs font-medium">
-                      Government savings (T-G)
+                      <span className="inline-flex items-center gap-1">
+                        Government savings (T-G)
+                        <EffectArrow direction="up" />
+                      </span>
                     </Label>
                     <span className="text-xs font-semibold bg-green-50 text-green-700 px-1.5 py-0.5 rounded">
                       {params.governmentSpending}
@@ -382,7 +422,10 @@ export default function ModelControls({
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="centralBankSupply" className="text-xs font-medium">
-                      Central Bank Designated Supply (Ms)
+                      <span className="inline-flex items-center gap-1">
+                        Central Bank Designated Supply (Ms)
+                        <EffectArrow direction="up" />
+                      </span>
                     </Label>
                     <span className="text-xs font-semibold bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded">
                       {params.centralBankSupply || 50}
@@ -403,7 +446,10 @@ export default function ModelControls({
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="priceLevel" className="text-xs font-medium">
-                      Price Level (P)
+                      <span className="inline-flex items-center gap-1">
+                        Price Level (P)
+                        <EffectArrow direction="down" />
+                      </span>
                     </Label>
                     <span className="text-xs font-semibold bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded">
                       {params.priceLevel || 50}
@@ -464,7 +510,10 @@ export default function ModelControls({
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="wealth-money-demand" className="text-xs font-medium">
-                      Wealth
+                      <span className="inline-flex items-center gap-1">
+                        Wealth
+                        <EffectArrow direction="up" />
+                      </span>
                     </Label>
                     <span className="text-xs font-semibold bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded">
                       {params.wealth || 50}
@@ -485,7 +534,10 @@ export default function ModelControls({
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="expectedInflation" className="text-xs font-medium">
-                      Expected Inflation
+                      <span className="inline-flex items-center gap-1">
+                        Expected Inflation
+                        <EffectArrow direction="down" />
+                      </span>
                     </Label>
                     <span className="text-xs font-semibold bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded">
                       {params.expectedInflation || 50}
@@ -546,7 +598,10 @@ export default function ModelControls({
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="productivity" className="text-xs font-medium">
-                      Productivity
+                      <span className="inline-flex items-center gap-1">
+                        Productivity
+                        <EffectArrow direction="up" />
+                      </span>
                     </Label>
                     <span className="text-xs font-semibold bg-red-50 text-red-700 px-1.5 py-0.5 rounded">
                       {params.productivity || 50}
@@ -567,7 +622,10 @@ export default function ModelControls({
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="capital" className="text-xs font-medium">
-                      Capital
+                      <span className="inline-flex items-center gap-1">
+                        Capital
+                        <EffectArrow direction="up" />
+                      </span>
                     </Label>
                     <span className="text-xs font-semibold bg-red-50 text-red-700 px-1.5 py-0.5 rounded">
                       {params.capital || 50}
@@ -588,7 +646,10 @@ export default function ModelControls({
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="labor" className="text-xs font-medium">
-                      Labor
+                      <span className="inline-flex items-center gap-1">
+                        Labor
+                        <EffectArrow direction="up" />
+                      </span>
                     </Label>
                     <span className="text-xs font-semibold bg-red-50 text-red-700 px-1.5 py-0.5 rounded">
                       {params.labor || 50}

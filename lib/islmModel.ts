@@ -4,6 +4,7 @@
 
 export const SHIFT_SCALE = 0.2;
 export const OUTPUT_GAP_TOLERANCE = 5;
+export const IS_CURRENT_INCOME_SAVINGS_SENSITIVITY = 0.12;
 
 const BASE_OUTPUT = 50;
 const BASE_RATE = 10;
@@ -99,7 +100,11 @@ export function mapControlsToStructuralParams(
   const moneyDemandDeviation = params.moneyDemand - BASE_OUTPUT;
   const moneySupplyDeviation = params.moneySupply - BASE_OUTPUT;
 
-  const c = clamp(BASE_C - savingsDeviation * 0.004, 0.2, 0.85);
+  // Keep MPC fixed so the IS slope is constant. This is what makes the three
+  // panels (IS-LM, loanable funds / IS sub-panel, money market) resolve to one
+  // shared (Y*, r*) by construction; a drifting slope would break that.
+  const c = BASE_C;
+  void savingsDeviation;
   const b = BASE_B;
   const h = BASE_H;
   const k = BASE_K;
@@ -143,6 +148,24 @@ export function computeInvestmentShift(investment: number): number {
 
 export function computeSavingsShift(savings: number): number {
   return (BASE_OUTPUT - savings) * SHIFT_SCALE;
+}
+
+export function computeCurrentIncomeSavingsShift(
+  output: number,
+  baselineOutput = BASE_OUTPUT
+): number {
+  return -(output - baselineOutput) * IS_CURRENT_INCOME_SAVINGS_SENSITIVITY;
+}
+
+export function computeEffectiveSavingsShift(
+  savings: number,
+  output: number,
+  baselineOutput = BASE_OUTPUT
+): number {
+  return (
+    computeSavingsShift(savings) +
+    computeCurrentIncomeSavingsShift(output, baselineOutput)
+  );
 }
 
 export function computeOpenEconomyInvestmentSideShift(
@@ -319,16 +342,22 @@ export function buildStructuralIsProjectionSeries(
   params: IslmCoreParams,
   step = 5
 ): IsChartPoint[] {
-  const structural = mapControlsToStructuralParams(params);
+  const investmentShift = computeOpenEconomyInvestmentSideShift(
+    params.investment,
+    params.netExports
+  );
+  const savingsShift = computeSavingsShift(params.savings);
+  const isBaseIntercept = 10 - IS_PANEL_IS_SLOPE * 50;
+  const sBaseIntercept = 10 - IS_PANEL_S_SLOPE * 50;
   const data: IsChartPoint[] = [];
   for (let x = 0; x <= 100; x += step) {
-    const lineValue = structural.isIntercept + structural.isSlope * x;
+    const investmentY =
+      isBaseIntercept + investmentShift + IS_PANEL_IS_SLOPE * x;
+    const savingsY = sBaseIntercept + savingsShift + IS_PANEL_S_SLOPE * x;
     data.push({
       x,
-      investmentY: Math.max(0, Math.min(20, lineValue)),
-      // Mirror the same structural IS line so the panel remains visually coherent
-      // while keeping the existing chart API shape.
-      savingsY: Math.max(0, Math.min(20, lineValue)),
+      investmentY: Math.max(0, Math.min(20, investmentY)),
+      savingsY: Math.max(0, Math.min(20, savingsY)),
     });
   }
   return data;
@@ -358,11 +387,118 @@ export function computeIsPanelEquilibrium(
     }
     return null;
   }
-  const eq = computeIslmAlgebraicIntersection(paramsOrInvestmentShift);
-  if (eq.equilibriumX >= 0 && eq.equilibriumX <= 100 && eq.equilibriumY >= 0 && eq.equilibriumY <= 20) {
-    return { x: eq.equilibriumX, y: eq.equilibriumY };
+  const investmentShift = computeOpenEconomyInvestmentSideShift(
+    paramsOrInvestmentShift.investment,
+    paramsOrInvestmentShift.netExports
+  );
+  const sShift = computeSavingsShift(paramsOrInvestmentShift.savings);
+  return computeIsPanelEquilibrium(investmentShift, sShift);
+}
+
+// ---------------------------------------------------------------------------
+// Loanable funds sub-panel (goods market: I(r), S(r, Y*))
+//
+// Plots the loanable funds diagram in (funds-quantity, r) space with y = r and
+// x = quantity of loanable funds. Designed so:
+//   1) investment-side sliders move ONLY the I curve,
+//   2) savings-side sliders move ONLY the S curve (plus the LM→IS income
+//      channel when Y* changes),
+//   3) the curves' crossing r is identical to the IS-LM macro r*.
+//
+// Derivation (with constant MPC c, see mapControlsToStructuralParams):
+//   Macro IS: r = A - B*Y, with A = autonomousDemand / b, B = (1-c)/b
+//   Macro LM: r = -C_macro + D*Y, with C_macro = (mOverP - l0)/h, D = k/h
+//   Y*    = (A + C_macro) / (B + D)
+//   r*    = (A*D - B*(-C_macro)) / (B + D) = (A*D + B*C_macro) / (B + D)
+//
+// Loanable funds lines:
+//   I(r)      = 50 + I_shift / Q_SCALE + I_R * (BASE_RATE - r)
+//   S(r, Y*)  = 50 + S_shift / Q_SCALE + S_Y * (Y* - BASE_OUTPUT)
+//                 + S_R * (r - BASE_RATE)
+// Crossing r_panel:
+//   r_panel - BASE_RATE
+//     = [(I_shift - S_shift)/Q_SCALE - S_Y*(Y* - BASE_OUTPUT)] / (I_R + S_R)
+// Matching to r_macro - BASE_RATE via coefficient of (I_shift - S_shift) and
+// of C_macro gives:
+//   Q_SCALE = b / (I_R + S_R)
+//   S_Y     = B * (I_R + S_R)
+// which together imply r_panel ≡ r_macro for every parameter setting.
+// ---------------------------------------------------------------------------
+
+export const LOANABLE_FUNDS_I_R_SLOPE = 2.5;
+export const LOANABLE_FUNDS_S_R_SLOPE = 2.5;
+
+const LF_SLOPE_SUM = LOANABLE_FUNDS_I_R_SLOPE + LOANABLE_FUNDS_S_R_SLOPE;
+const LF_Q_SCALE = BASE_B / LF_SLOPE_SUM;
+const LF_S_Y_SLOPE = ((1 - BASE_C) / BASE_B) * LF_SLOPE_SUM;
+
+// Match the autonomousDemand coefficients in mapControlsToStructuralParams so
+// the loanable funds decomposition is consistent with macro IS.
+const LF_INVESTMENT_COEF = 0.45;
+const LF_NX_COEF = 0.35;
+const LF_SAVINGS_COEF = 0.4;
+const LF_GOV_SAVINGS_COEF = 0.35;
+
+export interface LoanableFundsChartPoint {
+  x: number;
+  investmentR: number | null;
+  savingsR: number | null;
+}
+
+function loanableFundsBases(params: IslmCoreParams): {
+  investmentBase: number;
+  savingsBase: number;
+  macroY: number;
+  macroR: number;
+} {
+  const investmentShift =
+    LF_INVESTMENT_COEF * (params.investment - BASE_OUTPUT) +
+    LF_NX_COEF * params.netExports;
+  const savingsShift =
+    LF_SAVINGS_COEF * (params.savings - BASE_OUTPUT) +
+    LF_GOV_SAVINGS_COEF * params.governmentSpending;
+  const macro = computeIslmAlgebraicIntersection(params);
+  return {
+    investmentBase: BASE_OUTPUT + investmentShift / LF_Q_SCALE,
+    savingsBase:
+      BASE_OUTPUT +
+      savingsShift / LF_Q_SCALE +
+      LF_S_Y_SLOPE * (macro.equilibriumX - BASE_OUTPUT),
+    macroY: macro.equilibriumX,
+    macroR: macro.equilibriumY,
+  };
+}
+
+export function buildLoanableFundsSeries(
+  params: IslmCoreParams,
+  step = 1
+): LoanableFundsChartPoint[] {
+  const { investmentBase, savingsBase } = loanableFundsBases(params);
+  const data: LoanableFundsChartPoint[] = [];
+  for (let x = 0; x <= 100; x += step) {
+    const rawInvestmentR =
+      BASE_RATE + (investmentBase - x) / LOANABLE_FUNDS_I_R_SLOPE;
+    const rawSavingsR =
+      BASE_RATE + (x - savingsBase) / LOANABLE_FUNDS_S_R_SLOPE;
+    data.push({
+      x,
+      investmentR:
+        rawInvestmentR >= 0 && rawInvestmentR <= 20 ? rawInvestmentR : null,
+      savingsR:
+        rawSavingsR >= 0 && rawSavingsR <= 20 ? rawSavingsR : null,
+    });
   }
-  return null;
+  return data;
+}
+
+export function computeLoanableFundsEquilibrium(
+  params: IslmCoreParams
+): { x: number; y: number } {
+  const { investmentBase, savingsBase, macroR } = loanableFundsBases(params);
+  return {
+    x: (investmentBase + savingsBase) / 2,
+    y: macroR,
+  };
 }
 
 export interface LmChartPoint {

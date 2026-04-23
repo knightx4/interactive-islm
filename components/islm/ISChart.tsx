@@ -30,9 +30,9 @@ import {
   STANDALONE_CHART_MARGIN,
 } from "@/components/islm/chartAllView";
 import {
-  IS_PANEL_IS_SLOPE,
-  IS_PANEL_S_SLOPE,
-  computeIslmAlgebraicIntersection,
+  buildLoanableFundsSeries,
+  computeLoanableFundsEquilibrium,
+  type LoanableFundsChartPoint,
 } from "@/lib/islmModel";
 
 type IsChartDriverParams = {
@@ -139,30 +139,6 @@ function EquilibriumGuides({
   );
 }
 
-type IsChartRow = {
-  x: number;
-  investmentY: number;
-  savingsY: number;
-};
-
-function buildSavingsInvestmentRows(
-  equilibriumX: number,
-  equilibriumY: number,
-  step = 5
-): IsChartRow[] {
-  const data: IsChartRow[] = [];
-  for (let x = 0; x <= 100; x += step) {
-    const investmentY = equilibriumY + IS_PANEL_IS_SLOPE * (x - equilibriumX);
-    const savingsY = equilibriumY + IS_PANEL_S_SLOPE * (x - equilibriumX);
-    data.push({
-      x,
-      investmentY: Math.max(0, Math.min(20, investmentY)),
-      savingsY: Math.max(0, Math.min(20, savingsY)),
-    });
-  }
-  return data;
-}
-
 export default function ISChart({
   params,
   baselineParams = null,
@@ -172,61 +148,55 @@ export default function ISChart({
   frameClassName,
   allView = false,
 }: ISChartProps) {
-  const panelEquilibrium = useMemo(
-    () =>
-      computeIslmAlgebraicIntersection({
+  const chartData = useMemo(
+    (): LoanableFundsChartPoint[] =>
+      buildLoanableFundsSeries({
         ...params,
         fullEmployment: params.fullEmployment ?? 50,
       }),
     [params]
   );
 
-  const chartData = useMemo(
-    (): IsChartRow[] =>
-      buildSavingsInvestmentRows(
-        panelEquilibrium.equilibriumX,
-        panelEquilibrium.equilibriumY
-      ),
-    [panelEquilibrium.equilibriumX, panelEquilibrium.equilibriumY]
-  );
-
-  const baselineChartData = useMemo((): IsChartRow[] | null => {
+  const baselineChartData = useMemo((): LoanableFundsChartPoint[] | null => {
     if (!baselineParams) {
       return null;
     }
-    const baselineEq = computeIslmAlgebraicIntersection({
+    return buildLoanableFundsSeries({
       ...baselineParams,
       fullEmployment: baselineParams.fullEmployment ?? 50,
     });
-    return buildSavingsInvestmentRows(
-      baselineEq.equilibriumX,
-      baselineEq.equilibriumY
-    );
   }, [baselineParams]);
 
   const baselineSeries = useMemo((): BaselineSeries[] => {
     if (!baselineChartData) return [];
+    const investmentPoints = baselineChartData
+      .filter((p) => p.investmentR !== null)
+      .map((p) => ({ x: p.x, y: p.investmentR as number }));
+    const savingsPoints = baselineChartData
+      .filter((p) => p.savingsR !== null)
+      .map((p) => ({ x: p.x, y: p.savingsR as number }));
     return [
-      {
-        id: "baseline-investment",
-        points: baselineChartData.map((p) => ({ x: p.x, y: p.investmentY })),
-      },
-      {
-        id: "baseline-savings",
-        points: baselineChartData.map((p) => ({ x: p.x, y: p.savingsY })),
-      },
+      { id: "baseline-investment", points: investmentPoints },
+      { id: "baseline-savings", points: savingsPoints },
     ];
   }, [baselineChartData]);
 
-  const guidePoint = equilibrium
-    ? {
-        x: Math.max(0, Math.min(100, equilibrium.output)),
-        y: Math.max(0, Math.min(20, equilibrium.rate)),
-      }
-    : {
-        x: Math.max(0, Math.min(100, panelEquilibrium.equilibriumX)),
-        y: Math.max(0, Math.min(20, panelEquilibrium.equilibriumY)),
-      };
+  const panelEquilibrium = useMemo(
+    () =>
+      computeLoanableFundsEquilibrium({
+        ...params,
+        fullEmployment: params.fullEmployment ?? 50,
+      }),
+    [params]
+  );
+
+  // Prefer the parent-provided macro rate (identical to our own by construction)
+  // so all panels share exactly one r*. Only the x coordinate is panel-specific
+  // (it is loanable funds quantity Q*, not Y*).
+  const guidePoint = {
+    x: Math.max(0, Math.min(100, panelEquilibrium.x)),
+    y: Math.max(0, Math.min(20, equilibrium?.rate ?? panelEquilibrium.y)),
+  };
 
   const chartMargin = allView ? ALL_VIEW_MARGIN : STANDALONE_CHART_MARGIN;
 
@@ -297,7 +267,7 @@ export default function ISChart({
                 >
                   {!allView && (
                     <Label
-                      value="Activity (index)"
+                      value="Loanable funds (S, I)"
                       position="bottom"
                       offset={5}
                     />
@@ -332,7 +302,9 @@ export default function ISChart({
                     return [value ?? "", ""];
                   }}
                   labelFormatter={(value) =>
-                    allView ? `Activity ${value} · r (index)` : `Index: ${value}`
+                    allView
+                      ? `Funds ${value} · r (index)`
+                      : `Funds (index): ${value}`
                   }
                 />
                 {!allView && <Legend verticalAlign="top" height={28} />}
@@ -344,20 +316,22 @@ export default function ISChart({
                   key="live-investment"
                   name={allView ? "I+NX" : "Investment (I + NX)"}
                   type="monotone"
-                  dataKey="investmentY"
+                  dataKey="investmentR"
                   stroke="#3b82f6"
                   strokeWidth={allView ? 1.5 : 2}
                   dot={false}
+                  connectNulls={false}
                   animationDuration={500}
                 />
                 <Line
                   key="live-savings"
                   name={allView ? "S" : "Savings (S)"}
                   type="monotone"
-                  dataKey="savingsY"
+                  dataKey="savingsR"
                   stroke="#10b981"
                   strokeWidth={allView ? 1.5 : 2}
                   dot={false}
+                  connectNulls={false}
                   animationDuration={500}
                 />
 

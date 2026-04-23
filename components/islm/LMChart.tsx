@@ -163,14 +163,18 @@ export default function LMChart({
     if (!baselineParams) {
       return null;
     }
+    const baselineEquilibrium = computeIslmAlgebraicIntersection({
+      ...baselineParams,
+      fullEmployment: baselineParams.fullEmployment ?? 50,
+    });
     return buildLmChartSeries(
       {
         ...baselineParams,
         fullEmployment: baselineParams.fullEmployment ?? 50,
       },
-      equilibrium?.output ?? 50
+      baselineEquilibrium.equilibriumX
     );
-  }, [baselineParams, equilibrium?.output]);
+  }, [baselineParams]);
 
   const baselineSeries = useMemo((): BaselineSeries[] => {
     if (!baselineChartData) return [];
