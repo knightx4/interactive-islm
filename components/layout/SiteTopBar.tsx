@@ -11,6 +11,7 @@ const navItems = [
 
 export default function SiteTopBar() {
   const pathname = usePathname();
+  const currentPath = pathname ?? "/";
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -22,7 +23,9 @@ export default function SiteTopBar() {
         <nav aria-label="Primary" className="flex items-center gap-1">
           {navItems.map((item) => {
             const isActive =
-              item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+              item.href === "/"
+                ? currentPath === "/"
+                : currentPath.startsWith(item.href);
 
             return (
               <Link
