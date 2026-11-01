@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Source_Serif_4, Source_Sans_3 } from "next/font/google";
 import { Analytics } from '@vercel/analytics/next';
 import "./globals.css";
 import SiteTopBar from "@/components/layout/SiteTopBar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const serif = Source_Serif_4({
+  variable: "--font-serif-body",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const sans = Source_Sans_3({
+  variable: "--font-sans-body",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -28,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${serif.variable} ${sans.variable} antialiased`}
       >
         <div className="flex min-h-screen flex-col">
           <SiteTopBar />

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/", label: "Simulator" },
   { href: "/learn", label: "Learn" },
+  { href: "/design", label: "Style" },
 ];
 
 export default function SiteTopBar() {
@@ -14,13 +15,13 @@ export default function SiteTopBar() {
   const currentPath = pathname ?? "/";
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4 md:px-6">
-        <Link href="/" className="font-semibold tracking-tight text-foreground">
+    <header className="sticky top-0 z-40 border-b border-ink bg-paper">
+      <div className="mx-auto flex h-12 w-full max-w-7xl items-center justify-between gap-4 px-4 md:px-6">
+        <Link href="/" className="font-serif text-lg font-semibold tracking-tight text-foreground">
           Interactive IS-LM
         </Link>
 
-        <nav aria-label="Primary" className="flex items-center gap-1">
+        <nav aria-label="Primary" className="flex items-center gap-5">
           {navItems.map((item) => {
             const isActive =
               item.href === "/"
@@ -32,10 +33,10 @@ export default function SiteTopBar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  "border-b-2 py-1 text-sm transition-colors",
                   isActive
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    ? "border-ink font-semibold text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
                 )}
                 aria-current={isActive ? "page" : undefined}
               >
