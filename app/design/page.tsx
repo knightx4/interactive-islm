@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import Chart from "@/components/chart/Chart";
+
 export const metadata: Metadata = { title: "Style | Interactive IS-LM" };
 
 const curves = [
@@ -61,28 +63,20 @@ export default function DesignPage() {
       <section className="mt-10 border-t border-ink pt-4">
         <h2 className="text-2xl">Chart, in the house style</h2>
         <figure className="mt-4">
-          <svg viewBox="0 0 480 300" className="w-full" role="img" aria-label="Example IS and LM curves intersecting">
-            <g className="stroke-rule" strokeWidth="1">
-              {[60, 110, 160, 210].map((y) => <line key={y} x1="48" x2="460" y1={y} y2={y} />)}
-            </g>
-            <g className="stroke-ink" strokeWidth="1" fill="none">
-              <path d="M48 10V260H460" />
-            </g>
-            <g className="fill-muted-foreground" fontSize="12" textAnchor="middle">
-              <text x="254" y="290">Output, Y</text>
-              <text transform="translate(14 135) rotate(-90)">Interest rate, r</text>
-            </g>
-            <path d="M70 40 L430 230" className="stroke-is" strokeWidth="2" fill="none" />
-            <path d="M70 230 L430 40" className="stroke-lm" strokeWidth="2" fill="none" />
-            <line x1="250" x2="250" y1="135" y2="260" className="stroke-ink" strokeDasharray="2 3" />
-            <line x1="48" x2="250" y1="135" y2="135" className="stroke-ink" strokeDasharray="2 3" />
-            <circle cx="250" cy="135" r="4" className="fill-ink" />
-            <text x="436" y="236" fontSize="14" fontWeight="600" className="fill-is">IS</text>
-            <text x="436" y="44" fontSize="14" fontWeight="600" className="fill-lm">LM</text>
-          </svg>
+          <Chart
+            title="Example IS and LM curves intersecting"
+            xLabel="Output, Y" yLabel="Interest rate, r"
+            xDomain={[0, 10]} yDomain={[0, 10]} hideTickValues
+            series={[
+              { id: "is", curve: "is", label: "IS", points: [{ x: 0.5, y: 9 }, { x: 9.5, y: 1 }] },
+              { id: "lm", curve: "lm", label: "LM", points: [{ x: 0.5, y: 1 }, { x: 9.5, y: 9 }] },
+              { id: "lm0", curve: "lm", ghost: true, points: [{ x: 0.5, y: 2.5 }, { x: 9.5, y: 10 }] },
+            ]}
+            marks={[{ x: 5, y: 5, label: "E" }]}
+          />
           <figcaption className="mt-2 text-sm text-muted-foreground">
-            Figure 1. Curves are named at the line end in their own colour; the equilibrium is an
-            ink dot with dotted guides.
+            Figure 1. Curves are named at the line end in their own colour; a dashed line is the
+            earlier position; the equilibrium is an ink dot with dotted guides.
           </figcaption>
         </figure>
       </section>
