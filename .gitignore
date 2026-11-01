@@ -42,3 +42,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# course slide extractions stay local (public repo)
+macro-slides-master-analysis.md
