@@ -32,3 +32,7 @@ Core math lives in [`lib/islmModel.ts`](lib/islmModel.ts) so all charts stay con
 ## License
 
 ISC (see `package.json`).
+
+## Learn course
+
+`/learn` lists numbered lessons in four parts; each has a page at `/learn/<slug>`. Lessons run on a separate model in [`lib/macro/model.ts`](lib/macro/model.ts) (IS, LM and FE curves, prices that adjust over time, and a small open economy with floating or fixed exchange rate). The simulator keeps its own model in `lib/islmModel.ts`. Lesson text lives in `lib/learn/lessons.ts`; shocks in `lib/macro/shocks.ts`.
