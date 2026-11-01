@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { baselineEconomy, simulate, type Regime } from "@/lib/macro/model";
 import { questionsFor } from "@/lib/macro/predict";
+import { chainFor, recipeFor } from "@/lib/macro/recipe";
 import { shockById, shocksFor } from "@/lib/macro/shocks";
 import CurvesFigure from "./CurvesFigure";
+import RecipeStepper from "./RecipeStepper";
 import PredictCheck from "./PredictCheck";
 import SideMarkets from "./SideMarkets";
 import TimePath from "./TimePath";
@@ -75,6 +77,13 @@ export default function LessonLab({ regime, defaultShock }: { regime: Regime; de
         <CardHeader className="py-4"><CardTitle className="text-base">2. Predict first</CardTitle></CardHeader>
         <CardContent className="pb-5">
           <PredictCheck key={shock.id} questions={questions} revealed={revealed} onReveal={reveal} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="py-4"><CardTitle className="text-base">Recipe: work it out step by step</CardTitle></CardHeader>
+        <CardContent className="pb-5">
+          <RecipeStepper key={shock.id} steps={recipeFor(sim, regime, shock.label)} chain={chainFor(sim, regime)} />
         </CardContent>
       </Card>
 

@@ -65,3 +65,24 @@ describe("textbook directions", () => {
     expect(direction(100, 90)).toBe("down");
   });
 });
+
+import { chainFor, detectShift, recipeFor } from "./recipe";
+
+describe("recipe and chain", () => {
+  const run = (r: Regime, id: string) => simulate(baselineEconomy(r), shocks.find((x) => x.id === id)!.apply);
+  it("detects the curve each shock moves", () => {
+    expect(detectShift(run("closed", "fiscal-spend"))).toEqual({ curve: "IS", dir: "right" });
+    expect(detectShift(run("closed", "money-up"))).toEqual({ curve: "LM", dir: "right" });
+    expect(detectShift(run("closed", "money-demand-up"))).toEqual({ curve: "LM", dir: "left" });
+    expect(detectShift(run("closed", "supply-down"))).toEqual({ curve: "FE", dir: "left" });
+  });
+  it("builds five steps and a chain ending at FE for every shock", () => {
+    for (const r of regimes) for (const s of shocksFor(r)) {
+      const sim = simulate(baselineEconomy(r), s.apply);
+      expect(recipeFor(sim, r, s.label)).toHaveLength(5);
+      const c = chainFor(sim, r);
+      expect(c[0]).toMatch(/shifts/);
+      expect(c[c.length - 1]).toBe("Output returns to FE");
+    }
+  });
+});
