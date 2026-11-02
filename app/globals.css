@@ -67,13 +67,13 @@
   --radius: 0.125rem;
 
   /* Paper and ink (see docs/DESIGN.md) */
-  --paper: #f7f2e8;
-  --ink: #1d1b18;
-  --ink-soft: #4a463f;
-  --ink-faint: #6e675c;
-  --rule: #d6cdbb;
-  --rule-strong: #1d1b18;
-  --wash: #efe8d9;
+  --paper: #f6f7f9;
+  --ink: #15181d;
+  --ink-soft: #3e4550;
+  --ink-faint: #646d7a;
+  --rule: #d7dce3;
+  --rule-strong: #15181d;
+  --wash: #eceff3;
 
   /* One fixed colour per curve, used everywhere */
   --c-is: #1f4e79;
@@ -133,13 +133,13 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-  --paper: #16150f;
-  --ink: #ece6d8;
-  --ink-soft: #c4bdad;
-  --ink-faint: #9c9585;
-  --rule: #38352c;
-  --rule-strong: #ece6d8;
-  --wash: #201e17;
+  --paper: #111317;
+  --ink: #e7e9ed;
+  --ink-soft: #b7bdc6;
+  --ink-faint: #8a929d;
+  --rule: #2b3037;
+  --rule-strong: #e7e9ed;
+  --wash: #191c21;
   --c-is: #6fa3d6;
   --c-lm: #e57d72;
   --c-fe: #6dba7d;
@@ -150,13 +150,13 @@
   }
 }
 :root[data-theme="dark"] {
-  --paper: #16150f;
-  --ink: #ece6d8;
-  --ink-soft: #c4bdad;
-  --ink-faint: #9c9585;
-  --rule: #38352c;
-  --rule-strong: #ece6d8;
-  --wash: #201e17;
+  --paper: #111317;
+  --ink: #e7e9ed;
+  --ink-soft: #b7bdc6;
+  --ink-faint: #8a929d;
+  --rule: #2b3037;
+  --rule-strong: #e7e9ed;
+  --wash: #191c21;
   --c-is: #6fa3d6;
   --c-lm: #e57d72;
   --c-fe: #6dba7d;
