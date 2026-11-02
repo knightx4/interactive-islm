@@ -29,8 +29,10 @@ describe("the course outline", () => {
       }
     }
   });
-  it("puts the oil, money and spending shocks on the IS-LM-FE page", () => {
-    expect(lessonBySlug("is-lm-fe")!.lab!.shocks).toEqual(["productivity-down", "money-supply-up", "gov-spending-up"]);
+  it("plays the recipe on a money rise and a spending rise on the IS-LM-FE page, and offers every shifter in its sandbox", () => {
+    const secs = lessonBySlug("is-lm-fe")!.sections!;
+    expect(secs.map((s) => s.widget)).toEqual(expect.arrayContaining(["recipe-two", "money-neutrality", "price-lm", "lm-puzzle", "ge-sandbox"]));
+    expect(secs[secs.length - 1].widget).toBe("ge-sandbox");
   });
   it("has a real-world note and a headline for each worked shock", () => {
     for (const id of workedShockIds) {

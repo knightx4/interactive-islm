@@ -51,12 +51,6 @@ export const parts = [
   { n: 4, title: "Practice", blurb: "Mixed problems that put the whole toolkit to work." },
 ];
 
-const worked = [
-  "productivity-down", "money-supply-up", "gov-spending-up", "taxes-up",
-  "wealth-up", "expected-inflation-up", "investment-outlook-up", "labour-tax-up",
-];
-const featured = ["productivity-down", "money-supply-up", "gov-spending-up"];
-
 export const lessons: Lesson[] = [
   {
     n: 1, slug: "measuring-the-economy", part: 1, title: "Measuring output and prices",
@@ -509,31 +503,105 @@ export const lessons: Lesson[] = [
   },
   {
     n: 6, slug: "is-lm-fe", part: 2, title: "The IS-LM-FE model",
-    summary: "Put the goods, money and labour markets on one picture and run a shock through it.",
-    covers: ["The IS, LM and FE curves", "What each curve holds fixed", "Short-run and long-run equilibrium"],
+    summary: "Put the goods, money and labour markets on one picture, and learn the single procedure that answers every shock question.",
+    covers: ["The three curves and what each intersection means", "Slack, scarcity and why prices move", "The eight-step recipe", "Money neutrality and the speed of price adjustment"],
     body: [
-      "The model is three conditions drawn against output on the horizontal axis and the real interest rate on the vertical. The IS curve collects every pair of output and interest rate at which desired saving equals desired investment, so the goods market clears. The LM curve collects every pair at which the real money supply equals what people want to hold, so the money market clears. The FE line marks the output the economy produces when the labour market clears, with the real wage where labour demand meets labour supply. It is vertical because that level of output does not depend on the interest rate.",
-      "In the short run prices are stuck, so the economy sits where IS and LM cross, wherever that is relative to FE. If output is above FE, firms and workers bid prices up; below it, prices slip. A price change alters real money balances, so it moves LM. The economy keeps sliding along until IS, LM and FE all meet at one point, which is the long run.",
-      "Below, pick a shock and say what you expect to happen to nine variables, now and after prices have settled. Then step through the recipe and watch the same answer appear on the curves, in the three side markets, and along the time path.",
+      "The model is three conditions drawn against output on the horizontal axis and the real interest rate on the vertical. Each one describes a market. Together they give the one procedure this course uses for every question about a shock: move the curve that the shock moves, find where the economy lands while prices are stuck, then ask whether prices have a reason to move.",
+      "This lesson builds that procedure. It starts with what the curves mean, shows how a change in the price level shifts LM, then plays the recipe on two shocks and finishes with a sandbox where you pick the shock yourself. All numbers are index units from a toy economy (output of 100, a real interest rate of 5 percent, a price level of 1), meant to get directions and sizes in proportion, not to describe any country.",
     ],
     takeaways: [
-      "IS and LM set output and the interest rate in the short run; FE sets where output ends up.",
-      "Every shock moves exactly one curve first; the table of shifts tells you which.",
-      "Prices move until real money balances put LM back through the point where IS meets FE.",
+      "IS and LM cross where the goods market and the money market both clear at the current price level. FE is the output the labour market supports. Only where all three meet is the economy at rest.",
+      "Left of FE there is slack and prices are expected to fall; right of FE there is scarcity and prices are expected to rise.",
+      "A higher price level shrinks real money M/P, so LM shifts left, the real interest rate rises and bond prices fall. A lower price level does the opposite.",
+      "Every shock question has the same shape: which curve moves, where do IS and LM cross at the old price level, how does that compare with FE, then let prices move.",
+      "Money is neutral when prices adjust at once, and not neutral while they are slow: the slower the prices, the longer a money change moves output.",
     ],
-    lab: { regime: "closed", shocks: featured, defaultShock: "productivity-down" },
+    sections: [
+      {
+        heading: "Three curves, three markets",
+        paras: [
+          "The IS curve is the set of output and interest rate pairs at which desired saving equals desired investment. Lower interest rates raise investment and, through lower saving, shift spending toward today, so more output is demanded: IS slopes down. It holds fixed everything that moves saving or investment at a given rate, such as taxes, government purchases, wealth and expected returns on capital.",
+          "The LM curve is the set of pairs at which the real money supply M/P equals real money demand. Higher output means more transactions and so more demand for money; with the supply fixed, the interest rate has to rise to hold demand back. LM slopes up. It holds fixed the nominal money supply, the price level, expected inflation and the other things that shift money demand.",
+          "The FE line is vertical at full-employment output. It is where the labour market clears and the economy produces all it can at normal intensity. It moves only when productivity, capital, labour supply or taxes on labour change.",
+          "Where IS and LM cross, the goods and money markets clear. That is the short-run equilibrium, and it can be left or right of FE. Where all three cross, the labour market also clears, nothing pushes prices, and the economy is at rest. That is general equilibrium, which the course treats as the long run.",
+        ],
+      },
+      {
+        heading: "Slack, scarcity and the pull on prices",
+        paras: [
+          "If the IS-LM point lies left of FE, the economy is producing less than it can. Employment is below its full level, factories are under-used, and sellers compete harder for buyers. Prices are expected to fall. If the point lies right of FE, demand is running past normal capacity. Firms compete to hire and to buy inputs, and prices are expected to rise.",
+          "Either way the price change does something specific: it changes real money balances M/P, and that moves LM. The next figure lets you see this. Set government spending to shift IS, then move the price level and watch the point slide along IS.",
+        ],
+      },
+      {
+        heading: "How a price change moves LM",
+        paras: [
+          "Take the nominal money supply as fixed. If prices fall, the same dollars buy more, so real money balances rise. People now hold more money than they want at the old interest rate. They use the extra to buy bonds, which bids bond prices up and so pushes the interest rate down. At every output the rate that clears the money market is now lower, which is a shift of LM to the right.",
+          "If prices rise, real balances shrink. People are short of money, they sell bonds to get it, bond prices fall and the interest rate rises at every output. LM shifts left. Bond prices and interest rates always move in opposite directions: a bond that pays a fixed amount later is worth less today when the rate used to discount it is higher.",
+          "That is why slack pulls LM right, lowering the interest rate and raising output until the point reaches FE, and scarcity pulls LM left until it does.",
+        ],
+        widget: "price-lm",
+      },
+      {
+        heading: "The recipe, played twice",
+        paras: [
+          "The recipe has eight steps. 1) Start at the resting point A, with all three curves crossing. 2) Name the shock and the market it hits. 3) Move the curve that shock moves, and only that curve. 4) Find the short-run point B, where IS and LM cross at the old price level. 5) Check the side markets at B: saving and investment, money, and labour. 6) Compare output at B with FE. 7) Let prices adjust, which moves LM. 8) Land at the long-run point C and compare it with A.",
+          "The price step is never skipped. A common mistake is to stop at B. Point B is only the answer for a short period, and it is a different answer from C whenever B is not on FE.",
+          "Try it on the two shocks below. Predict first, then step through. The money supply shock moves LM and, in the long run, only the price level changes. The government spending shock moves IS: output rises at first, but in the long run the extra spending crowds out investment through a higher interest rate, and prices end up higher.",
+        ],
+        widget: "recipe-two",
+      },
+      {
+        heading: "Money neutrality and how fast prices adjust",
+        paras: [
+          "Run the money supply shock again, now with the speed of price adjustment under your control. If prices adjust at once, an increase in the money supply raises the price level in the same proportion and nothing else moves: output, the real interest rate, employment and the real wage stay where they were. That is money neutrality, the classical result.",
+          "If prices adjust slowly, the extra money lowers the interest rate and raises output above FE for a while, until rising prices shrink real balances back to their old level. The slower the adjustment, the longer the boost lasts, which is the Keynesian result. The long run is the same in both cases. The disagreement is about how long the short run is.",
+        ],
+        widget: "money-neutrality",
+      },
+      {
+        heading: "A puzzle about money demand",
+        paras: [
+          "Money demand rises with output and falls with the interest rate. Yet along an LM curve both output and the interest rate change, while the quantity of money held stays at M/P. Is that a contradiction?",
+          "No. As you move up LM, higher income raises money demand and the higher rate lowers it, and the two effects cancel exactly. That is what makes the point a point on LM. Only a change in something else, such as the price level, the nominal money supply or expected inflation, breaks the cancellation and shifts the curve.",
+        ],
+        widget: "lm-puzzle",
+      },
+      {
+        heading: "Your turn",
+        paras: [
+          "Here is the full set of shifters from the shift table. Pick any, predict where the economy goes at B and at C, then run the recipe and compare. A wrong prediction is the quickest way to find which step of the recipe you are skipping.",
+        ],
+        widget: "ge-sandbox",
+      },
+    ],
+    predictions: [
+      { q: "The IS-LM point lies to the left of FE. What do you expect to happen next?", options: ["Prices fall, real money rises, LM shifts right", "Prices rise, real money falls, LM shifts left", "Nothing: the economy stays there"], answer: 0, why: "Left of FE is slack. Slack pushes prices down, which raises M/P and moves LM right, lowering the interest rate and raising output toward FE." },
+      { q: "The price level rises and the nominal money supply does not change. What happens to the real interest rate and to the price of bonds?", options: ["The rate falls and bond prices rise", "The rate rises and bond prices fall", "The rate rises and bond prices rise"], answer: 1, why: "Real money M/P shrinks, people sell bonds to get money, bond prices fall and so the interest rate rises. Interest rates and bond prices always move in opposite directions." },
+      { q: "The money supply rises 10 percent and prices adjust at once. In the long run which of these differ from before?", options: ["Only the price level, which is 10 percent higher", "Output and the price level", "The real interest rate and the price level"], answer: 0, why: "With instant adjustment, the price level rises by the same share as the money supply, real balances return to their old level, and nothing real changes." },
+      { q: "Government spending rises with the money supply unchanged. Compared with the start, what is true in the long run?", options: ["Output is higher and the interest rate is unchanged", "Output is unchanged, the real interest rate is higher and the price level is higher", "Output, the interest rate and the price level are all unchanged"], answer: 1, why: "In the long run output is back on FE. The extra spending is paid for by less investment, which needs a higher interest rate, and a rise in the price level shrinks real money to make that happen." },
+      { q: "A student answers a shock question by stopping at point B. Which step has been skipped?", options: ["Naming the shock", "Letting prices adjust to the long-run point", "Finding where IS and LM cross"], answer: 1, why: "The price step is never skipped. Point B holds only while prices are stuck. Unless B is on FE, prices will move and take the economy to C." },
+      { q: "Moving along the LM curve to a higher output, what happens to the quantity of money people want to hold?", options: ["It rises with income", "It falls with the higher rate", "It does not change: the two effects cancel"], answer: 2, why: "Along LM, money demand equals the fixed real supply. Higher income raises demand and the higher interest rate lowers it by the same amount." },
+    ],
+    newsColumns: ["In the news", "Driver", "Curve moved", "Effect before prices adjust"],
+    news: [
+      { headline: "Bank branches report that customers are keeping fewer cash balances after a new payment app spread.", driver: "Payment technology improves", curve: "LM right", effect: "Money demand falls, the interest rate falls and output rises above FE; prices then rise and pull LM back." },
+      { headline: "The government announces a three-year programme of school building paid from the budget.", driver: "Government spending rises", curve: "IS right", effect: "Output and the interest rate rise at B; prices rise and crowd out investment until output is back on FE." },
+      { headline: "Retail prices have fallen for six months while factories sit half empty.", driver: "Slack: output left of FE", curve: "LM right (via falling P)", effect: "Falling prices raise real money, lower the interest rate and slowly raise output." },
+      { headline: "Parliament is told that the central bank will hold the money supply steady for the rest of the year.", driver: "No shifter", curve: "None", effect: "With nothing to move, the recipe ends at once: nothing happens at B or C." },
+    ],
   },
   {
-    n: 7, slug: "recipe", part: 2, title: "The recipe",
-    summary: "A fixed sequence of eight steps that turns any shock into a prediction.",
-    covers: ["Naming the shock and the market it hits", "Moving a curve and finding the short-run point", "Letting prices adjust to the long-run point"],
-    lab: { regime: "closed", shocks: worked, defaultShock: "money-supply-up" },
+    n: 7, slug: "supply-shocks", part: 2, title: "Supply shocks and stagflation",
+    summary: "Why an oil shock lowers output and raises prices at once, and why policy has no good answer.",
+    covers: ["A fall in A moves FE left", "Policy after a supply shock", "Combined supply and demand shocks", "The 1970s, 2021-22 and the 1990s productivity boom"],
+    lab: { regime: "closed", shocks: ["productivity-down", "productivity-up", "capital-down", "capital-up"], defaultShock: "productivity-down" },
   },
   {
-    n: 8, slug: "supply-demand-shocks", part: 2, title: "Supply and demand shocks",
-    summary: "Shocks that move IS or LM against shocks that move FE, and how to tell them apart in the data.",
-    covers: ["Demand shocks: spending and money", "Supply shocks: productivity, capital, labour", "Why prices and output move together or apart"],
-    lab: { regime: "closed", shocks: worked, defaultShock: "productivity-down" },
+    n: 8, slug: "demand-shocks", part: 2, title: "Demand shocks and sticky prices",
+    summary: "How a fall in confidence or wealth causes a recession, why it can last, and when stimulus helps.",
+    covers: ["Demand shocks through IS and through LM", "Why prices and wages stick", "Fiscal stimulus and the multiplier", "The liquidity trap"],
+    lab: { regime: "closed", shocks: ["wealth-down", "future-income-down", "taxes-up", "expected-inflation-down", "money-supply-down"], defaultShock: "wealth-down" },
   },
   {
     n: 9, slug: "recessions", part: 2, title: "Recessions",
@@ -673,11 +741,11 @@ export const legacySlugs: Record<string, string> = {
   "goods-market-is": "saving-investment",
   "money-market-lm": "money-inflation",
   "labor-productivity": "productivity-growth",
-  "demand-shocks": "supply-demand-shocks",
-  "supply-shocks": "supply-demand-shocks",
-  "price-adjustment": "recipe",
-  "fiscal-policy": "supply-demand-shocks",
-  "monetary-policy": "supply-demand-shocks",
+  recipe: "is-lm-fe",
+  "supply-demand-shocks": "supply-shocks",
+  "price-adjustment": "is-lm-fe",
+  "fiscal-policy": "demand-shocks",
+  "monetary-policy": "demand-shocks",
   "policy-tradeoffs": "recessions",
   "floating-rates": "exchange-rates",
   "fixed-rates": "exchange-rates",

@@ -6,6 +6,7 @@ import { IsShifters, RicardianWidget, SavingMarketIS, SmoothingWidget } from "./
 import { LmShifters, MoneyMarketLM, MultiplierWidget, PolicyRateWidget } from "./money";
 import { FEHandoff, GrowthCalculator, HiringWidget, ProductionFunctionWidget } from "./productivity";
 import { BigMacWidget, CarryWidget, RegimeSpectrum, StrongCurrencyWidget, UipWidget } from "./fx";
+import { GeSandbox, LmPuzzle, MoneyNeutrality, PriceLM, RecipeTwoShocks } from "./fullmodel";
 import { CpiBasketWidget, ExpenditureSorter, ImportsDemo, RealNominalWidget, ThreeWaysWidget } from "./measuring";
 
 /** Interactive pieces a lesson section can name by id. */
@@ -37,6 +38,11 @@ const registry: Record<string, ComponentType> = {
   "regime-spectrum": RegimeSpectrum,
   uip: UipWidget,
   carry: CarryWidget,
+  "price-lm": PriceLM,
+  "recipe-two": RecipeTwoShocks,
+  "money-neutrality": MoneyNeutrality,
+  "lm-puzzle": LmPuzzle,
+  "ge-sandbox": GeSandbox,
 };
 
 export default function Widget({ id }: { id: string }) {
