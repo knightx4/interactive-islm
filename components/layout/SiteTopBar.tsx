@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/", label: "Simulator" },
   { href: "/learn", label: "Learn" },
-  { href: "/design", label: "Style" },
 ];
 
 export default function SiteTopBar() {

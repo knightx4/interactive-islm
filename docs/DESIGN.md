@@ -1,10 +1,10 @@
 # Design language
 
 The app should read like a considered economics text: a textbook figure or a
-financial-press chart, not a component kit. See the live reference at `/design`.
+financial-press chart, not a component kit.
 
 ## Principles
-1. **Paper and ink.** Warm paper background, near-black ink text, no gradients.
+1. **Paper and ink.** Cool off-white background (#f6f7f9; #111317 in dark), near-black ink text, no gradients.
 2. **Rules, not boxes.** Sections are separated by hairline rules and whitespace.
    No cards, no card-in-card, no drop shadows, no pastel pills. Corner radius is
    2px at most.
