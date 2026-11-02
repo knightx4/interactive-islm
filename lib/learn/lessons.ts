@@ -157,6 +157,84 @@ export const lessons: Lesson[] = [
     n: 2, slug: "productivity-growth", part: 1, title: "Productivity and growth",
     summary: "Why output per worker rises, and what it does to wages and living standards.",
     covers: ["The production function and what moves it", "Capital, labour and productivity", "Growth over decades compared with swings over quarters"],
+    body: [
+      "Over decades, what separates a rich country from a poor one is how much each worker produces. Over quarters, output bounces around a trend; over generations, the trend itself is what changes living standards. This lesson looks at where output comes from, and why the thing economists call productivity matters so much.",
+      "The model's supply side is a production function. Output Y depends on the capital stock K, the number of workers N, and a productivity term A that captures everything else: technology, organisation, skills, institutions. The version used here is Y = A × K^a × N^(1−a), where a is a number between 0 and 1 giving capital's share of income. Values below are in index units, not data.",
+    ],
+    takeaways: [
+      "Output rises with labour but at a falling rate: the marginal product of labour (MPL) diminishes.",
+      "A firm hires until the MPL falls to the real wage. The MPL curve is therefore the demand for labour.",
+      "More A or more K raises the MPL at every level of employment, so labour demand shifts right.",
+      "Growth accounting splits output growth into capital, labour, schooling and a residual, total factor productivity (TFP). A country can grow fast mostly by adding inputs, which cannot go on forever.",
+      "A rise in A today moves the FE line to the right.",
+    ],
+    sections: [
+      {
+        heading: "The production function",
+        paras: [
+          "Hold capital and productivity fixed and draw output against the number of workers. The curve rises, because more workers make more. It also flattens, because each new worker has the same machines to share. The slope of the curve at any point is the marginal product of labour, MPL: the extra output from hiring one more worker. That is diminishing marginal product.",
+          "The three sliders each do something different. Raising A lifts the whole curve and steepens it, so the same workers make more. Raising K does the same through machines. Changing a changes how much capital matters relative to labour. Try each one and keep an eye on the tangent line.",
+        ],
+        widget: "production-function",
+      },
+      {
+        heading: "Hire until the marginal worker pays for themselves",
+        paras: [
+          "A firm that pays a real wage w, measured in units of output, gains from hiring a worker whenever that worker adds more than w. As employment grows the MPL falls. So the firm keeps hiring until the MPL has fallen to the wage. Stopping earlier leaves profit on the table; going on costs more than it brings in.",
+          "Turn that around. For each wage the firm picks the number of workers at which MPL equals w, so the MPL curve read sideways is the firm's demand for labour. Summed across firms, it is the economy's labour demand. When A or K rises, the MPL curve moves up and labour demand shifts right: at any wage, firms want more workers. The labour lesson combines this with labour supply.",
+        ],
+        widget: "hiring",
+      },
+      {
+        heading: "Growth accounting",
+        paras: [
+          "Take the production function and ask how fast each input grew. Growth in output is approximately the growth in A, plus a times the growth in capital, plus (1 − a) times the growth in labour. Capital and labour growth can be measured. Growth in A cannot be observed directly, so it is computed as what is left over: the part of output growth that more capital and labour do not explain. That residual is total factor productivity growth, TFP.",
+          "Labour can be split further. More workers raise labour input, and so does more schooling per worker. The calculator keeps those apart. Choose a preset or set your own numbers.",
+        ],
+        widget: "growth-calc",
+      },
+      {
+        heading: "Input-led growth and TFP-led growth",
+        paras: [
+          "In a well-known 1995 study, Alwyn Young applied growth accounting to Hong Kong, Singapore, South Korea and Taiwan. Their output growth was among the fastest in the world for a quarter of a century. Young found that much of it came from putting more resources to work: a rising share of the population in jobs, more years of schooling, and a high investment rate that raised the capital stock quickly. Measured TFP growth was modest, and for Singapore close to zero, while it was larger for Hong Kong and Taiwan.",
+          "The lesson is about the source of growth. Growth from adding inputs runs into diminishing returns and a limit on how many more people can join the workforce or stay in school. Growth from TFP does not use up anything, and it is what lasts. The first preset in the calculator is stylised after the input-led pattern; the second shows a case where about half of growth is the residual. Both are rounded teaching numbers, not data.",
+        ],
+      },
+      {
+        heading: "Where this leads",
+        paras: [
+          "Productivity raises output per worker, and it raises the wage that labour demand supports. In the IS-LM-FE picture, a rise in A today raises the output the economy can make at full employment, so the FE line shifts right. The labour lesson shows how the labour market delivers it.",
+        ],
+        widget: "fe-handoff",
+      },
+    ],
+    predictions: [
+      { q: "A firm's marginal product of labour is 0.8 and the real wage is 0.6. What should it do?", options: ["Hire more workers", "Keep its workforce", "Lay off workers"], answer: 0, why: "The next worker adds more than they cost. The firm should keep hiring until MPL falls to the wage." },
+      { q: "A new technology raises A in every firm. What happens to labour demand?", options: ["It shifts right: at each wage firms want more workers", "It shifts left, because machines replace workers", "It does not change, since the wage is unchanged"], answer: 0, why: "A higher A raises the MPL at every level of employment. Since firms hire until MPL equals the wage, they want more workers at each wage." },
+      { q: "A firm has 100 workers and the wage rises. With K and A unchanged, it will…", options: ["hire fewer workers, moving up the MPL curve", "hire more, because output per worker is higher", "keep 100, since the MPL curve has not moved"], answer: 0, why: "A higher wage is a move along the demand curve: employment falls until the MPL is as high as the new wage." },
+      { q: "Employment grows 2 percent a year, capital grows 4 percent, and a = 0.3. Output grows 4 percent. TFP growth is about…", options: ["1.4 percent", "0 percent", "2.6 percent"], answer: 0, why: "Capital explains 0.3 × 4 = 1.2 points and labour 0.7 × 2 = 1.4 points, 2.6 in all. The residual is 4 − 2.6 = 1.4." },
+      { q: "A country's growth is nearly all explained by more capital, workers and schooling. What follows?", options: ["Growth will probably slow when the inputs stop growing as fast", "Growth is permanent, since capital keeps rising", "TFP must be growing quickly"], answer: 0, why: "Inputs run into diminishing returns and limits. Only productivity growth can keep output per worker rising indefinitely." },
+    ],
+    newsColumns: ["In the news", "Driver", "Where it moves", "Effect"],
+    news: [
+      { headline: "A new software tool lets small firms do in a day what took a week.", driver: "A rises", curve: "MPL and labour demand shift right; FE moves right", effect: "Output and wages can both rise at full employment." },
+      { headline: "A wave of factory building doubles the stock of machines per worker in a region.", driver: "K rises", curve: "MPL up; labour demand right", effect: "Each worker produces more, and firms want more workers at any wage." },
+      { headline: "A government study finds a country's growth came mostly from more schooling and a bigger workforce.", driver: "Growth accounting", curve: "Not a shift: a decomposition", effect: "Growth driven by inputs, with a small TFP share, may not continue at the same pace." },
+      { headline: "Wages rise sharply in a labour-intensive industry while productivity is unchanged.", driver: "Higher w", curve: "Movement along labour demand", effect: "Firms in that industry hire fewer workers." },
+      { headline: "A natural disaster destroys a quarter of a region's factories.", driver: "K falls", curve: "MPL down; labour demand left", effect: "Output and the demand for workers fall until the capital is rebuilt." },
+    ],
+    cases: [
+      {
+        heading: "Input-led growth in East Asia",
+        text: "Young (1995) is a growth-accounting study of Hong Kong, Singapore, South Korea and Taiwan between the mid-1960s and about 1990. Output grew at roughly 7 to 10 percent a year. Young's central finding was that most of this was due to rapid growth in inputs: more people at work, better-educated workers and a very high investment rate. His estimates of TFP growth were low, about 0.2 percent a year for Singapore and around 2 to 2.5 percent for Hong Kong and Taiwan, closer to the rates in rich countries. His conclusion was that the rapid growth was less of a productivity miracle than it looked, and that inputs could not keep growing at those rates indefinitely.",
+        approx: "From memory and approximate: output growth ranges and the TFP figures for each economy should be checked against the paper. Later work disputes some of the estimates, and results depend on how capital and labour are measured.",
+      },
+      {
+        heading: "A productivity-led case",
+        text: "Between the mid-1990s and the early 2000s, US output per hour worked grew faster than in the previous two decades. Many studies attributed a good part of the pickup to faster TFP growth in making and using information technology, rather than to a sudden jump in the capital stock or the workforce. The second preset in the calculator is stylised after this kind of pattern, with growth where about half of the total is the residual.",
+        approx: "From memory and approximate: the timing and the share attributed to TFP differ by study. The calculator preset is a stylised illustration and is not US data.",
+      },
+    ],
   },
   {
     n: 3, slug: "unemployment", part: 1, title: "Unemployment",
