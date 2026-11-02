@@ -12,14 +12,14 @@ function Spark({ title, values, guide, cursor }: { title: string; values: number
   const path = (vs: number[]) => vs.map((v, i) => `${i ? "L" : "M"}${x(i)},${y(v)}`).join(" ");
   return (
     <div>
-      <div className="text-xs font-medium text-gray-700">{title}</div>
+      <div className="text-sm font-semibold">{title}</div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
-        {guide && <path d={path(guide)} fill="none" stroke="#86efac" strokeWidth="1.5" strokeDasharray="3 3" />}
-        <path d={path(values)} fill="none" stroke="#2563eb" strokeWidth="2" />
-        <line x1={x(cursor)} x2={x(cursor)} y1={0} y2={H} stroke="#9ca3af" />
-        <circle cx={x(cursor)} cy={y(values[cursor])} r="3.5" fill="#111827" />
+        {guide && <path d={path(guide)} fill="none" stroke="var(--c-fe)" strokeWidth="1.5" strokeDasharray="3 3" />}
+        <path d={path(values)} fill="none" stroke="var(--ink)" strokeWidth="2" />
+        <line x1={x(cursor)} x2={x(cursor)} y1={0} y2={H} stroke="var(--rule)" />
+        <circle cx={x(cursor)} cy={y(values[cursor])} r="3.5" fill="var(--ink)" />
       </svg>
-      <div className="text-xs tabular-nums text-gray-600">{values[cursor].toFixed(2)}</div>
+      <div className="num text-sm text-muted-foreground">{values[cursor].toFixed(2)}</div>
     </div>
   );
 }

@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 /** Nested driver lists: fixed cap + scroll so expanding doesn’t resize the whole controls card */
 function expandPanelClassName(borderClass: string) {
   return cn(
-    "mt-1.5 max-h-[min(220px,42svh)] space-y-3 overflow-y-auto overflow-x-hidden overscroll-contain border-l-2 pl-3 pr-0.5 [scrollbar-gutter:stable]",
+    "mt-1.5 space-y-3 border-l pl-3",
     borderClass
   );
 }
@@ -24,7 +24,7 @@ function EffectArrow({ direction }: { direction: EffectDirection }) {
     <span
       className={cn(
         "inline-flex items-center text-[11px] font-semibold",
-        direction === "up" ? "text-emerald-700" : "text-rose-700"
+        direction === "up" ? "text-fe" : "text-lm"
       )}
       aria-label={
         direction === "up"
@@ -46,7 +46,6 @@ interface ModelControlsProps {
   params: ModelParams;
   updateParam: (key: keyof ModelParams, value: number) => void;
   equilibriumOutput: number | null;
-  compact?: boolean;
   /** Snapshot current sliders as dotted baseline on charts. */
   onSetBaseline?: () => void;
   /** Called after reset defaults so baseline overlay can be cleared. */
@@ -57,7 +56,6 @@ export default function ModelControls({
   params,
   updateParam,
   equilibriumOutput,
-  compact = false,
   onSetBaseline,
   onAfterReset,
 }: ModelControlsProps) {
@@ -149,24 +147,12 @@ export default function ModelControls({
   };
 
   return (
-    <Card className="flex w-full max-w-full min-h-0 flex-col gap-1.5 overflow-hidden py-2.5 shadow-sm max-sm:flex-1 max-sm:min-h-0 sm:gap-2.5 sm:py-3 sm:h-full sm:max-h-full sm:flex-1">
-      <CardHeader className="shrink-0 px-3.5 pb-0 pt-0 sm:px-4">
-        <CardTitle className="text-[15px] sm:text-base">Model Parameters</CardTitle>
+    <Card className="flex w-full max-w-full flex-col gap-2 border-ink py-3">
+      <CardHeader className="px-0 pb-0 pt-0">
+        <CardTitle className="font-serif text-lg">Parameters</CardTitle>
       </CardHeader>
-      <CardContent
-        className={
-          compact
-            ? "flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain px-3.5 pb-2.5 pt-0 sm:basis-0 sm:overflow-hidden"
-            : "flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain px-3.5 pb-2.5 pt-1 sm:basis-0 sm:overflow-hidden"
-        }
-      >
-        <div
-          className={
-            compact
-              ? "space-y-2 pr-0.5 sm:min-h-0 sm:flex-1 sm:basis-0 sm:overflow-y-auto sm:overscroll-contain"
-              : "space-y-2.5 pr-0.5 sm:min-h-0 sm:flex-1 sm:basis-0 sm:overflow-y-auto sm:overscroll-contain"
-          }
-        >
+      <CardContent className="flex flex-col px-0 pb-0 pt-1">
+        <div className="space-y-4">
           {/* Investment Section */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
@@ -177,17 +163,17 @@ export default function ModelControls({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 w-6 p-0 rounded-full"
+                  className="h-6 w-6 p-0"
                   onClick={() => setShowInvestmentComponents(!showInvestmentComponents)}
                 >
                   {showInvestmentComponents ? (
-                    <ChevronUp className="h-4 w-4 text-gray-500" />
+                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
                   ) : (
-                    <ChevronDown className="h-4 w-4 text-gray-500" />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   )}
                 </Button>
               </div>
-              <span className="text-sm font-semibold bg-blue-100 text-blue-800 px-2 py-1 rounded">
+              <span className="num text-sm font-semibold text-is">
                 {params.investment}
               </span>
             </div>
@@ -203,7 +189,7 @@ export default function ModelControls({
 
             {/* Investment Components */}
             {showInvestmentComponents && (
-              <div className={expandPanelClassName("border-blue-200")}>
+              <div className={expandPanelClassName("border-rule")}>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="futureMPK" className="text-xs font-medium">
@@ -212,7 +198,7 @@ export default function ModelControls({
                         <EffectArrow direction="up" />
                       </span>
                     </Label>
-                    <span className="text-xs font-semibold bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
+                    <span className="num text-xs font-semibold text-is">
                       {params.futureMPK || 50}
                     </span>
                   </div>
@@ -233,7 +219,7 @@ export default function ModelControls({
                           <EffectArrow direction="up" />
                         </span>
                       </Label>
-                      <span className="text-xs font-semibold bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
+                      <span className="num text-xs font-semibold text-is">
                         {params.netExports ?? 0}
                       </span>
                     </div>
@@ -265,17 +251,17 @@ export default function ModelControls({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 w-6 p-0 rounded-full"
+                  className="h-6 w-6 p-0"
                   onClick={() => setShowSavingsComponents(!showSavingsComponents)}
                 >
                   {showSavingsComponents ? (
-                    <ChevronUp className="h-4 w-4 text-gray-500" />
+                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
                   ) : (
-                    <ChevronDown className="h-4 w-4 text-gray-500" />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   )}
                 </Button>
               </div>
-              <span className="text-sm font-semibold bg-green-100 text-green-800 px-2 py-1 rounded">
+              <span className="num text-sm font-semibold text-is">
                 {params.savings}
               </span>
             </div>
@@ -291,14 +277,14 @@ export default function ModelControls({
 
             {/* Savings Components */}
             {showSavingsComponents && (
-              <div className={expandPanelClassName("border-green-200")}>
+              <div className={expandPanelClassName("border-rule")}>
                 {/* Current Income */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label className="text-xs font-medium">
                       Current Income (Y)
                     </Label>
-                    <span className="text-xs font-semibold bg-green-50 text-green-700 px-1.5 py-0.5 rounded">
+                    <span className="num text-xs font-semibold text-is">
                       {equilibriumOutput ? equilibriumOutput.toFixed(1) : "50.0"}
                     </span>
                   </div>
@@ -313,7 +299,7 @@ export default function ModelControls({
                         <EffectArrow direction="down" />
                       </span>
                     </Label>
-                    <span className="text-xs font-semibold bg-green-50 text-green-700 px-1.5 py-0.5 rounded">
+                    <span className="num text-xs font-semibold text-is">
                       {params.futureY || 50}
                     </span>
                   </div>
@@ -337,7 +323,7 @@ export default function ModelControls({
                         <EffectArrow direction="down" />
                       </span>
                     </Label>
-                    <span className="text-xs font-semibold bg-green-50 text-green-700 px-1.5 py-0.5 rounded">
+                    <span className="num text-xs font-semibold text-is">
                       {params.wealth || 50}
                     </span>
                   </div>
@@ -361,7 +347,7 @@ export default function ModelControls({
                         <EffectArrow direction="up" />
                       </span>
                     </Label>
-                    <span className="text-xs font-semibold bg-green-50 text-green-700 px-1.5 py-0.5 rounded">
+                    <span className="num text-xs font-semibold text-is">
                       {params.governmentSpending}
                     </span>
                   </div>
@@ -391,17 +377,17 @@ export default function ModelControls({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 w-6 p-0 rounded-full"
+                  className="h-6 w-6 p-0"
                   onClick={() => setShowMoneySupplyComponents(!showMoneySupplyComponents)}
                 >
                   {showMoneySupplyComponents ? (
-                    <ChevronUp className="h-4 w-4 text-gray-500" />
+                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
                   ) : (
-                    <ChevronDown className="h-4 w-4 text-gray-500" />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   )}
                 </Button>
               </div>
-              <span className="text-sm font-semibold bg-purple-100 text-purple-800 px-2 py-1 rounded">
+              <span className="num text-sm font-semibold text-money">
                 {params.moneySupply}
               </span>
             </div>
@@ -417,7 +403,7 @@ export default function ModelControls({
 
             {/* Money Supply Components */}
             {showMoneySupplyComponents && (
-              <div className={expandPanelClassName("border-purple-200")}>
+              <div className={expandPanelClassName("border-rule")}>
                 {/* Central Bank Supply */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
@@ -427,7 +413,7 @@ export default function ModelControls({
                         <EffectArrow direction="up" />
                       </span>
                     </Label>
-                    <span className="text-xs font-semibold bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded">
+                    <span className="num text-xs font-semibold text-money">
                       {params.centralBankSupply || 50}
                     </span>
                   </div>
@@ -451,7 +437,7 @@ export default function ModelControls({
                         <EffectArrow direction="down" />
                       </span>
                     </Label>
-                    <span className="text-xs font-semibold bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded">
+                    <span className="num text-xs font-semibold text-money">
                       {params.priceLevel || 50}
                     </span>
                   </div>
@@ -479,17 +465,17 @@ export default function ModelControls({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 w-6 p-0 rounded-full"
+                  className="h-6 w-6 p-0"
                   onClick={() => setShowMoneyDemandComponents(!showMoneyDemandComponents)}
                 >
                   {showMoneyDemandComponents ? (
-                    <ChevronUp className="h-4 w-4 text-gray-500" />
+                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
                   ) : (
-                    <ChevronDown className="h-4 w-4 text-gray-500" />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   )}
                 </Button>
               </div>
-              <span className="text-sm font-semibold bg-amber-100 text-amber-800 px-2 py-1 rounded">
+              <span className="num text-sm font-semibold text-lm">
                 {params.moneyDemand}
               </span>
             </div>
@@ -505,7 +491,7 @@ export default function ModelControls({
 
             {/* Money Demand Components */}
             {showMoneyDemandComponents && (
-              <div className={expandPanelClassName("border-amber-200")}>
+              <div className={expandPanelClassName("border-rule")}>
                 {/* Wealth (same as Savings → Wealth) */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
@@ -515,7 +501,7 @@ export default function ModelControls({
                         <EffectArrow direction="up" />
                       </span>
                     </Label>
-                    <span className="text-xs font-semibold bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded">
+                    <span className="num text-xs font-semibold text-lm">
                       {params.wealth || 50}
                     </span>
                   </div>
@@ -539,7 +525,7 @@ export default function ModelControls({
                         <EffectArrow direction="down" />
                       </span>
                     </Label>
-                    <span className="text-xs font-semibold bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded">
+                    <span className="num text-xs font-semibold text-lm">
                       {params.expectedInflation || 50}
                     </span>
                   </div>
@@ -567,17 +553,17 @@ export default function ModelControls({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 w-6 p-0 rounded-full"
+                  className="h-6 w-6 p-0"
                   onClick={() => setShowFullEmploymentComponents(!showFullEmploymentComponents)}
                 >
                   {showFullEmploymentComponents ? (
-                    <ChevronUp className="h-4 w-4 text-gray-500" />
+                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
                   ) : (
-                    <ChevronDown className="h-4 w-4 text-gray-500" />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   )}
                 </Button>
               </div>
-              <span className="text-sm font-semibold bg-red-100 text-red-800 px-2 py-1 rounded">
+              <span className="num text-sm font-semibold text-fe">
                 {params.fullEmployment}
               </span>
             </div>
@@ -593,7 +579,7 @@ export default function ModelControls({
 
             {/* Full Employment Components */}
             {showFullEmploymentComponents && (
-              <div className={expandPanelClassName("border-red-200")}>
+              <div className={expandPanelClassName("border-rule")}>
                 {/* Productivity */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
@@ -603,7 +589,7 @@ export default function ModelControls({
                         <EffectArrow direction="up" />
                       </span>
                     </Label>
-                    <span className="text-xs font-semibold bg-red-50 text-red-700 px-1.5 py-0.5 rounded">
+                    <span className="num text-xs font-semibold text-fe">
                       {params.productivity || 50}
                     </span>
                   </div>
@@ -627,7 +613,7 @@ export default function ModelControls({
                         <EffectArrow direction="up" />
                       </span>
                     </Label>
-                    <span className="text-xs font-semibold bg-red-50 text-red-700 px-1.5 py-0.5 rounded">
+                    <span className="num text-xs font-semibold text-fe">
                       {params.capital || 50}
                     </span>
                   </div>
@@ -651,7 +637,7 @@ export default function ModelControls({
                         <EffectArrow direction="up" />
                       </span>
                     </Label>
-                    <span className="text-xs font-semibold bg-red-50 text-red-700 px-1.5 py-0.5 rounded">
+                    <span className="num text-xs font-semibold text-fe">
                       {params.labor || 50}
                     </span>
                   </div>
@@ -670,7 +656,7 @@ export default function ModelControls({
           </div>
         </div>
 
-        <div className="shrink-0 space-y-2 border-t border-gray-200 pt-2">
+        <div className="shrink-0 space-y-2 border-t border-rule pt-2">
           {onSetBaseline && (
             <Button
               type="button"

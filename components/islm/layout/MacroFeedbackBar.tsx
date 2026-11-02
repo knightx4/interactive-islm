@@ -17,18 +17,18 @@ export default function MacroFeedbackBar({
     gap !== null && Math.abs(gap) < OUTPUT_GAP_TOLERANCE;
 
   return (
-    <div className="border-t border-border/70 pt-2">
-      <p className="text-[11px] leading-snug text-gray-700 sm:text-xs">
+    <div className="mb-3">
+      <p className="text-sm">
         {equilibriumOutput !== null && gap !== null && (
           <>
             Output is{" "}
             <span
               className={
                 nearFullEmployment
-                  ? "font-semibold text-green-600"
+                  ? "font-semibold text-fe"
                   : gap > 0
-                    ? "font-semibold text-red-600"
-                    : "font-semibold text-blue-600"
+                    ? "font-semibold text-lm"
+                    : "font-semibold text-is"
               }
             >
               {nearFullEmployment
@@ -39,7 +39,7 @@ export default function MacroFeedbackBar({
             </span>
             {` (Y=${equilibriumOutput.toFixed(1)}, Y*=${fullEmployment}). `}
             {nearFullEmployment ? (
-              <span className="text-muted-foreground">
+              <span className="text-muted-foreground num">
                 Within +/-{OUTPUT_GAP_TOLERANCE} index units.
               </span>
             ) : (

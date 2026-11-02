@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Info } from "lucide-react";
 import {
   computeIslmAlgebraicIntersection,
@@ -13,16 +12,12 @@ interface ExpenditureIdentityCardProps {
   equilibriumOutput: number | null;
 }
 
-function row(label: string, value: number, accent?: string) {
+function row(label: string, value: number, strong?: boolean) {
   return (
-    <div className="flex items-baseline justify-between gap-3 text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span
-        className={`font-mono tabular-nums font-semibold ${accent ?? "text-gray-900"}`}
-      >
-        {value.toFixed(1)}
-      </span>
-    </div>
+    <tr className={strong ? "border-t border-ink font-semibold" : "border-t border-rule"}>
+      <td className="py-1.5 pr-4">{label}</td>
+      <td className="num py-1.5 text-right">{value.toFixed(1)}</td>
+    </tr>
   );
 }
 
@@ -63,44 +58,39 @@ export default function ExpenditureIdentityCard({
   const usingAlgebraic = equilibriumOutput === null;
 
   return (
-    <Card className="mt-4 shrink-0 shadow-sm md:mt-6">
-      <CardHeader className="py-3 md:py-4">
-        <div className="flex items-center justify-between gap-2">
-          <CardTitle className="text-base md:text-lg">
-            Expenditure accounting (graph index units)
-          </CardTitle>
-          <div className="group relative inline-flex">
-            <button
-              type="button"
-              aria-label="Show accounting methodology"
-              className="inline-flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              <Info className="h-4 w-4" />
-            </button>
-            <div className="pointer-events-none absolute right-0 top-7 z-20 hidden w-[min(32rem,80vw)] rounded-md border bg-background p-2 text-xs leading-relaxed text-muted-foreground shadow-md group-hover:block group-focus-within:block">
-              {methodologyText}
-            </div>
+    <section className="mt-10 max-w-lg border-t border-ink pt-4">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-2xl">Expenditure accounting</h2>
+        <div className="group relative inline-flex">
+          <button
+            type="button"
+            aria-label="Show accounting methodology"
+            className="inline-flex h-6 w-6 items-center justify-center text-muted-foreground hover:text-foreground"
+          >
+            <Info className="h-4 w-4" />
+          </button>
+          <div className="pointer-events-none absolute right-0 top-7 z-20 hidden w-[min(32rem,80vw)] border border-ink bg-paper p-3 text-xs leading-relaxed text-muted-foreground group-hover:block group-focus-within:block">
+            {methodologyText}
           </div>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-3 border-t border-border/60 pt-3 md:pt-4">
-        {usingAlgebraic && (
-          <p className="text-xs text-amber-800 dark:text-amber-200">
-            Equilibrium is outside the plotted IS–LM window;{" "}
-            <strong>Y</strong> below uses the same algebraic intersection as the charts.
-          </p>
-        )}
-        <div className="grid max-w-md grid-cols-1 gap-2 rounded-lg border bg-muted/30 p-3 sm:max-w-lg">
-          {row("Consumption C", C, "text-violet-700 dark:text-violet-300")}
-          {row("Investment I", I, "text-blue-700 dark:text-blue-300")}
-          {row("Net exports NX", NX, "text-teal-700 dark:text-teal-300")}
-          {row("Government G", G, "text-slate-700 dark:text-slate-300")}
-          {row("Savings S", S, "text-blue-700 dark:text-blue-300")}
-          {row("Interest rate r (IS–LM index)", rIndex, "text-gray-700 dark:text-gray-300")}
-          <div className="my-1 border-t border-dashed border-border" />
-          {row("Output Y (IS–LM)", Y, "text-gray-900 dark:text-gray-100")}
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+      <p className="mt-1 text-sm text-muted-foreground">In the index units of the figures.</p>
+      {usingAlgebraic && (
+        <p className="mt-2 text-sm text-lm">
+          Equilibrium is outside the plotted window; <i>Y</i> uses the algebraic intersection.
+        </p>
+      )}
+      <table className="mt-3 w-full text-sm">
+        <tbody>
+          {row("Consumption C", C)}
+          {row("Investment I", I)}
+          {row("Net exports NX", NX)}
+          {row("Government G", G)}
+          {row("Saving S (Y − C − G)", S)}
+          {row("Interest rate r", rIndex)}
+          {row("Output Y", Y, true)}
+        </tbody>
+      </table>
+    </section>
   );
 }

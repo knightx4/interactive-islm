@@ -22,31 +22,33 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
   const part = parts.find((p) => p.n === lesson.part)!;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
-      <div className="mx-auto w-full max-w-5xl space-y-6">
-        <nav className="text-sm text-muted-foreground">
-          <Link href="/learn" className="hover:underline">Learn</Link> / Part {part.n}: {part.title}
-        </nav>
-        <section className="space-y-3 rounded-xl border bg-card p-5 shadow-sm md:p-6">
-          <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">{lesson.n}. {lesson.title}</h1>
-          <p className="text-muted-foreground">{lesson.summary}</p>
-          {lesson.body.map((p, k) => <p key={k} className="text-gray-800">{p}</p>)}
-          <ul className="list-disc space-y-1 pl-5 text-sm text-gray-800">
-            {lesson.takeaways.map((t) => <li key={t}>{t}</li>)}
-          </ul>
-        </section>
+    <div className="mx-auto w-full max-w-4xl px-4 pb-16 pt-8 md:px-6">
+      <nav className="text-sm text-muted-foreground">
+        <Link href="/learn" className="underline underline-offset-4">Learn</Link> / Part {part.n}: {part.title}
+      </nav>
+      <header className="mt-3 max-w-2xl">
+        <h1 className="text-3xl md:text-4xl">{lesson.n}. {lesson.title}</h1>
+        <p className="prose-text mt-3 text-lg text-muted-foreground">{lesson.summary}</p>
+      </header>
+      <div className="prose-text mt-4 max-w-2xl space-y-4">
+        {lesson.body.map((p, k) => <p key={k}>{p}</p>)}
+        <ul className="list-disc space-y-1 pl-5">
+          {lesson.takeaways.map((t) => <li key={t}>{t}</li>)}
+        </ul>
+      </div>
 
+      <div className="mt-10">
         <LessonLab key={lesson.slug} regime={lesson.regime} defaultShock={lesson.defaultShock} />
+      </div>
 
-        <section className="rounded-xl border border-dashed bg-card p-4 text-sm">
-          <h2 className="font-semibold">{lesson.realWorld.heading}</h2>
-          <p className="mt-1 text-gray-700">{lesson.realWorld.text}</p>
-        </section>
+      <aside className="mt-10 max-w-2xl border-t border-ink pt-4">
+        <h2 className="text-xl">{lesson.realWorld.heading}</h2>
+        <p className="prose-text mt-1">{lesson.realWorld.text}</p>
+      </aside>
 
-        <div className="flex justify-between text-sm">
-          {prev ? <Link className="hover:underline" href={`/learn/${prev.slug}`}>← {prev.n}. {prev.title}</Link> : <span />}
-          {next ? <Link className="hover:underline" href={`/learn/${next.slug}`}>{next.n}. {next.title} →</Link> : <span />}
-        </div>
+      <div className="mt-10 flex justify-between gap-4 border-t border-rule pt-4 text-sm">
+        {prev ? <Link className="underline underline-offset-4" href={`/learn/${prev.slug}`}>← {prev.n}. {prev.title}</Link> : <span />}
+        {next ? <Link className="text-right underline underline-offset-4" href={`/learn/${next.slug}`}>{next.n}. {next.title} →</Link> : <span />}
       </div>
     </div>
   );

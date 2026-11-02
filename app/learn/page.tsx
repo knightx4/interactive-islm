@@ -1,40 +1,37 @@
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { lessons, parts } from "@/lib/learn/lessons";
 
 export default function LearnPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
-      <div className="mx-auto w-full max-w-5xl space-y-8">
-        <section className="space-y-2 rounded-xl border bg-card p-5 shadow-sm md:p-6">
-          <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">Learn IS-LM</h1>
-          <p className="max-w-3xl text-sm text-muted-foreground md:text-base">
-            A short course in {lessons.length} lessons across four parts. Each lesson lets you pick a
-            shock, predict what happens, then watch the IS, LM and FE curves and the markets behind
-            them adjust over time.
-          </p>
-        </section>
-        {parts.map((part) => (
-          <section key={part.n} className="space-y-3">
-            <div>
-              <h2 className="text-lg font-semibold">Part {part.n}: {part.title}</h2>
-              <p className="text-sm text-muted-foreground">{part.blurb}</p>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              {lessons.filter((l) => l.part === part.n).map((l) => (
-                <Link key={l.slug} href={`/learn/${l.slug}`} className="block">
-                  <Card className="h-full transition-colors hover:bg-accent/40">
-                    <CardHeader className="py-4">
-                      <CardTitle className="text-base">{l.n}. {l.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pb-5 text-sm text-muted-foreground">{l.summary}</CardContent>
-                  </Card>
+    <div className="mx-auto w-full max-w-4xl px-4 pb-16 pt-8 md:px-6">
+      <header className="max-w-2xl">
+        <h1 className="text-3xl md:text-4xl">Learn IS-LM</h1>
+        <p className="prose-text mt-3 text-lg text-foreground/90">
+          A short course in {lessons.length} lessons across four parts. Each lesson lets you pick a
+          shock, predict what happens, then watch the <span className="font-semibold text-is">IS</span>,{" "}
+          <span className="font-semibold text-lm">LM</span> and <span className="font-semibold text-fe">FE</span>{" "}
+          curves and the markets behind them adjust over time.
+        </p>
+      </header>
+      {parts.map((part) => (
+        <section key={part.n} className="mt-10 border-t border-ink pt-4">
+          <h2 className="text-2xl">Part {part.n}: {part.title}</h2>
+          <p className="mt-1 text-muted-foreground">{part.blurb}</p>
+          <ol className="mt-3 divide-y divide-rule border-y border-rule">
+            {lessons.filter((l) => l.part === part.n).map((l) => (
+              <li key={l.slug}>
+                <Link href={`/learn/${l.slug}`} className="group flex gap-4 py-3">
+                  <span className="num w-6 shrink-0 text-muted-foreground">{l.n}.</span>
+                  <span>
+                    <span className="font-serif text-lg font-semibold group-hover:underline underline-offset-4">{l.title}</span>
+                    <span className="block text-sm text-muted-foreground">{l.summary}</span>
+                  </span>
                 </Link>
-              ))}
-            </div>
-          </section>
-        ))}
-      </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ))}
     </div>
   );
 }
