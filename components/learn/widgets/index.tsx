@@ -7,6 +7,7 @@ import { LmShifters, MoneyMarketLM, MultiplierWidget, PolicyRateWidget } from ".
 import { FEHandoff, GrowthCalculator, HiringWidget, ProductionFunctionWidget } from "./productivity";
 import { BigMacWidget, CarryWidget, RegimeSpectrum, StrongCurrencyWidget, UipWidget } from "./fx";
 import { GeSandbox, LmPuzzle, MoneyNeutrality, PriceLM, RecipeTwoShocks } from "./fullmodel";
+import { IdentityWidget, LedgerWidget, NxShiftersWidget } from "./open";
 import { CpiBasketWidget, ExpenditureSorter, ImportsDemo, RealNominalWidget, ThreeWaysWidget } from "./measuring";
 
 /** Interactive pieces a lesson section can name by id. */
@@ -37,6 +38,9 @@ const registry: Record<string, ComponentType> = {
   "big-mac": BigMacWidget,
   "regime-spectrum": RegimeSpectrum,
   uip: UipWidget,
+  "saving-nx": IdentityWidget,
+  ledger: LedgerWidget,
+  "nx-shifters": NxShiftersWidget,
   carry: CarryWidget,
   "price-lm": PriceLM,
   "recipe-two": RecipeTwoShocks,

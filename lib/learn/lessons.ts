@@ -5,6 +5,8 @@ export type LabSpec = {
   regime: Regime;
   /** Capital mobility for open economies, 0 (none) to 1 (perfect). */
   mobility?: number;
+  /** Regimes the reader may toggle between on the page (default: closed/floating when the lab starts closed). */
+  regimes?: Regime[];
   shocks: string[];
   defaultShock: string;
 };
@@ -20,6 +22,9 @@ export type NewsRow = { headline: string; driver: string; curve: string; effect:
 
 /** A worked real-world case. Numbers are public facts from memory and marked approximate. */
 export type Case = { heading: string; text: string; approx: string };
+
+/** A real case drawn as a cause chain that lights up link by link. Dates and numbers are from memory and marked approximate. */
+export type ChainCase = { heading: string; when: string; text: string; links: string[]; curves: string; approx: string };
 
 export type Lesson = {
   /** 1 to 13; the Practice page is 0 and is not numbered. */
@@ -42,6 +47,10 @@ export type Lesson = {
   newsColumns?: [string, string, string, string];
   news?: NewsRow[];
   cases?: Case[];
+  /** Cases drawn as animated cause chains. */
+  chains?: ChainCase[];
+  /** Heading for the chain cases, if the lesson has them. */
+  chainsHeading?: string;
 };
 
 export const parts = [
@@ -708,7 +717,132 @@ export const lessons: Lesson[] = [
     n: 11, slug: "open-economy", part: 3, title: "The open economy",
     summary: "Net exports inside IS, and how capital mobility changes what policy can do.",
     covers: ["Net exports and the real exchange rate", "Capital mobility from none to perfect", "Large and small economies"],
-    lab: { regime: "floating", mobility: 0.5, shocks: ["gov-spending-up", "money-supply-up", "foreign-demand-up"], defaultShock: "gov-spending-up" },
+    body: [
+      "Opening the economy adds a new term to the spending identity, net exports NX, and a new market that clears alongside the others: the market for foreign exchange. This lesson follows both. First the accounting, which says that a trade deficit and a capital inflow are the same fact. Then the curves, where NX shifts IS. Last, the question of who controls the money supply: under a float the central bank does; under a peg the balance of payments does.",
+      "Notation as before. e is foreign currency per unit of home currency, so a rise is an appreciation. RER = e × P_home ÷ P_foreign. The model numbers are index units from a toy economy and the country cases are from memory, with every date and size marked approximate.",
+    ],
+    takeaways: [
+      "Saving funds investment at home or abroad: I = S − NX. A trade deficit means home investment exceeds home saving, and the gap is financed by capital flowing in (foreign saving).",
+      "The current account and the financial account are two sides of one ledger. With a floating rate, reserves do not move, so CA + FA = 0; under a peg the gap is the change in reserves.",
+      "NX rises with partner income and with a lower real exchange rate, and shifts with trade policy. Each of these moves IS: right if NX rises, left if it falls.",
+      "Under a float, shocks are partly absorbed by e; the central bank still sets the money supply. Under a peg, the central bank must defend e, so inflows add to the money supply and outflows drain it, and monetary policy cannot be used independently.",
+      "A rate rise in a large economy pulls capital from others: floating currencies fall, pegged ones lose reserves and tighten.",
+    ],
+    sections: [
+      {
+        heading: "Saving, investment and the trade balance",
+        paras: [
+          "Spending adds up to output: Y = C + I + G + NX. Households and government spend some of Y on consumption and government purchases, and what is left is national saving S = Y − C − G. Subtract: S = I + NX, which gives I = S − NX.",
+          "Read it as a funding statement. A country that invests more than it saves has NX < 0, a trade deficit, and the missing funds are foreign saving lent to it. A country that saves more than it invests has a surplus and lends the rest abroad. Set the sliders so that S is below I and look at which part of investment is funded from abroad.",
+        ],
+        widget: "saving-nx",
+      },
+      {
+        heading: "One ledger, two accounts",
+        paras: [
+          "The balance of payments records every payment between a country and the rest of the world. The current account CA records trade in goods and services (and, in practice, income and transfers; here CA is just NX). The financial account FA records net purchases of assets: a positive FA is capital flowing in. Every payment shows up on both sides of the books, so CA + FA equals the change in the central bank's holdings of foreign currency.",
+          "If the central bank does not intervene, that change is zero and FA = −CA. Whatever flows in as a trade deficit must flow in as lending. Under a peg the bank soaks up the difference with its reserves, and that is what links the balance of payments to the money supply.",
+        ],
+        widget: "ledger",
+      },
+      {
+        heading: "Net exports inside IS",
+        paras: [
+          "In the closed economy IS was built from saving and investment. Now IS includes NX: for each interest rate and output level, desired saving must equal desired investment plus net exports. Anything that raises NX at a given Y and r raises the total demand for home output and moves IS right.",
+          "Three drivers matter most. Partner income: when trading partners grow, they import more of our goods and NX rises. Trade policy: a tariff on our imports lowers them and raises NX; a tariff by our partners lowers our exports. The real exchange rate: a higher RER makes our goods dearer and NX falls. Output at home also matters: richer households import more, which is why IS slopes more steeply than in the closed economy.",
+        ],
+        widget: "nx-shifters",
+      },
+      {
+        heading: "Float against peg",
+        paras: [
+          "Under a float, the central bank chooses the money supply and the exchange rate moves to clear the foreign-exchange market. A shock to NX or to capital flows changes e first. That takes some of the force off output, because a falling e raises NX again. The central bank can use monetary policy for domestic aims.",
+          "Under a peg, the central bank promises to trade at a fixed e. If more people want the home currency, it must sell home currency and buy foreign currency, so reserves rise and the money supply rises; if people want to leave, it sells reserves and the money supply falls. The rate of interest is pulled toward the world rate whatever the bank would like. A money expansion is undone as reserves leak out, which leaves fiscal policy as the lever that works.",
+          "In the lab below, switch between the two regimes and replay the same shock. Look at e, reserves and the money supply on the side panels.",
+        ],
+      },
+      {
+        heading: "When the Fed hikes",
+        paras: [
+          "When the US raises its interest rate, dollar assets pay more and some investors move money out of other countries. For a country with a floating rate this lowers e: the currency depreciates, raises NX, and pushes the economy toward expansion, though dollar debts become heavier. For a country with a peg it drains reserves and tightens money, and it must raise its own rate or give up the peg. This spillover is a large reason that countries with weak reserves watch the US central bank closely.",
+        ],
+      },
+    ],
+    lab: { regime: "floating", mobility: 0.5, regimes: ["floating", "fixed"], shocks: ["money-supply-up", "gov-spending-up", "foreign-rate-up", "foreign-demand-up", "devaluation-fear"], defaultShock: "money-supply-up" },
+    chainsHeading: "Cases as cause chains",
+    chains: [
+      {
+        heading: "Finland after the Soviet collapse",
+        when: "1990 to 1993",
+        text: "Finland sold a noticeable share of its exports to the Soviet Union, and that trade fell away as the Soviet Union broke up. The country had tied the markka to a basket of currencies, and a domestic credit boom was also ending, so the story has more than one cause. This chain isolates the trade channel.",
+        links: ["Soviet demand collapses", "Exports and NX fall: IS shifts left", "Output falls below FE", "Peg: reserves drain, money tightens", "Peg given up, markka floats (1992)", "Markka depreciates", "NX recovers: IS moves back"],
+        curves: "On the curves: IS left with a peg, LM also left as reserves drain; after the float, e falls and IS returns. The lab's 'foreign demand rises' shock is the mirror image: run it in both regimes and read each arrow backwards.",
+        approx: "From memory and approximate: the size of the Soviet share of exports (very roughly a fifth in the late 1980s), a fall in output of about 10 percent from 1990 to 1993, unemployment rising from low single digits to the mid-teens, and the markka floating in September 1992 and losing a large part of its value. Compare against Bank of Finland and Statistics Finland data.",
+      },
+      {
+        heading: "The dollar and the Plaza Accord",
+        when: "1980 to 1987",
+        text: "In the early 1980s the United States combined tight money with large budget deficits. Interest rates were high, capital flowed in, and the dollar rose strongly. Imports surged and the trade deficit widened. In September 1985, finance ministers of five rich countries met at the Plaza Hotel in New York and agreed to help the dollar fall.",
+        links: ["US deficit spending and tight money", "IS right, home rate up", "Capital flows in", "Dollar appreciates (e up)", "NX falls: record trade deficit", "Plaza Accord, Sept 1985", "e falls", "NX recovers, with a lag"],
+        curves: "On the curves: fiscal expansion under a float shifts IS right; e rises and NX falls, which takes back some of the output gain. The lab's 'government spending' shock in the floating regime shows it.",
+        approx: "From memory and approximate: the dollar's rise of very roughly half in trade-weighted terms from 1980 to early 1985, a fall of about 40 percent against the yen and the mark by 1987, and the date of the Plaza meeting (22 September 1985). The US trade deficit kept widening for about two years after the Plaza before it narrowed.",
+      },
+      {
+        heading: "China's peg and its money supply",
+        when: "1994 to about 2014",
+        text: "For about a decade China held the yuan near 8.3 per dollar. With the rate below what the market would have set, exports boomed and foreign money came in. To keep the rate, the central bank bought dollars and paid for them with newly created yuan.",
+        links: ["Yuan held below the market rate", "NX and inflows rise: IS shifts right", "Central bank buys dollars", "Reserves pile up", "Base money grows: LM shifts right", "Pressure on prices"],
+        curves: "On the curves: IS right, then LM right, and in the long run the price level rises because the rate cannot do the adjusting. The central bank offset part of the money growth by issuing bills and raising reserve requirements.",
+        approx: "From memory and approximate: the rate near 8.28 per dollar from the mid-1990s to 2005, gradual appreciation afterward, reserves rising to roughly four trillion dollars by about 2014, and consumer-price inflation reaching about 6 percent in 2008 and 2011. Check against People's Bank of China and IMF data.",
+      },
+      {
+        heading: "Argentina's currency board",
+        when: "1991 to 2002",
+        text: "Argentina fixed the peso to the dollar by law in 1991, after hyperinflation. Inflation fell quickly. But when the dollar strengthened and its neighbour Brazil let its currency fall in 1999, Argentina's goods became dear. Prices had to fall instead of the exchange rate, and a long slump followed.",
+        links: ["Peso fixed 1:1 to the dollar (1991)", "Inflation falls sharply", "Dollar strengthens, Brazil devalues", "RER high: NX falls, IS left", "Output below FE, prices must fall", "Capital flight drains reserves and money", "Peg abandoned (early 2002)", "Peso falls sharply"],
+        curves: "On the curves: IS left; under a peg the only adjustment is slow price deflation, and LM shifts left as reserves leave. The lab's 'devaluation fear' shock under a peg shows the drain.",
+        approx: "From memory and approximate: the law's date (1991), the Brazilian devaluation (January 1999), output falling by roughly a fifth between 1998 and 2002, deposit limits in December 2001, and a fall in the peso to several per dollar by mid-2002.",
+      },
+      {
+        heading: "Soros against the Bank of England",
+        when: "September 1992",
+        text: "Britain had joined the European exchange-rate system at a fixed value against the German mark. After German reunification, German rates rose, and Britain, in a recession, had to follow them. Traders judged that the rate could not be held. The full story is told in the German reunification lesson.",
+        links: ["German rates high after reunification", "UK must match them in a recession", "Markets doubt the peg: a premium on sterling", "Bank sells reserves and raises its rate", "Pound leaves the system, 16 Sept 1992", "Pound falls, rates are cut"],
+        curves: "On the curves: LM left to defend the peg while IS is already weak; once markets expect a devaluation, the IS curve shifts further left. The lab's 'devaluation fear' shock under a peg is this case.",
+        approx: "From memory and approximate: the date (Wednesday 16 September 1992), the Bank's rate rising from 10 percent toward 12 and an announced 15 percent on the day, the pound falling roughly 15 percent against the mark in following weeks, and the often-quoted gain of about a billion dollars for one fund.",
+      },
+      {
+        heading: "Sanctions on Russia",
+        when: "2022",
+        text: "After Russia's invasion of Ukraine in February 2022, other governments froze a large share of the Russian central bank's foreign reserves. That removed the tool normally used to defend a currency in a crisis. The rouble fell hard in the first days, the central bank raised its rate sharply and imposed controls on moving money out.",
+        links: ["Sanctions, reserves frozen", "Capital flight; fear of collapse", "Rouble falls, e drops", "Rate raised sharply, capital controls", "Imports collapse; energy exports stay high", "NX surplus climbs", "Rouble recovers"],
+        curves: "On the curves: a floating currency under a risk premium. The lab's 'devaluation fear' shock under a float: e falls, the rate rises, NX rises.",
+        approx: "From memory and approximate: about half of reserves frozen, a policy rate raised from about 9.5 to 20 percent on 28 February 2022, the rouble weakening past 100 per dollar in March and recovering to roughly 55 to 60 by mid-year, and later weakening again. For the later path, fill in from public reporting (central bank data) with links.",
+      },
+      {
+        heading: "Fed hikes and emerging markets",
+        when: "2013 and 2022",
+        text: "In 2013, when the US central bank hinted at slowing its bond purchases, money left many emerging markets within weeks. Again in 2022, as US rates rose quickly, many currencies fell against the dollar.",
+        links: ["US rate rises", "Foreign rate up: capital leaves", "Float: currency falls", "Peg: reserves drain", "Local central bank raises its rate", "Dollar debts weigh more"],
+        curves: "On the curves: the lab's 'foreign interest rate' shock, in both regimes. Under a float e falls and NX rise; under a peg reserves leave and output falls.",
+        approx: "From memory and approximate: the 2013 episode (often called the taper tantrum, May to September 2013) and the fast US rate rises that began in March 2022. Size of currency falls differs widely by country; check country data.",
+      },
+    ],
+    newsColumns: ["In the news", "Driver", "Curve moved", "Effect"],
+    news: [
+      { headline: "Major trading partners report a pickup in growth and imports.", driver: "Partner income rises", curve: "IS shifts right (NX up)", effect: "Output and the rate rise; with a float the currency also strengthens." },
+      { headline: "The central bank drains reserves for the third week to hold the exchange rate.", driver: "Outflow under a peg", curve: "LM shifts left", effect: "The money supply shrinks, the interest rate rises, output falls." },
+      { headline: "Country's trade deficit widens as foreign investors pour money into its bonds.", driver: "Capital inflow", curve: "IS shifts left through lower NX", effect: "Two sides of one ledger: the inflow and deficit match." },
+      { headline: "A rate rise in the US sends emerging currencies lower.", driver: "Foreign rate up", curve: "IS shifts right under a float, left under a peg", effect: "Floating currencies depreciate and NX rise; pegged central banks lose reserves." },
+    ],
+    predictions: [
+      { q: "A country saves 18 and invests 22. Net exports are…", options: ["+4, a surplus", "−4, a deficit financed by foreign saving", "0, since saving equals investment in the long run"], answer: 1, why: "NX = S − I = 18 − 22 = −4. The shortfall in saving is made up by capital flowing in." },
+      { q: "Under a peg, CA = −6 and private capital inflow FA = +4. The central bank…", options: ["buys 2 of reserves", "sells 2 of reserves, draining money", "does nothing; the ledger already balances"], answer: 1, why: "CA + FA = −2, so reserves fall by 2 and the money supply with them." },
+      { q: "A trading partner's income jumps. At home, IS…", options: ["shifts right, because NX rise", "shifts left, because imports rise", "does not move"], answer: 0, why: "Partners with higher incomes buy more of our goods, so NX rise at every Y and r." },
+      { q: "A pegged-currency central bank cuts interest rates by expanding credit. The result is that…", options: ["output rises a lot, as in a closed economy", "reserves leak out and output barely moves", "the currency depreciates"], answer: 1, why: "Lower rates draw capital out; to keep the rate fixed the bank sells reserves, which cancels the extra money." },
+      { q: "The Fed raises rates. A country with a floating currency sees…", options: ["its currency fall and net exports rise", "its currency rise and net exports fall", "reserves fall"], answer: 0, why: "Capital leaves for the higher dollar return, so e falls. A lower RER raises NX." },
+      { q: "A pegged economy's main trading partner puts a tariff on its goods. Compared with a floating economy…", options: ["the loss of output is larger, since e cannot fall", "the loss of output is smaller, since reserves help", "nothing differs"], answer: 0, why: "A float lets e fall and cushions NX. A peg cannot, so output carries the hit and reserves drain." },
+    ],
   },
   {
     n: 12, slug: "tariffs-trade", part: 3, title: "Tariffs and trade",

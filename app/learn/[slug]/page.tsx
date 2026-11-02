@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import CaseChains from "@/components/learn/CaseChains";
 import CaseNotes from "@/components/learn/CaseNotes";
 import LessonLab from "@/components/learn/LessonLab";
 import NewsTable from "@/components/learn/NewsTable";
@@ -77,6 +78,13 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
         <section className="mt-10 border-t border-ink pt-4">
           <h2 className="text-2xl">Worked real-world cases</h2>
           <div className="mt-3"><CaseNotes cases={lesson.cases} /></div>
+        </section>
+      )}
+
+      {lesson.chains && (
+        <section className="mt-10 border-t border-ink pt-4">
+          <h2 className="text-2xl">{lesson.chainsHeading ?? "Cases as cause chains"}</h2>
+          <div className="mt-3"><CaseChains cases={lesson.chains} /></div>
         </section>
       )}
 

@@ -32,6 +32,7 @@ export default function LessonLab({ lab }: { lab: LabSpec }) {
   const [t, setT] = useState(1);
   const [playing, setPlaying] = useState(false);
 
+  const toggle: Regime[] | null = lab.regimes ?? (lab.regime === "closed" ? ["closed", "floating"] : null);
   const mobility = lab.mobility ?? (regime === "closed" ? 1 : OPEN_MOBILITY);
   const available = lab.shocks.map((id) => shockById(id)!).filter((s) => shocksFor(regime).includes(s));
   const shock = available.find((s) => s.id === shockId) ?? available[0];
@@ -90,12 +91,12 @@ export default function LessonLab({ lab }: { lab: LabSpec }) {
             ))}
           </div>
           <p className="text-sm text-muted-foreground">{shock.blurb}</p>
-          {lab.regime === "closed" && (
+          {toggle && (
             <div className="flex items-center gap-2 text-sm" role="group" aria-label="Economy">
               <span className="text-muted-foreground">Economy:</span>
-              {(["closed", "floating"] as const).map((r) => (
+              {toggle.map((r) => (
                 <Button key={r} type="button" size="sm" variant={regime === r ? "default" : "outline"} aria-pressed={regime === r} onClick={() => pickRegime(r)}>
-                  {r === "closed" ? "Closed" : "Open, floating rate"}
+                  {r === "closed" ? "Closed" : r === "floating" ? "Open, floating rate" : "Open, pegged rate"}
                 </Button>
               ))}
             </div>
