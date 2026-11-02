@@ -9,6 +9,7 @@ import { BigMacWidget, CarryWidget, RegimeSpectrum, StrongCurrencyWidget, UipWid
 import { GeSandbox, LmPuzzle, MoneyNeutrality, PriceLM, RecipeTwoShocks } from "./fullmodel";
 import { IdentityWidget, LedgerWidget, NxShiftersWidget } from "./open";
 import { DemandLab, IsDemandSpeed, LiquidityTrap, LmDemandSpeed, MultiplierDemo, StimulusTiming, Wealth2008 } from "./demand";
+import { Classifier, Contributions2008, NgdpTarget, RecessionLab, RecessionTypes, TaylorRule } from "./policy";
 import { HurricaneWidget, OilLab, PolicyDilemma, Us1970s } from "./supply";
 import { TariffPredict, TariffRecord, TariffShocks } from "./tariffs";
 import { CpiBasketWidget, ExpenditureSorter, ImportsDemo, RealNominalWidget, ThreeWaysWidget } from "./measuring";
@@ -54,6 +55,12 @@ const registry: Record<string, ComponentType> = {
   "lm-puzzle": LmPuzzle,
   "ge-sandbox": GeSandbox,
   "oil-lab": OilLab,
+  "recession-lab": RecessionLab,
+  "recession-types": RecessionTypes,
+  classifier: Classifier,
+  "gdp-2008": Contributions2008,
+  taylor: TaylorRule,
+  "ngdp-target": NgdpTarget,
   "demand-lab": DemandLab,
   "is-speed": IsDemandSpeed,
   "lm-speed": LmDemandSpeed,

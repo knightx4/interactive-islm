@@ -824,10 +824,99 @@ export const lessons: Lesson[] = [
     ],
   },
   {
-    n: 9, slug: "recessions", part: 2, title: "Recessions",
-    summary: "What puts output below capacity, how long it lasts, and what policy can do.",
-    covers: ["Slumps from falling demand", "Slumps from falling capacity", "Policy responses and their limits"],
-    lab: { regime: "closed", shocks: ["taxes-up", "wealth-up", "money-supply-up", "gov-spending-up"], defaultShock: "taxes-up" },
+    n: 9, slug: "recessions", part: 2, title: "Recessions and policy rules",
+    summary: "Classify a recession by which curve moved, and judge what the central bank and the government should do about it.",
+    covers: ["Three ways for output to fall", "Supply against demand and real against nominal recessions", "Rules against discretion, and the Taylor rule", "COVID, the 2022 tightening and Turkey's rate cuts"],
+    body: [
+      "A recession is a fall in output. The model says there are exactly three ways it can happen, one for each curve: IS can move left, LM can move left, or FE can move left. Which one it was decides whether prices rise or fall, whether it is likely to be short or long, and what policy can do. Knowing that is the skill of this lesson.",
+      "After sorting recessions, the lesson turns to the central bank. Should it follow a rule or use its judgment? A Taylor rule is the best-known rule and you can play with one below. Model numbers are index units from a toy economy; the real-world data are from memory and approximate, and are marked as such.",
+    ],
+    takeaways: [
+      "Output falls when IS, LM or FE moves left. An IS or LM move is a demand recession, with falling prices on the way back. An FE move is a supply recession, with rising prices.",
+      "A recession that starts with money, an LM shift, is nominal: once prices have adjusted, nothing real is different. One that starts with spending or capacity is real.",
+      "Inflation rising during a downturn points to supply. Inflation falling points to demand. Reading the labour market and the price direction tells you which curve moved.",
+      "A rule such as the Taylor rule raises the nominal rate by more than one for one with inflation and lowers it when output is below potential. Rules are predictable but cannot respond to the unexpected; discretion is flexible but can be inconsistent.",
+      "Nominal GDP targeting and the gold standard are alternatives. The first lets prices absorb a supply shock; the second ties the money supply to gold and can force deflation.",
+    ],
+    sections: [
+      {
+        heading: "Three ways for output to fall",
+        paras: [
+          "Run the recipe on a drop in spending, a cut in the money supply and an oil shock. Each starts from the same point and ends with lower output at some stage, but the paths differ. In the first two, output falls on impact and prices fall during the recovery. In the third output is unchanged at first, then falls as prices rise.",
+          "That difference shows up in real data. In a demand recession, the labour market is slack, inflation is falling and so is output. In a supply recession, inflation is rising. The table below runs all three through the model.",
+        ],
+        widget: "recession-types",
+      },
+      {
+        heading: "Try each one in the lab",
+        paras: [
+          "Pick any of the five shocks and predict both short-run and long-run effects before you reveal the answer. Then compare what happened to prices in each case.",
+        ],
+        widget: "recession-lab",
+      },
+      {
+        heading: "Classify the recession",
+        paras: [
+          "Below are short, invented briefs. Read each one, decide which curve moved left, and check. Ask first whether prices went up or down, then whether the cause was spending, money or capacity.",
+        ],
+        widget: "classifier",
+      },
+      {
+        heading: "What fell in 2008 and 2009",
+        paras: [
+          "Real GDP fell about 4 percent from the end of 2007 to the middle of 2009. Because Y = C + I + G + NX, the fall can be split by who stopped spending. Business and housing investment and consumption carried most of the fall, with government and net exports pulling the other way. That pattern fits a fall in wealth and in expected returns on capital. Both are IS shifts.",
+        ],
+        widget: "gdp-2008",
+      },
+      {
+        heading: "Rules and discretion",
+        paras: [
+          "A central bank can follow a rule, a formula that sets its policy rate from the data, or it can use judgment. A rule makes policy predictable, which helps people plan, and it ties the bank's hands against the temptation to inflate for short-term gain. Judgment can respond to events no rule foresaw, such as a financial crisis or a pandemic.",
+          "The Taylor rule sets the nominal rate equal to inflation plus a neutral real rate r*, plus half the gap between inflation and its target, plus half the output gap. With r* of 2 and a target of 2, inflation of 2 percent and a closed gap give a rate of 4 percent. Because inflation appears with a total weight of 1.5, the real rate rises when inflation does, which is the property that keeps inflation from spiralling. Use the calculator, then compare the rule with the actual policy rate.",
+        ],
+        widget: "taylor",
+      },
+      {
+        heading: "Other regimes",
+        paras: [
+          "Nominal GDP targeting has the central bank aim at a growth path for total spending in money terms. Real growth and inflation then trade off one for one, so a supply shock that lowers real growth is allowed to raise prices instead of forcing a deeper slump.",
+          "The gold standard ties the money supply to a stock of gold at a fixed price. It gives a firm anchor for the price level, but it takes monetary policy out of the central bank's hands. When demand for money rises or gold becomes scarce, the money supply cannot expand and prices have to fall. Countries that left the gold standard earlier in the 1930s generally recovered earlier, which is a commonly cited argument against it.",
+        ],
+        widget: "ngdp-target",
+      },
+    ],
+    predictions: [
+      { q: "Output is falling and inflation is rising. Which curve most likely moved?", options: ["IS to the left", "LM to the left", "FE to the left"], answer: 2, why: "Demand recessions lower prices on the way back. Only a fall in FE gives falling output together with rising prices." },
+      { q: "The central bank cuts the money supply, and prices adjust fully. In the long run what is different?", options: ["Output and the price level", "Only the price level", "Only the interest rate"], answer: 1, why: "A money shock is nominal. Once prices have adjusted, only the price level differs." },
+      { q: "A recession starts when households lose wealth. Which of these follows during the recovery?", options: ["Falling prices", "Rising prices", "Prices unchanged"], answer: 0, why: "Output is left of FE, so there is slack and prices fall, which brings LM to the right." },
+      { q: "Using i = inflation + 2 + 0.5 × (inflation − 2) + 0.5 × (output gap), what rate does the rule give for inflation of 4 percent and an output gap of 0?", options: ["4 percent", "7 percent", "6 percent"], answer: 1, why: "4 + 2 + 0.5 × 2 + 0 = 7. The extra point of inflation above the target adds 1 to the rate on top of the 4, so the real rate is above its neutral level." },
+      { q: "Inflation is 0 percent and the output gap is −6 percent. What does the Taylor rule ask for, with a target of 2?", options: ["A negative rate, which cannot be set", "About 2 percent", "About 5 percent"], answer: 0, why: "0 + 2 + 0.5 × (−2) + 0.5 × (−6) = −2. The nominal rate has a floor of zero, so the bank is left at the floor and cannot follow the rule." },
+      { q: "Under a nominal GDP target, real growth falls because of a supply shock. What happens to the inflation the target allows?", options: ["It rises", "It falls", "It stays the same"], answer: 0, why: "Nominal growth is real growth plus inflation. If the nominal target is unchanged and real growth falls, the inflation that fits the target rises." },
+    ],
+    newsColumns: ["In the news", "Driver", "Curve moved", "Effect"],
+    news: [
+      { headline: "Factory orders slump after a bank run alarms depositors; prices are drifting down.", driver: "Demand falls", curve: "IS left", effect: "Output falls, prices fall; a demand recession." },
+      { headline: "Fuel shortage idles delivery fleets; shop prices and unemployment both rise.", driver: "Supply falls", curve: "FE left", effect: "Output falls, prices rise; a supply recession." },
+      { headline: "Central bank says it will hold its rate above neutral until inflation is back at target.", driver: "Tightening", curve: "LM left", effect: "Output falls, rate rises; prices fall later." },
+      { headline: "The rate-setting committee says it is guided by a formula but may depart from it.", driver: "Rules against discretion", curve: "None", effect: "A statement about how policy is set, not a shock." },
+    ],
+    cases: [
+      {
+        heading: "COVID as a supply and a demand shock",
+        text: "In the spring of 2020 lockdowns shut firms and kept workers home, which cut capacity (a supply shock), while people also cut spending out of fear and lost income (a demand shock). US real GDP fell about 10 percent from the end of 2019 to the second quarter of 2020, and unemployment reached nearly 15 percent in April. Inflation first slowed, which points to the demand side. In 2021 it rose sharply as demand recovered faster than supply, which is the supply side. The Federal Reserve cut its rate to near zero in March 2020.",
+        approx: "From memory and approximate: the GDP fall, the unemployment peak, the dates and the rate cut. Check against BEA, BLS and the Federal Reserve.",
+      },
+      {
+        heading: "The 2022 tightening",
+        text: "With US inflation near 9 percent in the middle of 2022 and the labour market tight, the Federal Reserve raised its policy rate from near zero in early 2022 to about 4.5 percent by the end of that year and above 5 percent in 2023. A Taylor rule built on the data of the time would have called for a much higher rate than the Fed had in early 2022, which is one way to see that policy began late. Moving LM left was meant to lower inflation at a cost in output.",
+        approx: "From memory and approximate: the inflation peak, the rate path and dates. The rule comparison depends on the inputs chosen.",
+      },
+      {
+        heading: "Turkey's 2021 rate cuts",
+        text: "In late 2021 the Turkish central bank cut its policy rate from about 19 percent to about 14 percent while inflation was already rising above 20 percent. The Turkish lira lost a large share of its value against the dollar that year, and officially reported inflation went on to exceed 80 percent in 2022. In the model, a cut that is not backed by lower expected inflation lowers the real rate, and a currency that falls adds to prices. It is the opposite of what the Taylor principle prescribes.",
+        approx: "From memory and approximate: the rate levels, the lira's fall and the inflation peak. Check against the Turkish central bank and statistics office.",
+      },
+    ],
   },
   {
     n: 10, slug: "exchange-rates", part: 3, title: "Exchange rates",
