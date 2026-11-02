@@ -146,7 +146,7 @@ export const lessons: Lesson[] = [
   {
     n: 12, slug: "open-economy", part: 4, title: "Exchange rates and net exports",
     summary: "Real exchange rate, trade balance and the world interest rate.",
-    regime: "floating", defaultShock: "foreign-demand",
+    regime: "floating", defaultShock: "foreign-demand-up",
     body: [
       "A small open economy cannot sustain an interest rate different from the world's: capital would flow in or out until they match. The real exchange rate then does the balancing for the goods market.",
       "A stronger currency makes exports dearer and imports cheaper, lowering net exports. That is the extra channel the open-economy model adds to IS.",

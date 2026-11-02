@@ -64,7 +64,7 @@ export const drivers: Driver[] = [
   // ---- LM: money supply or money demand changes at every output and rate
   { id: "money-supply", curve: "LM", upDir: "right", up: "Central bank expands the money supply", down: "Central bank tightens the money supply",
     why: "More (less) money chasing the same demand pushes the rate down (up) at every output.",
-    step: (p, s) => ({ ...p, M: p.M * (s > 0 ? 1.1 : 0.9) }) },
+    step: (p, s) => ({ ...p, M: p.M * (s > 0 ? 1.1 : 0.9), D: p.D + 0.1 * p.M * s }) },
   { id: "expected-inflation", curve: "LM", upDir: "right", up: "Expected inflation rises", down: "Expected inflation falls",
     why: "The nominal rate is the real rate plus expected inflation, so at any real rate money costs more to hold and people want less of it.",
     step: (p, s) => ({ ...p, piE: p.piE + 2 * s }) },
@@ -127,12 +127,28 @@ export const shiftTable: Shock[] = drivers.flatMap((d) =>
   }),
 );
 
-/** Extras for the small-country open economy (replaced when the open economy is rebuilt). */
+/** Shocks that need an open economy. Each moves IS (through NX or capital flows) unless noted. */
+const openRegimes: Regime[] = ["floating", "fixed"];
 const foreign: Shock[] = [
-  { id: "world-rate-up", label: "World interest rate rises", group: "foreign", curve: "IS", dir: "left", driver: "world-rate",
-    regimes: ["floating", "fixed"], blurb: "r* up by 1 point; capital is pulled abroad.", apply: (p) => ({ ...p, rw: p.rw + 1 }) },
-  { id: "foreign-demand", label: "Foreign demand for our goods rises", group: "foreign", curve: "IS", dir: "right", driver: "foreign-demand",
-    regimes: ["floating", "fixed"], blurb: "Autonomous net exports up 6; IS shifts right.", apply: (p) => ({ ...p, x0: p.x0 + 6 }) },
+  { id: "foreign-rate-up", label: "Foreign interest rate rises (a rate hike abroad)", group: "foreign", curve: "IS", dir: "left", driver: "foreign-rate",
+    regimes: openRegimes, blurb: "Capital is pulled abroad: home assets must pay more, or the currency falls, or reserves drain.",
+    apply: (p) => ({ ...p, rw: p.rw + 1 }) },
+  { id: "foreign-demand-up", label: "Foreign demand for our goods rises", group: "foreign", curve: "IS", dir: "right", driver: "foreign-demand",
+    regimes: openRegimes, blurb: "Net exports rise at every exchange rate: IS shifts right.", apply: (p) => ({ ...p, x0: p.x0 + 6 }) },
+  { id: "tariff-up", label: "Home imposes a tariff", group: "foreign", curve: "IS", dir: "right", driver: "tariff",
+    regimes: openRegimes, blurb: "Imports fall at every exchange rate, so net exports rise: IS shifts right (and a float appreciates).",
+    apply: (p) => ({ ...p, tariff: p.tariff + 10 }) },
+  { id: "partner-tariff-up", label: "Trading partner imposes a tariff", group: "foreign", curve: "IS", dir: "left", driver: "partner-tariff",
+    regimes: openRegimes, blurb: "Our exports fall at every exchange rate: IS shifts left.", apply: (p) => ({ ...p, tariffP: p.tariffP + 10 }) },
+  { id: "devaluation-fear", label: "Investors expect a devaluation", group: "foreign", curve: "IS", dir: "left", driver: "premium",
+    regimes: openRegimes, blurb: "Holding home assets now needs a premium: a float depreciates, a peg loses reserves, and may break.",
+    apply: (p) => ({ ...p, prem: p.prem + 2 }) },
+  { id: "peg-undervalued", label: "The peg is reset at a cheaper rate", group: "foreign", curve: "IS", dir: "right", driver: "peg",
+    regimes: ["fixed"], blurb: "The currency is held weak: exports rise, reserves pile up, money and prices follow.",
+    apply: (p) => ({ ...p, E0: p.E0 * 0.9 }) },
+  { id: "peg-overvalued", label: "The peg is held above the market rate", group: "foreign", curve: "IS", dir: "left", driver: "peg",
+    regimes: ["fixed"], blurb: "Exports are priced out: the central bank sells reserves until it runs out.",
+    apply: (p) => ({ ...p, E0: p.E0 * 1.1 }) },
 ];
 
 export const shocks: Shock[] = [...shiftTable, ...foreign];

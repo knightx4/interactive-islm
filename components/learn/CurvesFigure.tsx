@@ -34,7 +34,7 @@ export default function CurvesFigure({ sim, index }: { sim: Simulation; index: n
       refLines={[
         { orientation: "v", value: sim.baseline.Ystar, curve: "fe", ghost: true },
         { orientation: "v", value: fr.Ystar, curve: "fe", label: "FE" },
-        ...(open ? [{ orientation: "h" as const, value: params.rw, curve: "ink" as const, label: "r*", ghost: true }] : []),
+        ...(open && params.mobility >= 1 ? [{ orientation: "h" as const, value: fr.rp, curve: "ink" as const, label: "r*", ghost: true }] : []),
       ]}
       marks={[{ x: fr.Y, y: fr.r, label: "E" }]}
     />
