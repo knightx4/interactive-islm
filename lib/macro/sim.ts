@@ -103,11 +103,11 @@ export const causes: Cause[] = [
   { id: "govSpending", parent: "saving", label: "Government spending", detail: "Government purchases (G)", ...R,
     driver: "gov-spending", sign: 1,
     chain: { up: "government spending rises -> government saving falls -> total saving falls -> IS right", down: "government spending falls -> government saving rises -> IS left" },
-    apply: (p, x) => ({ ...p, G: p.G + 0.1 * x }) },
+    apply: (p, x) => ({ ...p, G: p.G + 0.2 * x }) },
   { id: "taxes", parent: "saving", label: "Taxes", detail: "Taxes (T)", ...R,
     driver: "taxes", sign: 1,
     chain: { up: "taxes rise -> government saving rises by more than households cut theirs -> saving rises -> IS left", down: "taxes fall -> government saving falls -> saving falls -> IS right" },
-    apply: (p, x) => ({ ...p, T: p.T + 0.15 * x }) },
+    apply: (p, x) => ({ ...p, T: p.T + 0.2 * x }) },
   // ---- LM
   { id: "centralBank", parent: "moneySupply", label: "Central bank policy", detail: "Money stock M", ...R,
     driver: "money-supply", sign: 1,
@@ -145,11 +145,11 @@ export const causes: Cause[] = [
   { id: "participation", parent: "fullEmployment", label: "Labour-force participation", detail: "Labour supply", ...R,
     driver: "labour-supply", sign: 1,
     chain: { up: "more people seek work -> labour supply rises -> employment rises -> FE right", down: "fewer people seek work -> labour supply falls -> FE left" },
-    apply: (p, x) => ({ ...p, Ns0: p.Ns0 * (1 + 0.003 * x) }) },
+    apply: (p, x) => ({ ...p, Ns0: p.Ns0 * (1 + 0.0025 * x) }) },
   { id: "immigration", parent: "fullEmployment", label: "Immigration", detail: "Labour supply", ...R,
     driver: "labour-supply", sign: 1,
     chain: { up: "immigration rises -> labour supply rises -> employment rises -> FE right", down: "immigration falls -> labour supply falls -> FE left" },
-    apply: (p, x) => ({ ...p, Ns0: p.Ns0 * (1 + 0.004 * x) }) },
+    apply: (p, x) => ({ ...p, Ns0: p.Ns0 * (1 + 0.005 * x) }) },
   { id: "labourTax", parent: "fullEmployment", label: "Labour taxes", detail: "Labour tax rate", ...R,
     driver: "labour-tax", sign: 1,
     chain: { up: "labour taxes rise -> after-tax wage falls -> labour supply falls -> FE left", down: "labour taxes fall -> after-tax wage rises -> labour supply rises -> FE right" },
@@ -204,8 +204,8 @@ export const baselineState = (): SimState => ({
 export const STEPS = 80;
 const OPEN_MOBILITY = 0.5;
 
-/** Price-adjustment speed phi: sticky (slow) to flexible (fast). */
-export const phiFor = (speed: number) => 0.1 + 0.9 * (Math.min(100, Math.max(0, speed)) / 100);
+/** Price-adjustment speed phi: sticky (0.1) to flexible (0.9); the middle, 0.5, is the lessons' speed. */
+export const phiFor = (speed: number) => 0.1 + 0.8 * (Math.min(100, Math.max(0, speed)) / 100);
 
 export function baseFor(s: Pick<SimState, "open" | "speed">): Params {
   const regime: Regime = s.open ? "floating" : "closed";

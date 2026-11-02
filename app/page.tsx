@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
-import { SlidersHorizontal } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { Link2, SlidersHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Sheet, SheetTrigger, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import ModelControls from "@/components/islm/ModelControls";
 import ExpenditureIdentityCard from "@/components/islm/ExpenditureIdentityCard";
@@ -13,6 +14,7 @@ import TimePath from "@/components/learn/TimePath";
 import {
   baselineState, run, setCause, setParent, viewAt, type ParentId, type SimState,
 } from "@/lib/macro/sim";
+import { decodeState, encodeState } from "@/lib/macro/simUrl";
 
 function useIsDesktop() {
   return useSyncExternalStore(
@@ -29,6 +31,30 @@ function useIsDesktop() {
 export default function HomePage() {
   const [state, setState] = useState<SimState>(baselineState);
   const [playing, setPlaying] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [copied, setCopied] = useState<"" | "copied" | "failed">("");
+
+  // read the scenario from the link once, then keep the address in step without adding history entries
+  useEffect(() => {
+    setState(decodeState(window.location.search));
+    setReady(true);
+  }, []);
+  useEffect(() => {
+    if (!ready) return;
+    const q = encodeState(state);
+    const url = window.location.pathname + (q ? `?${q}` : "") + window.location.hash;
+    if (url !== window.location.pathname + window.location.search + window.location.hash) window.history.replaceState(window.history.state, "", url);
+  }, [state, ready]);
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied("copied");
+    } catch {
+      setCopied("failed");
+    }
+    setTimeout(() => setCopied(""), 2500);
+  };
 
   // the solution depends on everything except the playback position
   const key = JSON.stringify([state.offsets, state.causes, state.speed, state.open]);
@@ -81,6 +107,14 @@ export default function HomePage() {
             <MacroFeedbackBar frame={view.frame} />
             <CurvesFigure sim={rn.sim} view={view} />
             {playback}
+            <div className="mt-2 flex items-center gap-3">
+              <Button type="button" size="sm" variant="outline" onClick={copyLink}>
+                <Link2 className="mr-1 h-4 w-4" aria-hidden />Copy link
+              </Button>
+              <span className="text-sm text-muted-foreground" aria-live="polite">
+                {copied === "copied" ? "Link copied: it reopens these settings." : copied === "failed" ? "Copy failed: copy the address from the address bar." : "Copies a link that reopens exactly these settings."}
+              </span>
+            </div>
             <figcaption className="mt-2 text-sm text-muted-foreground">
               <b className="font-semibold text-foreground">Figure 1.</b> <span className="font-semibold text-is">IS</span>,{" "}
               <span className="font-semibold text-lm">LM</span> and <span className="font-semibold text-fe">FE</span>.{" "}

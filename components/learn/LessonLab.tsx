@@ -11,6 +11,7 @@ import { STEPS, viewFor } from "@/lib/macro/view";
 import CauseChain from "./CauseChain";
 import CurvesFigure from "./CurvesFigure";
 import NewsToModel from "./NewsToModel";
+import OpenInSimulator from "./OpenInSimulator";
 import PredictCheck from "./PredictCheck";
 import RealWorldCard from "./RealWorldCard";
 import RecipeStepper from "./RecipeStepper";
@@ -133,6 +134,7 @@ export default function LessonLab({ lab }: { lab: LabSpec }) {
             </div>
             <div>
               <CurvesFigure sim={sim} view={view} />
+              <div className="mt-2"><OpenInSimulator shockId={shock.id} open={regime !== "closed"} /></div>
               <p className="num mt-1 text-sm font-semibold" aria-live="polite">{label}</p>
               <p className="mt-0.5 text-sm text-muted-foreground">
                 <span className="font-semibold" style={{ color: "var(--pt-a)" }}>A</span> black: start.{" "}
