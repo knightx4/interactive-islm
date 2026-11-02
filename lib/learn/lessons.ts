@@ -705,7 +705,123 @@ export const lessons: Lesson[] = [
     n: 8, slug: "demand-shocks", part: 2, title: "Demand shocks and sticky prices",
     summary: "How a fall in confidence or wealth causes a recession, why it can last, and when stimulus helps.",
     covers: ["Demand shocks through IS and through LM", "Why prices and wages stick", "Fiscal stimulus and the multiplier", "The liquidity trap"],
-    lab: { regime: "closed", shocks: ["wealth-down", "future-income-down", "taxes-up", "expected-inflation-down", "money-supply-down"], defaultShock: "wealth-down" },
+    body: [
+      "A demand shock moves IS or LM. Output falls below FE, and the economy is then in slack. Falling prices are the economy's own cure, because they raise real money and shift LM right. But prices fall slowly, so the slump can last. This lesson follows that story, then asks when the government or the central bank should not wait.",
+      "All model numbers are index units from a toy economy. The real-world cases are from memory and approximate, and are marked as such where they appear.",
+    ],
+    takeaways: [
+      "Anything that raises desired saving or lowers desired investment at each interest rate moves IS left: lower expected productivity of capital, lower expected future income, lower wealth, tighter budgets. A fall in expected inflation or in the money supply moves LM left.",
+      "Each of these lowers output below FE. Prices then fall, real money rises and LM drifts right, which restores full employment. In the long run only the price level has changed.",
+      "The speed of that recovery depends on how quickly prices and wages fall. They are sticky for reasons of cost, contracts, incentives and fairness, so the slump can be long.",
+      "Stimulus is a quicker route back: it fills the gap that falling prices would fill slowly. The same stimulus at full employment fills no gap, so it only raises prices.",
+      "When the interest rate is stuck at its floor, more money does nothing and only fiscal action works.",
+    ],
+    sections: [
+      {
+        heading: "Shocks that move IS and shocks that move LM",
+        paras: [
+          "On the IS side, four ideas cover most of what the course calls a change in confidence or wealth. If firms expect capital to be less productive, desired investment falls at each rate. If households expect lower income in future, they save more now. If wealth falls, they save more out of income, and they also want to hold less money, which moves LM right as well. If the government or households face tighter budgets, such as higher taxes, total saving rises. In every case IS shifts left.",
+          "On the LM side, lower expected inflation makes money cheaper to hold at any given real interest rate, so people want more of it and LM shifts left. A cut in the money supply by the central bank does the same. Pick any of them below and run the recipe. Notice that an IS shock lowers both output and the interest rate at B, while an LM shock lowers output but raises the interest rate.",
+        ],
+        widget: "demand-lab",
+      },
+      {
+        heading: "The slow way back",
+        paras: [
+          "After a demand shock, B lies left of FE. There is slack, so prices are expected to fall. Falling prices raise real money, push the interest rate down and shift LM right until the point is back on FE. Output returns to its old level, the interest rate settles where the goods market dictates, and the price level is lower than before.",
+          "Everything depends on the speed. Use the slider on the two figures below. With instant prices the slump never happens: the price level falls at once and output stays on FE. With slow prices output stays below FE for a long time. The same shock can be a blip or a lasting recession, depending on how fast prices give way.",
+        ],
+        widget: "is-speed",
+      },
+      {
+        heading: "A shock on the money side",
+        paras: [
+          "The same logic holds for LM shocks. A fall in expected inflation shifts LM left, which raises the interest rate while lowering output, and prices then have to fall to bring LM back. A cut in the money supply is the same shape, and only the price level is lower in the long run, which is money neutrality again.",
+        ],
+        widget: "lm-speed",
+      },
+      {
+        heading: "Why prices and wages stick",
+        paras: [
+          "Four reasons are commonly given. Menu costs: changing a price costs something, if only the effort of reprinting, re-listing and renegotiating, so small changes are put off. Contracts: wages and many prices are fixed for months or years, so they cannot move when conditions change. Efficiency wages: a firm may pay above the market-clearing wage to keep good workers and keep them working hard, so it will not cut wages even when unemployment is high. Fairness: workers and customers resent cuts, and a firm that cuts wages may lose morale and staff.",
+          "None of the four makes prices rigid for ever. Together they make them slow, and slow is enough to turn a demand shock into a slump that lasts quarters or years, not days.",
+        ],
+      },
+      {
+        heading: "Keynes's question",
+        paras: [
+          "In the early 1930s output in the United States fell by about a quarter and unemployment reached about a quarter of the labour force (both rough figures from memory). A model with perfectly flexible prices says this cannot happen for long: slack lowers prices, LM shifts right, and output recovers. Yet it took most of the decade. The question John Maynard Keynes asked was why the economy did not cure itself faster, and his answer was that prices and wages do not fall fast enough, and that waiting is costly.",
+          "That is the case for acting. If prices fall slowly, policy can fill the gap sooner than they would.",
+        ],
+      },
+      {
+        heading: "Stimulus, and when it helps",
+        paras: [
+          "Fiscal stimulus raises government purchases or lowers taxes, which shifts IS right. Monetary stimulus raises the money supply, which shifts LM right. In a slump, either moves output toward FE sooner than falling prices would. The figure below plays a wealth shock three ways: left alone, with a stimulus, and with the same stimulus applied to an economy that was already at full employment. In the first case prices fall and recovery is slow. In the second the gap closes sooner. In the third there is no gap to fill, so output overshoots FE and prices rise.",
+          "How large is the effect? A one-dollar rise in spending is received as income, part is spent, and that spending is received as income by someone else, and so on. If a share c is spent each round, the total is 1 divided by (1 minus c) times the original dollar. That is the multiplier. A larger c means a larger multiplier, and a rise in the interest rate that crowds out investment makes it smaller. In 1936 the United States paid a bonus to First World War veterans that was worth roughly 2 percent of national income at the time (an approximate figure from memory), much of it cashed and spent within months. It is often cited as a rare example of a large cash transfer that was largely spent, though the recovery of those years had many other causes.",
+        ],
+        widget: "stimulus-timing",
+      },
+      {
+        heading: "The multiplier, round by round",
+        paras: [
+          "Change c and the number of rounds to see how the series adds up. The last paragraph compares the textbook value with the toy economy, where the interest rate is free to respond.",
+        ],
+        widget: "multiplier-demo",
+      },
+      {
+        heading: "When the interest rate cannot fall",
+        paras: [
+          "Monetary policy works through the interest rate. But a nominal interest rate cannot go below zero, since people could hold cash instead. If the interest rate needed to clear the goods market is far below zero, the central bank can push the rate down to zero and no further. More money simply sits as idle balances. This is called a liquidity trap. In the sketch below the central bank's tool stops working at the floor, and only a rightward shift of IS, which means fiscal policy, lifts output.",
+          "Japan after its asset price collapse around 1990 is the standard case. The central bank cut its policy rate from about 6 percent to near zero by the late 1990s, prices were roughly flat or falling, and growth was weak for years. These figures are approximate and from memory.",
+        ],
+        widget: "liquidity-trap",
+      },
+      {
+        heading: "The 2008 wealth shock",
+        paras: [
+          "Between 2006 and 2009 US house prices fell by roughly a quarter and household wealth by about a fifth (approximate, from memory). Households that expect to be poorer save more and spend less, and that is the IS shift this lesson describes. The table gives the rough magnitudes. Compare them with the wealth shock in the lab above.",
+        ],
+        widget: "wealth-2008",
+      },
+    ],
+    predictions: [
+      { q: "Households fear a long period of lower income. Which curve moves, and which way?", options: ["IS shifts left", "IS shifts right", "LM shifts left"], answer: 0, why: "Households that expect lower future income save more today, so desired saving is higher at each rate and IS shifts left." },
+      { q: "Expected inflation falls. What happens at B?", options: ["Output and the interest rate both fall", "Output falls and the interest rate rises", "Nothing, because it is a nominal change"], answer: 1, why: "Money is cheaper to hold, so demand for it rises, LM shifts left, output falls and the interest rate rises." },
+      { q: "After a demand shock, prices adjust instantly. What happens to output?", options: ["It falls and recovers slowly", "It never leaves FE", "It rises above FE"], answer: 1, why: "If prices jump at once to their new long-run level, real money rises at once and LM moves straight to FE. There is no slump." },
+      { q: "Which of these is a reason prices and wages may be slow to fall?", options: ["Contracts fix them for a period", "Workers always prefer lower pay", "Falling prices raise real money"], answer: 0, why: "Contracts are one of four reasons given, with menu costs, efficiency wages and fairness." },
+      { q: "A stimulus is applied to an economy that is already at full employment. Compared with the same stimulus in a slump, the effect is…", options: ["Larger on output", "Mostly a higher price level", "The same"], answer: 1, why: "With no gap to fill, extra spending pushes output above FE and prices rise, which crowds the extra output out again." },
+      { q: "The interest rate is at its floor. What raises output?", options: ["A rise in the money supply", "A rise in government spending", "Neither"], answer: 1, why: "More money no longer lowers the rate, but more spending shifts IS right." },
+    ],
+    newsColumns: ["In the news", "Driver", "Curve moved", "Effect before prices adjust"],
+    news: [
+      { headline: "Families cut spending as home values slide for a third year.", driver: "Wealth falls", curve: "IS left, LM right", effect: "Output falls; prices fall later." },
+      { headline: "Surveys show firms expect weak sales next year and delay new plant.", driver: "Expected return on capital falls", curve: "IS left", effect: "Output and the interest rate fall." },
+      { headline: "Inflation expectations drift down and the central bank holds the money supply steady.", driver: "Expected inflation falls", curve: "LM left", effect: "Output falls and the interest rate rises." },
+      { headline: "The central bank's rate is zero and officials say more bond buying has had little effect.", driver: "Liquidity trap", curve: "LM flat at the floor", effect: "More money does not help; spending would." },
+    ],
+    cases: [
+      {
+        heading: "2008 house prices and household wealth",
+        text: "US house prices peaked around the middle of 2006 and by early 2012 had fallen by roughly a quarter. Household net worth fell from about 69 trillion dollars in 2007 to about 55 trillion in early 2009, roughly 20 percent. Households saved more and spent less, and real GDP fell about 4 percent from the end of 2007 to the middle of 2009.",
+        approx: "From memory and approximate: house price fall, net worth levels and fall, and the GDP fall. Check against the Case-Shiller index, the Federal Reserve's Z.1 release and BEA.",
+      },
+      {
+        heading: "The 2018 tax cut against the 2009 stimulus",
+        text: "The American Recovery and Reinvestment Act of early 2009 was a package of about 800 billion dollars, spread over several years, enacted when unemployment was heading toward 10 percent. The tax cuts enacted at the end of 2017 and effective in 2018 were scored at about 1.5 trillion dollars over ten years, and came when unemployment was near 4 percent. The model's prediction is that the same push helps more in the first case, where there is slack, than in the second, where it risks overshooting FE and raising prices. The evidence is disputed, and other things were going on in both periods.",
+        approx: "From memory and approximate: package sizes, timing and unemployment rates. Estimates of the effects vary widely.",
+      },
+      {
+        heading: "The 2021 relief package",
+        text: "The American Rescue Plan of March 2021 was a package of about 1.9 trillion dollars, including direct payments to households. It came when unemployment was about 6 percent but the economy was reopening fast, and US inflation rose through 2021 and 2022. How much of that rise came from the stimulus, and how much from supply problems, is still argued over.",
+        approx: "From memory and approximate: the size, timing and unemployment rate. The split of causes is contested.",
+      },
+      {
+        heading: "Japan in the 1990s",
+        text: "After property and share prices collapsed in 1990 and 1991, the Bank of Japan cut its policy rate from about 6 percent to near zero by the late 1990s. Prices were roughly flat or slightly falling, and growth averaged about 1 percent a year through the decade, with repeated fiscal packages. It is the usual example of a liquidity trap.",
+        approx: "From memory and approximate: the rate path and growth rate. Check against the Bank of Japan and Cabinet Office data.",
+      },
+    ],
   },
   {
     n: 9, slug: "recessions", part: 2, title: "Recessions",

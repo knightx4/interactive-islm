@@ -8,6 +8,7 @@ import { FEHandoff, GrowthCalculator, HiringWidget, ProductionFunctionWidget } f
 import { BigMacWidget, CarryWidget, RegimeSpectrum, StrongCurrencyWidget, UipWidget } from "./fx";
 import { GeSandbox, LmPuzzle, MoneyNeutrality, PriceLM, RecipeTwoShocks } from "./fullmodel";
 import { IdentityWidget, LedgerWidget, NxShiftersWidget } from "./open";
+import { DemandLab, IsDemandSpeed, LiquidityTrap, LmDemandSpeed, MultiplierDemo, StimulusTiming, Wealth2008 } from "./demand";
 import { HurricaneWidget, OilLab, PolicyDilemma, Us1970s } from "./supply";
 import { TariffPredict, TariffRecord, TariffShocks } from "./tariffs";
 import { CpiBasketWidget, ExpenditureSorter, ImportsDemo, RealNominalWidget, ThreeWaysWidget } from "./measuring";
@@ -53,6 +54,13 @@ const registry: Record<string, ComponentType> = {
   "lm-puzzle": LmPuzzle,
   "ge-sandbox": GeSandbox,
   "oil-lab": OilLab,
+  "demand-lab": DemandLab,
+  "is-speed": IsDemandSpeed,
+  "lm-speed": LmDemandSpeed,
+  "stimulus-timing": StimulusTiming,
+  "multiplier-demo": MultiplierDemo,
+  "liquidity-trap": LiquidityTrap,
+  "wealth-2008": Wealth2008,
   "policy-dilemma": PolicyDilemma,
   hurricane: HurricaneWidget,
   "us-1970s": Us1970s,

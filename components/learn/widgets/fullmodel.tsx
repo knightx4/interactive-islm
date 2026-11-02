@@ -68,7 +68,7 @@ export function PriceLM() {
 }
 
 /* ---------- Money neutrality and the speed of price adjustment ---------- */
-export function priceSpeedWidget(shockId: string, title: string, note: string) {
+export function priceSpeedWidget(shockId: string, title: string, note: string, range = 8) {
   return function PriceSpeed() {
     const [speed, setSpeed] = useState(0.3);
     const [instant, setInstant] = useState(false);
@@ -91,7 +91,7 @@ export function priceSpeedWidget(shockId: string, title: string, note: string) {
         <div className="mt-3 grid gap-4 md:grid-cols-2">
           <Chart
             title="Output relative to its starting level, by period"
-            xLabel="Periods after the shock" yLabel="Change in Y" xDomain={[0, 40]} yDomain={[-8, 8]} xTicks={4} yTicks={4} aspect={0.8}
+            xLabel="Periods after the shock" yLabel="Change in Y" xDomain={[0, 40]} yDomain={[-range, range]} xTicks={4} yTicks={4} aspect={0.8}
             series={[
               { id: "slow", curve: "ink", ghost: true, points: slowest.map((f, t) => ({ x: t, y: f.Y - slowest[0].Y })) },
               { id: "y", curve: "is", label: "Y", points: Ydev },
