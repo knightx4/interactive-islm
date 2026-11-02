@@ -11,6 +11,7 @@ import {
   baselineEconomy, investmentConst, moneyDemandConst, netExports, savingConst, simulate, Ystar,
   type Frame, type Params, type Regime, type Simulation,
 } from "./model";
+import { drivers, shockById, type Curve, type Dir } from "./shocks";
 import type { View } from "./view";
 
 export type Group = "IS" | "LM" | "FE";
@@ -55,6 +56,8 @@ export type Cause = {
   /** A second market the same cause also moves (wealth moves saving and money demand). */
   also?: ParentId;
   label: string;
+  /** What moves, in a few words (shown under the label). */
+  detail: string;
   /** Range of the slider (0 = no change). */
   min: number;
   max: number;
@@ -63,38 +66,113 @@ export type Cause = {
   /** Shift-table driver this cause is an example of, and whether the cause going up is the driver going up (+1) or down (-1). */
   driver: string;
   sign: 1 | -1;
+  /** The cause-and-effect line when the cause rises, and when it falls. */
+  chain: { up: string; down: string };
   needsOpen?: boolean;
+  /** Acts through the exchange rate itself, so the parent slider (a schedule at the old rate) does not move. */
+  viaRate?: boolean;
   apply: (p: Params, x: number) => Params;
 };
 
+const R = { min: -50, max: 50, step: 1, unit: "index" } as const;
+
+/** Every real-world cause, each acting on one model variable. Positive = the named thing rises. */
 export const causes: Cause[] = [
-  { id: "futureMPK", parent: "investment", label: "Future marginal product of capital", min: -50, max: 50, step: 1, unit: "index", driver: "investment-outlook", sign: 1,
+  // ---- IS: investment side
+  { id: "businessConfidence", parent: "investment", label: "Business confidence and expected profits", detail: "Future marginal product of capital", ...R,
+    driver: "investment-outlook", sign: 1,
+    chain: { up: "business confidence rises -> expected future MPK rises -> desired investment rises -> IS right", down: "business confidence falls -> expected future MPK falls -> desired investment falls -> IS left" },
     apply: (p, x) => ({ ...p, mpkF: p.mpkF + 0.1 * x }) },
-  { id: "netExports", parent: "investment", label: "Net exports (NX)", min: -50, max: 50, step: 1, unit: "index", driver: "foreign-demand", sign: 1, needsOpen: true,
+  { id: "foreignDemand", parent: "investment", label: "Foreign demand for our goods", detail: "Net exports (NX)", ...R, needsOpen: true,
+    driver: "foreign-demand", sign: 1,
+    chain: { up: "foreign demand rises -> NX rises -> S - NX falls, like an investment boom -> IS right (a floating currency then appreciates and pulls it back)", down: "foreign demand falls -> NX falls -> IS left (a floating currency then depreciates and pulls it back)" },
     apply: (p, x) => ({ ...p, x0: p.x0 + 0.2 * x }) },
-  { id: "futureY", parent: "saving", label: "Expected future income", min: -50, max: 50, step: 1, unit: "index", driver: "future-income", sign: 1,
+  { id: "exchangeRate", parent: "investment", label: "Exchange rate: demand for our currency", detail: "Expected-devaluation premium", ...R, needsOpen: true, viaRate: true,
+    driver: "foreign-demand", sign: -1,
+    chain: { up: "currency strengthens -> real exchange rate rises -> NX falls -> IS left", down: "currency weakens -> real exchange rate falls -> NX rises -> IS right" },
+    apply: (p, x) => ({ ...p, prem: p.prem - 0.04 * x }) },
+  // ---- IS: saving side
+  { id: "consumerConfidence", parent: "saving", label: "Consumer confidence and expected income", detail: "Expected future income (Yf)", ...R,
+    driver: "future-income", sign: 1,
+    chain: { up: "consumers expect higher income -> future Y rises -> saving falls -> IS right", down: "consumers expect lower income -> future Y falls -> saving rises -> IS left" },
     apply: (p, x) => ({ ...p, Yf: p.Yf + 0.5 * x }) },
-  { id: "wealth", parent: "saving", also: "moneyDemand", label: "Wealth", min: -50, max: 50, step: 1, unit: "index", driver: "wealth", sign: 1,
+  { id: "assetPrices", parent: "saving", also: "moneyDemand", label: "House and stock prices", detail: "Wealth (W)", ...R,
+    driver: "wealth", sign: 1,
+    chain: { up: "house prices rise -> wealth rises -> saving falls -> IS right (and money demand rises -> LM left)", down: "house prices fall -> wealth falls -> saving rises -> IS left (and money demand falls -> LM right)" },
     apply: (p, x) => ({ ...p, W: p.W + x }) },
-  { id: "govSaving", parent: "saving", label: "Government saving (T - G)", min: -50, max: 50, step: 1, unit: "index", driver: "gov-spending", sign: -1,
-    apply: (p, x) => ({ ...p, G: p.G - 0.1 * x }) },
-  { id: "centralBank", parent: "moneySupply", label: "Central bank money stock", min: -50, max: 50, step: 1, unit: "index", driver: "money-supply", sign: 1,
+  { id: "govSpending", parent: "saving", label: "Government spending", detail: "Government purchases (G)", ...R,
+    driver: "gov-spending", sign: 1,
+    chain: { up: "government spending rises -> government saving falls -> total saving falls -> IS right", down: "government spending falls -> government saving rises -> IS left" },
+    apply: (p, x) => ({ ...p, G: p.G + 0.1 * x }) },
+  { id: "taxes", parent: "saving", label: "Taxes", detail: "Taxes (T)", ...R,
+    driver: "taxes", sign: 1,
+    chain: { up: "taxes rise -> government saving rises by more than households cut theirs -> saving rises -> IS left", down: "taxes fall -> government saving falls -> saving falls -> IS right" },
+    apply: (p, x) => ({ ...p, T: p.T + 0.15 * x }) },
+  // ---- LM
+  { id: "centralBank", parent: "moneySupply", label: "Central bank policy", detail: "Money stock M", ...R,
+    driver: "money-supply", sign: 1,
+    chain: { up: "the central bank eases -> money supply rises -> LM right", down: "the central bank tightens -> money supply falls -> LM left" },
     apply: (p, x) => setM(p, p.M * (1 + IDX_M * x)) },
-  { id: "priceLevel", parent: "moneySupply", label: "Price level", min: -50, max: 50, step: 1, unit: "index", driver: "money-supply", sign: -1,
-    apply: (p, x) => setM(p, p.M / (1 + x / 100)) },
-  { id: "riskiness", parent: "moneyDemand", label: "Riskiness of other assets", min: -50, max: 50, step: 1, unit: "index", driver: "alt-risk", sign: 1,
-    apply: (p, x) => ({ ...p, risk: p.risk + 0.02 * x }) },
-  { id: "liquidity", parent: "moneyDemand", label: "Liquidity of other assets", min: -50, max: 50, step: 1, unit: "index", driver: "alt-liquidity", sign: 1,
-    apply: (p, x) => ({ ...p, liq: p.liq + 0.02 * x }) },
-  { id: "expectedInflation", parent: "moneyDemand", label: "Expected inflation", min: -50, max: 50, step: 1, unit: "index", driver: "expected-inflation", sign: 1,
+  { id: "inflationExpectations", parent: "moneyDemand", label: "Inflation expectations", detail: "Expected inflation", ...R,
+    driver: "expected-inflation", sign: 1,
+    chain: { up: "expected inflation rises -> holding money costs more -> money demand falls -> LM right", down: "expected inflation falls -> money demand rises -> LM left" },
     apply: (p, x) => ({ ...p, piE: p.piE + 0.08 * x }) },
-  { id: "productivity", parent: "fullEmployment", label: "Productivity", min: -50, max: 50, step: 1, unit: "index", driver: "productivity", sign: 1,
+  { id: "financialStress", parent: "moneyDemand", label: "Financial stress", detail: "Riskiness of other assets", ...R,
+    driver: "alt-risk", sign: 1,
+    chain: { up: "financial stress rises -> other assets look riskier -> money demand rises -> LM left", down: "financial stress eases -> other assets look safer -> money demand falls -> LM right" },
+    apply: (p, x) => ({ ...p, risk: p.risk + 0.02 * x }) },
+  { id: "paymentTech", parent: "moneyDemand", label: "New payment technology", detail: "Payment technology", ...R,
+    driver: "payment-tech", sign: 1,
+    chain: { up: "payments get easier -> people need less money -> money demand falls -> LM right", down: "payment technology worsens -> money demand rises -> LM left" },
+    apply: (p, x) => ({ ...p, tech: p.tech + 0.02 * x }) },
+  { id: "liquidity", parent: "moneyDemand", label: "Liquidity of other assets", detail: "Liquidity of alternatives", ...R,
+    driver: "alt-liquidity", sign: 1,
+    chain: { up: "other assets become easier to sell -> money demand falls -> LM right", down: "other assets become harder to sell -> money demand rises -> LM left" },
+    apply: (p, x) => ({ ...p, liq: p.liq + 0.02 * x }) },
+  // ---- FE
+  { id: "technology", parent: "fullEmployment", label: "Productivity and technology", detail: "Productivity (A)", ...R,
+    driver: "productivity", sign: 1,
+    chain: { up: "technology improves -> productivity A rises -> labour demand and output rise -> FE right", down: "productivity falls -> A falls -> labour demand and output fall -> FE left" },
     apply: (p, x) => ({ ...p, A: p.A * (1 + 0.002 * x) }) },
-  { id: "capital", parent: "fullEmployment", label: "Capital stock", min: -50, max: 50, step: 1, unit: "index", driver: "capital", sign: 1,
+  { id: "oilPrice", parent: "fullEmployment", label: "Energy and oil prices", detail: "Productivity (A)", ...R,
+    driver: "productivity", sign: -1,
+    chain: { up: "oil prices rise -> production costs rise, A falls -> labour demand and output fall -> FE left", down: "oil prices fall -> A rises -> FE right" },
+    apply: (p, x) => ({ ...p, A: p.A * (1 - 0.002 * x) }) },
+  { id: "capital", parent: "fullEmployment", label: "Capital stock (growth, war or disaster)", detail: "Capital stock K", ...R,
+    driver: "capital", sign: 1,
+    chain: { up: "capital accumulates -> K rises -> labour's marginal product rises -> FE right", down: "war or disaster destroys capital -> K falls -> labour's marginal product falls -> FE left" },
     apply: (p, x) => ({ ...p, K: p.K * (1 + 0.004 * x) }) },
-  { id: "labour", parent: "fullEmployment", label: "Labour supply", min: -50, max: 50, step: 1, unit: "index", driver: "labour-supply", sign: 1,
+  { id: "participation", parent: "fullEmployment", label: "Labour-force participation", detail: "Labour supply", ...R,
+    driver: "labour-supply", sign: 1,
+    chain: { up: "more people seek work -> labour supply rises -> employment rises -> FE right", down: "fewer people seek work -> labour supply falls -> FE left" },
+    apply: (p, x) => ({ ...p, Ns0: p.Ns0 * (1 + 0.003 * x) }) },
+  { id: "immigration", parent: "fullEmployment", label: "Immigration", detail: "Labour supply", ...R,
+    driver: "labour-supply", sign: 1,
+    chain: { up: "immigration rises -> labour supply rises -> employment rises -> FE right", down: "immigration falls -> labour supply falls -> FE left" },
     apply: (p, x) => ({ ...p, Ns0: p.Ns0 * (1 + 0.004 * x) }) },
+  { id: "labourTax", parent: "fullEmployment", label: "Labour taxes", detail: "Labour tax rate", ...R,
+    driver: "labour-tax", sign: 1,
+    chain: { up: "labour taxes rise -> after-tax wage falls -> labour supply falls -> FE left", down: "labour taxes fall -> after-tax wage rises -> labour supply rises -> FE right" },
+    apply: (p, x) => ({ ...p, tauL: p.tauL + 0.002 * x }) },
 ];
+
+/** The shift-table row a cause belongs to: the curve and which way it moves when the driver rises. */
+export function driverRow(c: Cause): { curve: Curve; upDir: Dir } {
+  const d = drivers.find((q) => q.id === c.driver);
+  if (d) return { curve: d.curve, upDir: d.upDir };
+  const s = shockById(c.driver) ?? shockById(`${c.driver}-up`);
+  if (!s) throw new Error(`no shift-table row for ${c.driver}`);
+  return { curve: s.curve, upDir: s.dir };
+}
+
+/** The curve a cause moves and the way, from the shift table (the driver's up-direction, flipped when the cause lowers it). */
+export function shiftOf(c: Cause, x: number): { curve: Curve; dir: Dir } | null {
+  if (x === 0) return null;
+  const d = driverRow(c);
+  const up = x * c.sign > 0;
+  const flip = (r: Dir): Dir => (r === "right" ? "left" : "right");
+  return { curve: d.curve, dir: up ? d.upDir : flip(d.upDir) };
+}
 
 export const causeById = (id: string) => causes.find((c) => c.id === id);
 export const causesOf = (parent: ParentId) => causes.filter((c) => c.parent === parent);

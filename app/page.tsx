@@ -47,7 +47,7 @@ export default function HomePage() {
 
   const isDesktop = useIsDesktop();
   const [sheetOpen, setSheetOpen] = useState(false);
-  const controls = <ModelControls state={state} onParent={onParent} onCause={onCause} onOpen={onOpen} onReset={onReset} />;
+  const controls = <ModelControls state={state} onParent={onParent} onCause={onCause} onOpen={onOpen} onReset={onReset} price={view.frame.P} />;
 
   const label =
     view.at === "A" ? "Point A: before the change" : view.at === "B" ? "Point B: the first move, prices not yet changed" :

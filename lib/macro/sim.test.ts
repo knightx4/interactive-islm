@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { desiredInvestment, desiredSaving, isR, lmR, moneyDemand, Ystar } from "./model";
 import {
-  baselineState, baseFor, causes, frameAt, parentValue, parents, path, phiFor, run, setCause, setParent, viewAt,
+  baselineState, baseFor, causes, driverRow, frameAt, parentValue, parents, path, phiFor, run, setCause, setParent, shiftOf, viewAt,
   type ParentId, type SimState,
 } from "./sim";
 
@@ -54,7 +54,7 @@ describe("the simulator runs on the Learn model", () => {
   });
 
   it("fiscal expansion raises output less than the simple multiplier (the interest rate crowds out)", () => {
-    const st = setCause(base, "govSaving", -30);
+    const st = setCause(base, "govSpending", 30);
     const f = at(st);
     const rn = run(st);
     const dG = rn.base.G - rn.after.G; // negative: G rose
@@ -105,9 +105,9 @@ describe("the three panels agree on one (Y, r)", () => {
     ["expansionary money", setParent(base, "moneySupply", 60)],
     ["tight money", setParent(base, "moneySupply", 40)],
     ["higher money demand", setParent(base, "moneyDemand", 62)],
-    ["deficit", setCause(base, "govSaving", -30)],
-    ["trade surplus (open)", setCause(base, "netExports", 30)],
-    ["mixed", setCause(setCause(setParent(base, "investment", 60), "wealth", 20), "centralBank", 15)],
+    ["deficit", setCause(base, "govSpending", 30)],
+    ["trade surplus (open)", setCause(base, "foreignDemand", 30)],
+    ["mixed", setCause(setCause(setParent(base, "investment", 60), "assetPrices", 20), "centralBank", 15)],
   ];
   const ts = [0, 1, 3, 20];
   for (const [label, st] of scenarios) {
@@ -126,7 +126,7 @@ describe("the three panels agree on one (Y, r)", () => {
 });
 
 describe("parents and causes stay consistent", () => {
-  for (const c of causes) {
+  for (const c of causes.filter((q) => !q.viaRate)) {
     it(`moving ${c.id} moves its parent ${c.parent}${c.also ? ` and ${c.also}` : ""}`, () => {
       const st = setCause(base, c.id, c.max);
       expect(Math.abs(parentValue(c.parent, st) - 50)).toBeGreaterThan(0.01);
@@ -135,13 +135,13 @@ describe("parents and causes stay consistent", () => {
   }
 
   it("the parent can still be moved directly after a cause has moved it", () => {
-    const st = setParent(setCause(base, "wealth", 30), "saving", 40);
+    const st = setParent(setCause(base, "assetPrices", 30), "saving", 40);
     expect(parentValue("saving", st)).toBeCloseTo(40, 6);
-    expect(st.causes.wealth).toBe(30);
+    expect(st.causes.assetPrices).toBe(30);
   });
 
   it("the money-supply and full-employment parents land exactly where they are put", () => {
-    const st = setParent(setParent(setCause(base, "productivity", 20), "fullEmployment", 63), "moneySupply", 72);
+    const st = setParent(setParent(setCause(base, "technology", 20), "fullEmployment", 63), "moneySupply", 72);
     expect(parentValue("fullEmployment", st)).toBeCloseTo(63, 6);
     expect(parentValue("moneySupply", st)).toBeCloseTo(72, 6);
   });
@@ -156,5 +156,56 @@ describe("playback", () => {
     expect(viewAt(rn.sim, rn.length - 1).at).toBe("C");
     expect(path(rn.sim).length).toBeGreaterThan(10);
     expect(baseFor(rn.state).regime).toBe("closed");
+  });
+});
+
+describe("every real-world cause moves the right curve the right way", () => {
+  /** Signed horizontal-shift measure of the curves as drawn: > 0 means right. */
+  const shifts = (st: SimState, atNewQ = false) => {
+    const rn = run(st);
+    const f = rn.sim.impact, f0 = rn.sim.baseline;
+    return {
+      // the IS schedule at the old exchange rate; the exchange-rate cause moves it only through q itself
+      IS: isR(rn.after, 100, atNewQ ? f.q : f0.q) - isR(rn.base, 100, f0.q),
+      LM: lmR(rn.base, 100, f0.Meff / f0.P) - lmR(rn.after, 100, f.Meff / f.P),
+      FE: Ystar(rn.after) - Ystar(rn.base),
+    };
+  };
+  const rowFor = driverRow;
+
+  for (const c of causes) {
+    for (const x of [c.max, c.min]) {
+      it(`${c.id} ${x > 0 ? "up" : "down"}: ${rowFor(c).curve} ${shiftOf(c, x)!.dir}, with the shift table's sign`, () => {
+        const want = shiftOf(c, x)!;
+        // the shift table's row for this driver gives the direction
+        expect(want.curve).toBe(rowFor(c).curve);
+        const got = shifts(setCause(base, c.id, x), c.id === "exchangeRate")[want.curve];
+        expect(want.dir === "right" ? got : -got).toBeGreaterThan(1e-6);
+        // the line names the curve and the direction
+        expect(x > 0 ? c.chain.up : c.chain.down).toContain(`${want.curve} ${want.dir}`);
+      });
+    }
+    it(`${c.id} leaves the other curves alone (except the one it also names)`, () => {
+      const s = shifts(setCause(base, c.id, c.max), c.id === "exchangeRate");
+      const main = rowFor(c).curve;
+      const alsoCurve = c.also ? "LM" : null;
+      for (const curve of ["IS", "LM", "FE"] as const) {
+        if (curve === main || curve === alsoCurve) continue;
+        // the exchange rate cause moves IS only through q; LM is untouched by the others
+        expect(Math.abs(s[curve])).toBeLessThan(1e-6);
+      }
+    });
+  }
+
+  it("wealth also moves money demand, which moves LM the other way", () => {
+    const s = shifts(setCause(base, "assetPrices", 50));
+    expect(s.IS).toBeGreaterThan(0); // IS right
+    expect(s.LM).toBeLessThan(0); // LM left
+  });
+
+  it("the exchange-rate and foreign-demand causes switch the open economy on", () => {
+    expect(setCause(base, "foreignDemand", 10).open).toBe(true);
+    expect(setCause(base, "exchangeRate", 10).open).toBe(true);
+    expect(setCause(base, "taxes", 10).open).toBe(false);
   });
 });
