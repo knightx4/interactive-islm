@@ -237,9 +237,87 @@ export const lessons: Lesson[] = [
     ],
   },
   {
-    n: 3, slug: "unemployment", part: 1, title: "Unemployment",
-    summary: "The labour market at full employment, and why jobs can still be scarce.",
+    n: 3, slug: "unemployment", part: 1, title: "The labour market and full employment",
+    summary: "How the labour market sets full-employment output, why the FE line is vertical, and what unemployment is.",
     covers: ["Labour demand, labour supply and the real wage", "Taxes on work", "Frictions, and unemployment above its natural level"],
+    body: [
+      "The first two lessons gave you output and the production function. This one finds out how much the economy produces when its labour market works as it should, and why that level does not depend on the interest rate. That level is full-employment output, Y*, drawn as the FE line.",
+      "The labour market has two sides. Firms demand workers up to the point where the marginal product of labour equals the real wage, so the MPL curve is labour demand. Households supply labour by comparing what an hour of work earns with what an hour of leisure is worth, so labour supply responds to the after-tax real wage. The real wage and employment at which the two meet fix employment N*, and the production function then fixes Y* = A × K^a × N*^(1−a). All numbers here are index units.",
+    ],
+    takeaways: [
+      "Labour demand is the MPL curve; labour supply rises with the after-tax real wage. They meet at the full-employment wage and employment N*.",
+      "Full-employment output Y* is the output made with N*. Higher A, higher K or more labour supply move FE right; a higher labour tax moves it left.",
+      "FE is vertical in (Y, r) because today's interest rate does not change today's capital stock, productivity or labour supply. Investment now becomes capital only later.",
+      "Full employment means unemployment at its natural rate, frictional plus structural, not zero. Cyclical unemployment is the part above that, and Okun's law ties it to the output gap.",
+      "The Phillips curve links unemployment and inflation, and it shifts up one for one with expected inflation.",
+    ],
+    sections: [
+      {
+        heading: "Labour demand, labour supply and the FE line",
+        paras: [
+          "Start with the labour market in the first panel below. The demand curve slopes down because of diminishing marginal product. The supply curve slopes up because a higher after-tax wage draws more people into work. Where they cross are the full-employment wage and employment. Read that employment off the production function in the second panel and you have full-employment output. The third panel draws it as a vertical line on the IS-LM chart.",
+          "Use the sliders to move each driver and check where the three panels move. A or K raises the MPL, so labour demand moves right, employment and the wage rise, and Y* rises. More willing workers shifts supply right: employment and Y* rise but the wage falls. A higher tax on labour income shifts supply left, because for any gross wage the after-tax pay is lower: employment and output fall, and the gross wage firms pay rises. IS and LM do not move at all.",
+        ],
+        widget: "linked-panels",
+      },
+      {
+        heading: "Why FE is vertical",
+        paras: [
+          "Every term in Y* = A × K^a × N*^(1−a) is fixed by something other than the real interest rate. Productivity A is technology. The capital stock K is what has been built up so far. Employment N* comes from the labour market. A higher interest rate discourages investment, but investment this year adds to capital only next year, so it does not alter this year's K. That is why the FE line is vertical: at any r, output at full employment is the same. In the longer run, extra investment does build capital and moves FE right, which is why a change in desired investment matters for later periods even though it does not shift FE today.",
+        ],
+      },
+      {
+        heading: "Taxing work and the Laffer curve",
+        paras: [
+          "A tax on wages drives a wedge between what the employer pays and what the worker keeps. Workers respond to what they keep. A higher tax lowers employment and so lowers Y*. Tax revenue is the rate times the wage bill. At a zero rate it is zero; at a very high rate so few people work that it is small again. In between there is a rate that raises most. That hump is the Laffer curve.",
+          "Where the peak lies depends on how strongly labour supply responds. If workers respond a lot, the peak is at a lower rate. The model can tell you the shape but not where a real country sits, which is a matter for evidence.",
+        ],
+        widget: "laffer",
+      },
+      {
+        heading: "Frictional, structural and cyclical unemployment",
+        paras: [
+          "Not everyone without a job is out of work because of a recession. Frictional unemployment is the time it takes workers and firms to find each other, which exists even in a healthy economy as people change jobs and enter the labour force. Structural unemployment is a lasting mismatch between workers' skills or locations and the jobs on offer, or from rules and wages that keep some jobs from being created. Together they make up the natural rate of unemployment. Cyclical unemployment is whatever lies above that, in a slump.",
+          "Full employment therefore means output at the natural rate of unemployment. Y* is output when unemployment is at the natural rate, not when everyone has a job. The natural rate is not observed directly and it changes slowly over time.",
+        ],
+      },
+      {
+        heading: "Okun's law",
+        paras: [
+          "When unemployment is above its natural rate, output is below Y*. In a commonly used rule of thumb, every point of unemployment above the natural rate goes with about 2.5 percent of output below FE. The coefficient is bigger than one because when output falls, hours, participation and productivity fall too, not just employment. The estimated coefficient differs across countries and periods, so use the slider.",
+        ],
+        widget: "okun",
+      },
+      {
+        heading: "The Phillips curve with expectations",
+        paras: [
+          "Unemployment and inflation are linked. When unemployment is below the natural rate, wages and prices tend to rise faster than people expected. When it is above, they rise more slowly. A simple form is inflation = expected inflation − β × (u − natural rate). At the natural rate, inflation equals expected inflation. If people come to expect more inflation, the whole curve shifts up one for one, which is why the early view that policy could hold unemployment permanently below natural by accepting a little more inflation did not survive the 1970s.",
+        ],
+        widget: "phillips",
+      },
+    ],
+    predictions: [
+      { q: "A cut in the tax on wages raises the after-tax wage at each gross wage. What happens to FE?", options: ["It moves right", "It moves left", "It does not move"], answer: 0, why: "More people are willing to work, so labour supply shifts right, employment and full-employment output rise." },
+      { q: "A wave of retirements reduces the number of people willing to work at each wage. What happens to FE and the real wage?", options: ["FE moves left, and the real wage rises", "FE moves left, and the real wage falls", "FE moves right, and the real wage rises"], answer: 0, why: "Labour supply shifts left. Employment falls and so does output, and with fewer workers the marginal product, and so the wage, rises." },
+      { q: "The central bank raises the interest rate. What happens to the FE line?", options: ["Nothing: FE does not depend on r", "It moves left, since investment falls", "It moves right, since saving rises"], answer: 0, why: "A, K and labour supply are all unchanged today. Lower investment affects capital next period, not this one." },
+      { q: "Unemployment is 7 percent and the natural rate is 5 percent. With an Okun coefficient of 2.5, output is…", options: ["5 percent below FE", "2 percent below FE", "7.5 percent above FE"], answer: 0, why: "Two points above natural times 2.5 gives 5 percent below FE." },
+      { q: "People start to expect 5 percent inflation instead of 2. With unemployment at the natural rate, actual inflation is…", options: ["about 5 percent", "still about 2 percent", "zero"], answer: 0, why: "At the natural rate, inflation equals expected inflation, so the whole Phillips curve has shifted up by 3 points." },
+    ],
+    newsColumns: ["In the news", "Driver", "Where it moves", "Effect"],
+    news: [
+      { headline: "The government cuts payroll taxes on workers' earnings.", driver: "Labour tax falls", curve: "Labour supply right; FE right", effect: "More employment and full-employment output; the wage employers pay falls a little." },
+      { headline: "A large group of workers retires faster than expected.", driver: "Labour supply falls", curve: "Labour supply left; FE left", effect: "Full-employment output falls and wages rise." },
+      { headline: "Factories adopt robots that raise output per worker.", driver: "A rises", curve: "Labour demand right; FE right", effect: "Output and wages rise at full employment." },
+      { headline: "The central bank lifts its interest rate by half a point.", driver: "Monetary policy", curve: "LM, not FE", effect: "Short-run output and the interest rate change. Full-employment output does not move today." },
+      { headline: "Unemployment jumps to 9 percent, far above what economists think is normal.", driver: "Cyclical unemployment", curve: "Output below FE", effect: "By Okun's rule of thumb, output is a few times that gap, roughly 10 percent, below FE if the natural rate is 5." },
+    ],
+    cases: [
+      {
+        heading: "US unemployment through the pandemic",
+        text: "The US unemployment rate stood near 3.5 percent in early 2020, jumped to about 14.8 percent in April 2020 as businesses closed, and then fell back quickly: to about 6.7 percent by December 2020, to below 4 percent by the end of 2021, and to around 3.5 percent through much of 2022 and 2023. By 2024 and 2025 it had drifted up to roughly 4 to 4.3 percent. The widget plots selected months. The speed of the recovery was unusual because a large share of the unemployed had been temporarily laid off rather than permanently separated, and they were recalled when businesses reopened.",
+        approx: "From memory and approximate to a few tenths of a point: all monthly values, and the descriptions of 2024 and 2025. The widget plots selected months rather than the full series, and this lesson was written before any of the latest releases could be checked. Check the BLS series LNS14000000 before relying on a figure.",
+      },
+    ],
   },
   {
     n: 4, slug: "saving-investment", part: 1, title: "Saving and investment",

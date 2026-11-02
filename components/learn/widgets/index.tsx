@@ -1,6 +1,7 @@
 "use client";
 
 import type { ComponentType } from "react";
+import { LafferWidget, LinkedPanels, OkunConverter, PhillipsWidget, UsUnemployment } from "./labour";
 import { FEHandoff, GrowthCalculator, HiringWidget, ProductionFunctionWidget } from "./productivity";
 import { CpiBasketWidget, ExpenditureSorter, ImportsDemo, RealNominalWidget, ThreeWaysWidget } from "./measuring";
 
@@ -15,6 +16,11 @@ const registry: Record<string, ComponentType> = {
   hiring: HiringWidget,
   "growth-calc": GrowthCalculator,
   "fe-handoff": FEHandoff,
+  "linked-panels": LinkedPanels,
+  laffer: LafferWidget,
+  okun: OkunConverter,
+  phillips: PhillipsWidget,
+  "us-unemployment": UsUnemployment,
 };
 
 export default function Widget({ id }: { id: string }) {
