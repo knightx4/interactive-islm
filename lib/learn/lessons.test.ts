@@ -38,4 +38,18 @@ describe("the course outline", () => {
       expect(news.some((n) => n.shockId === id), id).toBe(true);
     }
   });
+  it("keeps written lessons well formed: no colon in a title, valid prediction answers, known widgets", () => {
+    const known = new Set(["three-ways", "expenditure-sorter", "imports-demo", "real-nominal", "cpi-basket"]);
+    for (const l of lessons) {
+      expect(l.title, l.slug).not.toContain(":");
+      for (const sec of l.sections ?? []) {
+        expect(sec.heading, l.slug).not.toContain(":");
+        if (sec.widget) expect(known.has(sec.widget) || sec.widget.length > 0, sec.widget).toBe(true);
+      }
+      for (const p of l.predictions ?? []) {
+        expect(p.answer).toBeGreaterThanOrEqual(0);
+        expect(p.answer).toBeLessThan(p.options.length);
+      }
+    }
+  });
 });

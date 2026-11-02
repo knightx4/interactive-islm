@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import CaseNotes from "@/components/learn/CaseNotes";
 import LessonLab from "@/components/learn/LessonLab";
+import NewsTable from "@/components/learn/NewsTable";
+import Predictions from "@/components/learn/Predictions";
+import Widget from "@/components/learn/widgets";
 import { lessonBySlug, lessons, parts } from "@/lib/learn/lessons";
 
 export function generateStaticParams() {
@@ -53,10 +57,41 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
         )}
       </div>
 
+      {lesson.sections?.map((sec) => (
+        <section key={sec.heading} className="mt-10 border-t border-ink pt-4">
+          <h2 className="text-2xl">{sec.heading}</h2>
+          <div className="prose-text mt-2 max-w-2xl space-y-3">
+            {sec.paras.map((t, k) => <p key={k}>{t}</p>)}
+          </div>
+          {sec.widget && <div className="mt-4"><Widget id={sec.widget} /></div>}
+        </section>
+      ))}
+
       {lesson.lab && (
         <div className="mt-10">
           <LessonLab key={lesson.slug} lab={lesson.lab} />
         </div>
+      )}
+
+      {lesson.cases && (
+        <section className="mt-10 border-t border-ink pt-4">
+          <h2 className="text-2xl">Worked real-world cases</h2>
+          <div className="mt-3"><CaseNotes cases={lesson.cases} /></div>
+        </section>
+      )}
+
+      {lesson.news && (
+        <section className="mt-10 border-t border-ink pt-4">
+          <NewsTable rows={lesson.news} columns={lesson.newsColumns} />
+        </section>
+      )}
+
+      {lesson.predictions && (
+        <section className="mt-10 border-t border-ink pt-4">
+          <h2 className="text-2xl">Check your predictions</h2>
+          <p className="prose-text mt-1 max-w-2xl text-sm text-muted-foreground">Choose an answer first; the reasoning appears after you check.</p>
+          <div className="mt-3"><Predictions items={lesson.predictions} /></div>
+        </section>
       )}
 
       <div className="mt-10 flex justify-between gap-4 border-t border-rule pt-4 text-sm">
