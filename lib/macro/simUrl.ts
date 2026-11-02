@@ -4,8 +4,9 @@
  * malformed or out-of-range value reads as the baseline for that value.
  */
 import { shockById } from "./shocks";
+import type { Regime } from "./model";
 import {
-  baselineState, causeById, causes, setCause, STEPS, type ParentId, type SimState,
+  baselineState, causeById, causes, regimes, setCause, STEPS, type ParentId, type SimState,
 } from "./sim";
 
 const OFFSET_KEYS: Record<ParentId, string> = {
@@ -26,6 +27,9 @@ export function encodeState(st: SimState): string {
     if (Math.abs(x) > 0.005) q.set(c.id, round(x));
   }
   if (st.open) q.set("open", "1");
+  if (st.open && st.regime !== base.regime) q.set("rg", st.regime);
+  if (st.open && Math.abs(st.mobility - base.mobility) > 0.0005) q.set("mob", round(st.mobility));
+  if (st.open && st.partner) q.set("pt", "1");
   if (st.speed !== base.speed) q.set("sp", round(st.speed));
   if (st.t !== base.t) q.set("t", String(st.t));
   return q.toString();
@@ -54,6 +58,13 @@ export function decodeState(search: string): SimState {
     }
   }
   if (q.get("open") === "1") st.open = true;
+  const rg = regimes.find((r) => r.id === q.get("rg"));
+  if (rg) st.regime = rg.id;
+  const mob = num(q.get("mob"), 0, 1);
+  if (mob !== null) st.mobility = mob;
+  if (q.get("pt") === "1") st.partner = true;
+  // regime, mobility and partner only mean something in the open economy
+  if (!st.open && (rg || mob !== null || st.partner)) st.open = true;
   const sp = num(q.get("sp"), 0, 100);
   if (sp !== null) st.speed = sp;
   const t = num(q.get("t"), 0, STEPS + 1);
@@ -87,6 +98,10 @@ const SHOCK_CAUSE: Record<string, [cause: string, size: number]> = {
   "labour-supply": ["participation", 20],
   "labour-tax": ["labourTax", 50],
   "foreign-demand": ["foreignDemand", 30],
+  tariff: ["ourTariff", 50],
+  "partner-tariff": ["tariffsOnUs", 50],
+  "foreign-rate": ["foreignRate", 25],
+  premium: ["capitalFlight", 50],
 };
 
 /** Table rows with no named cause (depreciation, investment tax) are carried by the parent slider they move. */
@@ -96,9 +111,11 @@ const SHOCK_PARENT: Record<string, [parent: ParentId, size: number]> = {
 };
 
 /** The simulator state for a lesson shock, or null when the simulator has no equivalent. */
-export function stateForShock(shockId: string, open: boolean): SimState | null {
+export function stateForShock(shockId: string, regime: Regime): SimState | null {
   const shock = shockById(shockId);
-  if (!shock) return null;
+  // the simulator's pegs are fully backed boards, not the lessons' reserve-limited peg, so a fixed lesson has no equivalent
+  if (!shock || regime === "fixed") return null;
+  const open = regime === "floating";
   const sign = shockId.endsWith("-down") ? -1 : 1;
   const driver = shock.driver;
   let st: SimState = { ...baselineState(), open };
@@ -115,7 +132,7 @@ export function stateForShock(shockId: string, open: boolean): SimState | null {
 }
 
 /** Link to the simulator with a lesson shock applied, or null when there is none. */
-export function simulatorLinkForShock(shockId: string, open: boolean): string | null {
-  const st = stateForShock(shockId, open);
+export function simulatorLinkForShock(shockId: string, regime: Regime): string | null {
+  const st = stateForShock(shockId, regime);
   return st ? simulatorHref(st) : null;
 }

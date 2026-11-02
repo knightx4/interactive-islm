@@ -8,7 +8,7 @@
  * the parent; moving the parent adds a direct offset on top of the causes.
  */
 import {
-  baselineEconomy, investmentConst, moneyDemandConst, netExports, savingConst, simulate, Ystar,
+  baselineEconomy, investmentConst, moneyDemandConst, netExports, savingConst, simulateWorld, Ystar,
   type Frame, type Params, type Regime, type Simulation,
 } from "./model";
 import { drivers, shockById, type Curve, type Dir } from "./shocks";
@@ -71,6 +71,14 @@ export type Cause = {
   needsOpen?: boolean;
   /** Acts through the exchange rate itself, so the parent slider (a schedule at the old rate) does not move. */
   viaRate?: boolean;
+  /** How the cause is read: a shift of the IS schedule at a given exchange rate, or a capital flow that moves the exchange rate (and, under a peg, the money supply). */
+  channel?: "schedule" | "capital";
+  /** Under a hard peg (currency board, dollarization) the cause moves LM instead: the way it moves when the cause rises. */
+  pegDir?: Dir;
+  /** One line under a hard peg. */
+  pegChain?: { up: string; down: string };
+  /** The cause is a setting of the partner or the world, so it is fixed once a partner economy is simulated. */
+  noPartner?: boolean;
   apply: (p: Params, x: number) => Params;
 };
 
@@ -87,7 +95,8 @@ export const causes: Cause[] = [
     driver: "foreign-demand", sign: 1,
     chain: { up: "foreign demand rises -> NX rises -> S - NX falls, like an investment boom -> IS right (a floating currency then appreciates and pulls it back)", down: "foreign demand falls -> NX falls -> IS left (a floating currency then depreciates and pulls it back)" },
     apply: (p, x) => ({ ...p, x0: p.x0 + 0.2 * x }) },
-  { id: "exchangeRate", parent: "investment", label: "Exchange rate: demand for our currency", detail: "Expected-devaluation premium", ...R, needsOpen: true, viaRate: true,
+  { id: "exchangeRate", parent: "investment", label: "The dollar: investors' demand for our currency", detail: "Expected-devaluation premium", ...R, needsOpen: true, viaRate: true, channel: "capital", pegDir: "right",
+    pegChain: { up: "investors want our currency -> capital flows in, reserves rise -> money supply rises -> LM right", down: "investors shun our currency -> capital flows out, reserves fall -> money supply falls -> LM left" },
     driver: "foreign-demand", sign: -1,
     chain: { up: "currency strengthens -> real exchange rate rises -> NX falls -> IS left", down: "currency weakens -> real exchange rate falls -> NX rises -> IS right" },
     apply: (p, x) => ({ ...p, prem: p.prem - 0.04 * x }) },
@@ -108,6 +117,29 @@ export const causes: Cause[] = [
     driver: "taxes", sign: 1,
     chain: { up: "taxes rise -> government saving rises by more than households cut theirs -> saving rises -> IS left", down: "taxes fall -> government saving falls -> saving falls -> IS right" },
     apply: (p, x) => ({ ...p, T: p.T + 0.2 * x }) },
+  // ---- IS (and LM under a peg): the open economy
+  { id: "tariffsOnUs", parent: "investment", label: "Tariffs and sanctions on our exports", detail: "Partner's tariff", ...R, needsOpen: true, channel: "schedule",
+    driver: "partner-tariff", sign: 1,
+    chain: { up: "tariffs or sanctions hit our exports -> NX falls -> S - NX rises -> IS left", down: "tariffs on our exports are lifted -> NX rises -> IS right" },
+    apply: (p, x) => ({ ...p, tariffP: p.tariffP + 0.2 * x }) },
+  { id: "ourTariff", parent: "investment", label: "Our own tariffs on imports", detail: "Home tariff", ...R, needsOpen: true, channel: "schedule",
+    driver: "tariff", sign: 1,
+    chain: { up: "we raise tariffs -> imports fall, NX rises -> IS right (a floating currency then appreciates and pulls it back)", down: "we cut tariffs -> imports rise, NX falls -> IS left" },
+    apply: (p, x) => ({ ...p, tariff: p.tariff + 0.2 * x }) },
+  { id: "partnerGrowth", parent: "investment", label: "Partner growth", detail: "Partner income", ...R, needsOpen: true, channel: "schedule", noPartner: true,
+    driver: "foreign-demand", sign: 1,
+    chain: { up: "partners grow faster -> they buy more of our goods, NX rises -> IS right", down: "partners slow down -> they buy less of our goods, NX falls -> IS left" },
+    apply: (p, x) => ({ ...p, Yp: p.Yp + 0.4 * x }) },
+  { id: "foreignRate", parent: "investment", also: "moneySupply", label: "Foreign interest rates (Fed spillover)", detail: "Foreign real interest rate", ...R, needsOpen: true, viaRate: true, channel: "capital", noPartner: true, pegDir: "left",
+    driver: "foreign-demand", sign: 1,
+    chain: { up: "foreign rates rise -> capital leaves, our currency depreciates -> NX rises -> IS right", down: "foreign rates fall -> capital comes in, our currency appreciates -> NX falls -> IS left" },
+    pegChain: { up: "foreign rates rise -> capital leaves, reserves fall -> money supply falls -> LM left", down: "foreign rates fall -> capital comes in, reserves rise -> money supply rises -> LM right" },
+    apply: (p, x) => ({ ...p, rw: p.rw + 0.04 * x }) },
+  { id: "capitalFlight", parent: "investment", also: "moneySupply", label: "Capital flight", detail: "Expected-devaluation premium", ...R, needsOpen: true, viaRate: true, channel: "capital", pegDir: "left",
+    driver: "foreign-demand", sign: 1,
+    chain: { up: "residents move money abroad -> our currency depreciates -> NX rises -> IS right", down: "capital returns -> our currency appreciates -> NX falls -> IS left" },
+    pegChain: { up: "residents move money abroad -> reserves fall -> money supply falls -> LM left", down: "capital returns -> reserves rise -> money supply rises -> LM right" },
+    apply: (p, x) => ({ ...p, prem: p.prem + 0.04 * x }) },
   // ---- LM
   { id: "centralBank", parent: "moneySupply", label: "Central bank policy", detail: "Money stock M", ...R,
     driver: "money-supply", sign: 1,
@@ -166,8 +198,9 @@ export function driverRow(c: Cause): { curve: Curve; upDir: Dir } {
 }
 
 /** The curve a cause moves and the way, from the shift table (the driver's up-direction, flipped when the cause lowers it). */
-export function shiftOf(c: Cause, x: number): { curve: Curve; dir: Dir } | null {
+export function shiftOf(c: Cause, x: number, hardPeg = false): { curve: Curve; dir: Dir } | null {
   if (x === 0) return null;
+  if (hardPeg && c.pegDir) return { curve: "LM", dir: x > 0 ? c.pegDir : c.pegDir === "right" ? "left" : "right" };
   const d = driverRow(c);
   const up = x * c.sign > 0;
   const flip = (r: Dir): Dir => (r === "right" ? "left" : "right");
@@ -188,9 +221,28 @@ export type SimState = {
   speed: number;
   /** Playback position: 0 = before, 1 = impact, then the price adjustment, last = fully adjusted. */
   t: number;
-  /** Run the open economy (floating rate). */
+  /** Run the open economy. */
   open: boolean;
+  /** Where the exchange-rate regime sits on the spectrum from free float to dollarization. */
+  regime: RegimeChoice;
+  /** Capital mobility, 0 (none) to 1 (perfect): an advanced setting, 0.5 by default. */
+  mobility: number;
+  /** Simulate a partner economy beside the home one, sharing the world interest rate. */
+  partner: boolean;
 };
+
+/** The spectrum, from most flexible to most fixed. */
+export type RegimeChoice = "float" | "band" | "crawl" | "board" | "dollar";
+export const regimes: { id: RegimeChoice; label: string; text: string }[] = [
+  { id: "float", label: "Free float", text: "The market sets the exchange rate. The central bank keeps control of the money supply." },
+  { id: "band", label: "Band", text: "The rate floats inside a band around today's level. If a shock would push it past the edge (10%), the central bank defends the edge like a peg." },
+  { id: "crawl", label: "Crawling band", text: "Like the band, but centred on where the real adjustment is heading, so only overshooting is resisted." },
+  { id: "board", label: "Currency board", text: "A hard peg: every unit of money is backed by reserves, so the balance of payments sets the money supply and there is no devaluing." },
+  { id: "dollar", label: "Dollarization", text: "No home currency at all: money is the foreign currency, so no devaluation premium exists and the money supply follows the balance of payments." },
+];
+export const isHardPeg = (r: RegimeChoice) => r === "board" || r === "dollar";
+/** Half-width of the band, as a share of the central rate. */
+export const BAND = 0.1;
 
 export const baselineState = (): SimState => ({
   offsets: { investment: 0, saving: 0, moneySupply: 0, moneyDemand: 0, fullEmployment: 0 },
@@ -198,18 +250,35 @@ export const baselineState = (): SimState => ({
   speed: 50,
   t: 1,
   open: false,
+  regime: "float",
+  mobility: 0.5,
+  partner: false,
 });
 
 /** Number of price-adjustment periods simulated. */
 export const STEPS = 80;
-const OPEN_MOBILITY = 0.5;
 
 /** Price-adjustment speed phi: sticky (0.1) to flexible (0.9); the middle, 0.5, is the lessons' speed. */
 export const phiFor = (speed: number) => 0.1 + 0.8 * (Math.min(100, Math.max(0, speed)) / 100);
 
-export function baseFor(s: Pick<SimState, "open" | "speed">): Params {
-  const regime: Regime = s.open ? "floating" : "closed";
-  return { ...baselineEconomy(regime, s.open ? OPEN_MOBILITY : 1), phi: phiFor(s.speed) };
+/** Capital mobility in force: a linked partner means one world interest rate, so mobility is perfect. */
+const mobilityOf = (s: Pick<SimState, "open" | "mobility" | "partner">) => (!s.open ? 1 : s.partner ? 1 : s.mobility);
+
+/** The baseline economy for a state (closed, floating, or a fully backed hard peg). */
+export function baseFor(s: Pick<SimState, "open" | "speed" | "regime" | "mobility" | "partner">): Params {
+  const hard = s.open && isHardPeg(s.regime);
+  const regime: Regime = !s.open ? "closed" : hard ? "fixed" : "floating";
+  const p: Params = { ...baselineEconomy(regime, mobilityOf(s)), phi: phiFor(s.speed) };
+  // a currency board or dollarized economy has no domestic credit: money is reserves
+  return hard ? { ...p, D: 0, Res: p.M, dev: 0 } : p;
+}
+
+/** Why a cause cannot be moved in this state, or null when it can. */
+export function causeDisabled(c: Cause, st: SimState): string | null {
+  if (st.open && st.partner && c.noPartner) return "Fixed while a partner economy is simulated: the partner sets it.";
+  if (st.open && isHardPeg(st.regime) && c.parent === "moneySupply") return "A hard peg has no money policy: reserves set the money supply.";
+  if (st.open && st.regime === "dollar" && (c.id === "exchangeRate" || c.id === "capitalFlight")) return "Dollarized: there is no home currency to devalue, so no devaluation premium.";
+  return null;
 }
 
 /* Output exponent: Y* is proportional to A^FE_POW, so a change in Y* can be put back into A. */
@@ -238,7 +307,7 @@ function withCauses(base: Params, st: SimState): Params {
   let p = { ...base };
   for (const c of causes) {
     const x = st.causes[c.id] ?? 0;
-    if (x !== 0 && (!c.needsOpen || p.regime !== "closed")) p = c.apply(p, x);
+    if (x !== 0 && (!c.needsOpen || p.regime !== "closed") && !causeDisabled(c, st)) p = c.apply(p, x);
   }
   return p;
 }
@@ -250,7 +319,7 @@ export function paramsFor(base: Params, st: SimState): Params {
   if (o.investment) p = { ...p, i0: p.i0 + IDX_I * o.investment };
   if (o.saving) p = { ...p, s0: p.s0 + IDX_I * o.saving };
   if (o.moneyDemand) p = { ...p, L0: p.L0 + IDX_I * o.moneyDemand };
-  if (o.moneySupply) p = setM(p, p.M * (1 + IDX_M * o.moneySupply));
+  if (o.moneySupply && !(st.open && isHardPeg(st.regime))) p = setM(p, p.M * (1 + IDX_M * o.moneySupply));
   if (o.fullEmployment) {
     const y0 = Ystar(p);
     p = { ...p, A: p.A * Math.pow((y0 + o.fullEmployment) / y0, 1 / fePow(p)) };
@@ -299,16 +368,52 @@ export type Run = {
   state: SimState;
   base: Params;
   after: Params;
+  /** The home economy. */
   sim: Simulation;
+  /** The partner economy (Japan to the home economy's US), when one is simulated. */
+  foreign: Simulation | null;
+  /** Which model regime ran: a band that would be breached runs as a peg at its edge. */
+  ran: Regime;
+  /** The band's edge being defended, when a band or crawling band was breached. */
+  defended: { edge: number; centre: number } | null;
   /** Number of playback positions: 0 (before), 1 (impact) ... last (fully adjusted). */
   length: number;
 };
 
+const partnerBase = (home: Params): Params => ({ ...baselineEconomy("floating", 1), phi: home.phi });
+
+function world(base: Params, after: Params, withPartner: boolean) {
+  const pb = withPartner ? partnerBase(base) : null;
+  // the partner's trade function mirrors ours, so its own IS curve is drawn consistently with the shared NX
+  const mirror = (p: Params): Params => ({
+    ...p, tariff: after.tariffP, tariffP: after.tariff, x0: p.x0 - (after.x0 - base.x0),
+  });
+  return simulateWorld(base, () => ({ ...after, phi: base.phi }), pb, mirror, STEPS);
+}
+
 export function run(st: SimState): Run {
-  const base = baseFor(st);
-  const after = paramsFor(base, st);
-  const sim = simulate(base, () => ({ ...after, phi: base.phi }), STEPS);
-  return { state: st, base, after, sim, length: sim.frames.length + 1 };
+  let base = baseFor(st);
+  let after = paramsFor(base, st);
+  const partner = st.open && st.partner;
+  let w = world(base, after, partner);
+  let defended: Run["defended"] = null;
+  if (st.open && (st.regime === "band" || st.regime === "crawl")) {
+    // float inside the band; if the rate would leave it, hold the edge with a peg
+    const centre = st.regime === "band" ? 1 : w.home.longRun.E;
+    const lo = centre * (1 - BAND), hi = centre * (1 + BAND);
+    const out = w.home.frames.map((f) => f.E).concat(w.home.longRun.E).find((e) => e < lo - 1e-9 || e > hi + 1e-9);
+    if (out !== undefined) {
+      const edge = out > hi ? hi : lo;
+      base = { ...baselineEconomy("fixed", mobilityOf(st)), phi: phiFor(st.speed) };
+      after = { ...paramsFor(base, st), E0: edge };
+      w = world(base, after, partner);
+      defended = { edge, centre };
+    }
+  }
+  return {
+    state: st, base, after, sim: w.home, foreign: w.foreign, ran: base.regime, defended,
+    length: w.home.frames.length + 1,
+  };
 }
 
 /** The frame at a playback position (the last position is the fully adjusted long run). */

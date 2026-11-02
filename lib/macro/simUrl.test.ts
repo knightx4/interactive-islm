@@ -58,7 +58,7 @@ describe("scenario links", () => {
 
 describe("a lesson shock opens in the simulator", () => {
   const mobility = 0.5;
-  const mapped = shiftTable.filter((s) => stateForShock(s.id, false) !== null);
+  const mapped = shiftTable.filter((s) => stateForShock(s.id, "closed") !== null);
 
   it("covers every closed-economy row of the shift table", () => {
     expect(mapped.length).toBe(shiftTable.length);
@@ -66,7 +66,7 @@ describe("a lesson shock opens in the simulator", () => {
 
   for (const s of shiftTable) {
     it(`${s.id}: the simulator gives the lesson's answer`, () => {
-      const st = stateForShock(s.id, false)!;
+      const st = stateForShock(s.id, "closed")!;
       const lesson = simulate(baselineEconomy("closed"), s.apply, 60);
       const sim = run(st).sim;
       expect(sim.impact.Y).toBeCloseTo(lesson.impact.Y, 6);
@@ -74,21 +74,21 @@ describe("a lesson shock opens in the simulator", () => {
       expect(sim.longRun.Y).toBeCloseTo(lesson.longRun.Y, 6);
       expect(sim.longRun.P).toBeCloseTo(lesson.longRun.P, 6);
       // and the link carries it
-      expect(simulatorLinkForShock(s.id, false)).toMatch(/^\/(\?|$)/);
-      const back = decodeState(simulatorLinkForShock(s.id, false)!.split("?")[1] ?? "");
+      expect(simulatorLinkForShock(s.id, "closed")).toMatch(/^\/(\?|$)/);
+      const back = decodeState(simulatorLinkForShock(s.id, "closed")!.split("?")[1] ?? "");
       expect(run(back).sim.impact.Y).toBeCloseTo(lesson.impact.Y, 1);
     });
   }
 
   it("open-economy shocks open the floating economy", () => {
-    const st = stateForShock("foreign-demand-up", true)!;
+    const st = stateForShock("foreign-demand-up", "floating")!;
     expect(st.open).toBe(true);
     const lesson = simulate(baselineEconomy("floating", mobility), shiftTable.concat().find((s) => s.id === "gov-spending-up")!.apply, 60);
-    const st2 = stateForShock("gov-spending-up", true)!;
+    const st2 = stateForShock("gov-spending-up", "floating")!;
     expect(run(st2).sim.impact.Y).toBeCloseTo(lesson.impact.Y, 6);
   });
 
   it("a shock the simulator has no cause for gives no link", () => {
-    expect(simulatorLinkForShock("no-such-shock", false)).toBeNull();
+    expect(simulatorLinkForShock("no-such-shock", "closed")).toBeNull();
   });
 });

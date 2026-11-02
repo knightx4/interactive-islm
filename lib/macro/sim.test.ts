@@ -179,14 +179,14 @@ describe("every real-world cause moves the right curve the right way", () => {
         const want = shiftOf(c, x)!;
         // the shift table's row for this driver gives the direction
         expect(want.curve).toBe(rowFor(c).curve);
-        const got = shifts(setCause(base, c.id, x), c.id === "exchangeRate")[want.curve];
+        const got = shifts(setCause(base, c.id, x), c.channel === "capital")[want.curve];
         expect(want.dir === "right" ? got : -got).toBeGreaterThan(1e-6);
         // the line names the curve and the direction
         expect(x > 0 ? c.chain.up : c.chain.down).toContain(`${want.curve} ${want.dir}`);
       });
     }
     it(`${c.id} leaves the other curves alone (except the one it also names)`, () => {
-      const s = shifts(setCause(base, c.id, c.max), c.id === "exchangeRate");
+      const s = shifts(setCause(base, c.id, c.max), c.channel === "capital");
       const main = rowFor(c).curve;
       const alsoCurve = c.also ? "LM" : null;
       for (const curve of ["IS", "LM", "FE"] as const) {

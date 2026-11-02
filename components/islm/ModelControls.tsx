@@ -7,8 +7,9 @@ import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { RegimePicker } from "./OpenPanels";
 import {
-  causesOf, clampIdx, parentValue, parents, shiftOf, type Group, type ParentId, type SimState,
+  causeDisabled, causesOf, clampIdx, isHardPeg, parentValue, parents, shiftOf, type Group, type ParentId, type RegimeChoice, type SimState,
 } from "@/lib/macro/sim";
 
 const GROUPS: { id: Group; title: string; tone: string; note: string }[] = [
@@ -24,13 +25,16 @@ type Props = {
   onParent: (id: ParentId, value: number) => void;
   onCause: (id: string, value: number) => void;
   onOpen: (open: boolean) => void;
+  onRegime: (r: RegimeChoice) => void;
+  onMobility: (m: number) => void;
+  onPartner: (p: boolean) => void;
   onReset: () => void;
   /** Current price level, shown under the LM group (it moves on its own). */
   price: number;
 };
 
 /** The five market sliders, grouped by curve, each with the causes that move it. */
-export default function ModelControls({ state, onParent, onCause, onOpen, onReset, price }: Props) {
+export default function ModelControls({ state, onParent, onCause, onOpen, onRegime, onMobility, onPartner, onReset, price }: Props) {
   const [shown, setShown] = useState<Record<string, boolean>>({});
   return (
     <Card className="flex w-full max-w-full flex-col gap-2 border-ink py-3">
@@ -38,10 +42,33 @@ export default function ModelControls({ state, onParent, onCause, onOpen, onRese
         <CardTitle className="font-serif text-lg">Drivers</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-5 px-0 pb-0 pt-1">
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={state.open} onChange={(e) => onOpen(e.target.checked)} className="h-4 w-4 accent-[var(--ink)]" />
-          <span>Open economy (trade, floating exchange rate)</span>
-        </label>
+        <div className="space-y-3">
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={state.open} onChange={(e) => onOpen(e.target.checked)} className="h-4 w-4 accent-[var(--ink)]" />
+            <span>Open economy (trade and capital flows)</span>
+          </label>
+          {state.open && (
+            <div className="space-y-3 border-l border-rule pl-3">
+              <RegimePicker value={state.regime} onChange={onRegime} />
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={state.partner} onChange={(e) => onPartner(e.target.checked)} className="h-4 w-4 accent-[var(--ink)]" />
+                <span>Show a partner economy (US and Japan)</span>
+              </label>
+              <details className="text-sm">
+                <summary className="cursor-pointer text-xs font-medium text-muted-foreground">Advanced</summary>
+                <div className="mt-2 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="mobility" className="text-xs font-medium">Capital mobility</Label>
+                    <span className="num text-xs font-semibold">{(state.partner ? 1 : state.mobility).toFixed(2)}</span>
+                  </div>
+                  <Slider id="mobility" min={0} max={1} step={0.05} value={[state.partner ? 1 : state.mobility]} disabled={state.partner}
+                    onValueChange={(v) => onMobility(v[0])} className="cursor-pointer" />
+                  <p className="text-[11px] text-muted-foreground">0 = capital cannot move, 1 = it moves freely. {state.partner ? "Fixed at 1 with a partner, so both share one world rate." : "The course's small open economy is 1; the default is a large economy."}</p>
+                </div>
+              </details>
+            </div>
+          )}
+        </div>
 
         {GROUPS.map((g) => (
           <section key={g.id} aria-label={g.title} className="space-y-3">
@@ -74,14 +101,17 @@ export default function ModelControls({ state, onParent, onCause, onOpen, onRese
                     <div className="mt-1.5 space-y-3 border-l border-rule pl-3">
                       {cs.map((c) => {
                         const x = state.causes[c.id] ?? 0;
-                        const sh = shiftOf(c, x);
+                        const hard = state.open && isHardPeg(state.regime);
+                        const sh = shiftOf(c, x, hard);
+                        const off = causeDisabled(c, state);
+                        const chain = hard && c.pegChain ? c.pegChain : c.chain;
                         return (
                           <div key={c.id} className="space-y-1">
                             <div className="flex items-center justify-between gap-2">
                               <Label htmlFor={`cause-${c.id}`} className="text-xs font-medium">{c.label}</Label>
                               <span className={cn("num text-xs font-semibold", toneOf(g.id))}>{x > 0 ? "+" : ""}{x}</span>
                             </div>
-                            <Slider id={`cause-${c.id}`} min={c.min} max={c.max} step={c.step} value={[x]}
+                            <Slider id={`cause-${c.id}`} min={c.min} max={c.max} step={c.step} value={[x]} disabled={!!off}
                               onValueChange={(v) => onCause(c.id, v[0])} className="cursor-pointer" />
                             <p className="text-[11px] leading-snug text-muted-foreground">
                               <span className="font-semibold">Works through:</span> {c.detail}
@@ -90,7 +120,7 @@ export default function ModelControls({ state, onParent, onCause, onOpen, onRese
                               {c.viaRate && "Acts through the exchange rate, so the parent slider stays put. "}
                             </p>
                             <p className={cn("text-[11px] leading-snug", x === 0 ? "text-muted-foreground" : toneOf(sh?.curve ?? g.id))} aria-live="polite">
-                              {x === 0 ? <>If it rises: {c.chain.up}.</> : (x > 0 ? c.chain.up : c.chain.down) + "."}
+                              {off ?? (x === 0 ? <>If it rises: {chain.up}.</> : (x > 0 ? chain.up : chain.down) + ".")}
                             </p>
                           </div>
                         );

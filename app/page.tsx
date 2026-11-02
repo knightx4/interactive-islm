@@ -10,9 +10,10 @@ import MacroFeedbackBar from "@/components/islm/layout/MacroFeedbackBar";
 import Playback from "@/components/islm/Playback";
 import CurvesFigure from "@/components/learn/CurvesFigure";
 import SideMarkets from "@/components/learn/SideMarkets";
+import { ExchangeRateCard, NetExportsCard, PegCard, SavingIdentityCard, TwoCountry } from "@/components/islm/OpenPanels";
 import TimePath from "@/components/learn/TimePath";
 import {
-  baselineState, run, setCause, setParent, viewAt, type ParentId, type SimState,
+  baselineState, run, setCause, setParent, viewAt, isHardPeg, type ParentId, type RegimeChoice, type SimState,
 } from "@/lib/macro/sim";
 import { decodeState, encodeState } from "@/lib/macro/simUrl";
 
@@ -57,7 +58,7 @@ export default function HomePage() {
   };
 
   // the solution depends on everything except the playback position
-  const key = JSON.stringify([state.offsets, state.causes, state.speed, state.open]);
+  const key = JSON.stringify([state.offsets, state.causes, state.speed, state.open, state.regime, state.mobility, state.partner]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const rn = useMemo(() => run(state), [key]);
   const view = viewAt(rn.sim, state.t);
@@ -67,13 +68,16 @@ export default function HomePage() {
   const onParent = (id: ParentId, v: number) => edit((s) => setParent(s, id, v));
   const onCause = (id: string, v: number) => edit((s) => setCause(s, id, v));
   const onOpen = (open: boolean) => edit((s) => ({ ...s, open, t: 1 }));
+  const onRegime = (regime: RegimeChoice) => edit((s) => ({ ...s, regime, t: 1 }));
+  const onMobility = (mobility: number) => edit((s) => ({ ...s, mobility, t: 1 }));
+  const onPartner = (partner: boolean) => edit((s) => ({ ...s, partner, t: 1 }));
   const onReset = () => edit((s) => ({ ...baselineState(), speed: s.speed }));
   const onT = useCallback((t: number) => setState((s) => ({ ...s, t })), []);
   const onSpeed = (speed: number) => setState((s) => ({ ...s, speed }));
 
   const isDesktop = useIsDesktop();
   const [sheetOpen, setSheetOpen] = useState(false);
-  const controls = <ModelControls state={state} onParent={onParent} onCause={onCause} onOpen={onOpen} onReset={onReset} price={view.frame.P} />;
+  const controls = <ModelControls state={state} onParent={onParent} onCause={onCause} onOpen={onOpen} onRegime={onRegime} onMobility={onMobility} onPartner={onPartner} onReset={onReset} price={view.frame.P} />;
 
   const label =
     view.at === "A" ? "Point A: before the change" : view.at === "B" ? "Point B: the first move, prices not yet changed" :
@@ -127,10 +131,32 @@ export default function HomePage() {
             <h2 className="text-2xl">The markets behind the curves</h2>
             <p className="mt-1 text-sm text-muted-foreground">Saving and investment, money and labour, all at the point on show above.</p>
             <div className="mt-4 space-y-6">
-              <SideMarkets sim={rn.sim} view={view} />
+              <SideMarkets sim={rn.sim} view={view} sNX />
               <TimePath sim={rn.sim} index={view.t} />
             </div>
           </section>
+
+          {state.open && (
+            <section className="mt-10 border-t border-ink pt-4" aria-label="The open economy">
+              <h2 className="text-2xl">The open economy</h2>
+              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                {rn.defended
+                  ? `A ${state.regime === "band" ? "band" : "crawling band"} is being defended: the shock was too big for the rate to float freely.`
+                  : isHardPeg(state.regime) ? "Hard peg: the exchange rate is fixed, so the balance of payments sets the money supply." : "Floating inside the regime you chose: the exchange rate moves to keep the balance of payments in balance."}
+                {" "}All at the point on show above.
+              </p>
+              <div className="mt-4 space-y-8">
+                <ExchangeRateCard params={view.params} frame={view.frame} />
+                <div className="grid gap-8 md:grid-cols-2">
+                  <NetExportsCard params={view.params} frame={view.frame} />
+                  <SavingIdentityCard params={view.params} frame={view.frame} />
+                </div>
+                <PegCard run={rn} frame={view.frame} />
+              </div>
+            </section>
+          )}
+
+          {state.open && state.partner && <TwoCountry run={rn} t={state.t} />}
 
           <ExpenditureIdentityCard params={view.params} frame={view.frame} />
 

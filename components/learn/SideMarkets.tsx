@@ -23,18 +23,23 @@ function Panel({ title, note, children }: { title: string; note: string; childre
   );
 }
 
-function SavingInvestment({ p, f, p0, f0, ghosts, color }: Ctx) {
-  const S = (pp: Params, ff: Frame) => (r: number) => desiredSaving(pp, ff.Y, r);
-  const I = (pp: Params, ff: Frame) => (r: number) => desiredInvestment(pp, r) + ff.NX;
+function SavingInvestment({ p, f, p0, f0, ghosts, color, sNX }: Ctx) {
+  // Closed: S against I. Open: S against I + NX (lessons) or, as the course draws it, S - NX against I (simulator).
+  const open = p.regime !== "closed";
+  const S = (pp: Params, ff: Frame) => (r: number) => desiredSaving(pp, ff.Y, r) - (sNX ? ff.NX : 0);
+  const I = (pp: Params, ff: Frame) => (r: number) => desiredInvestment(pp, r) + (sNX ? 0 : ff.NX);
   const series: Series[] = [];
   if (ghosts) {
     if (differs(rs.map(S(p0, f0)), rs.map(S(p, f)))) series.push({ id: "s0", curve: "is", points: line(S(p0, f0), rs).map(swap), ghost: true });
     if (differs(rs.map(I(p0, f0)), rs.map(I(p, f)))) series.push({ id: "i0", curve: "is", points: line(I(p0, f0), rs).map(swap), ghost: true });
   }
-  series.push({ id: "s", curve: "is", points: line(S(p, f), rs).map(swap), label: "S" }, { id: "i", curve: "is", points: line(I(p, f), rs).map(swap), label: p.regime === "closed" ? "I" : "I+NX" });
+  series.push(
+    { id: "s", curve: "is", points: line(S(p, f), rs).map(swap), label: sNX && open ? "S-NX" : "S" },
+    { id: "i", curve: "is", points: line(I(p, f), rs).map(swap), label: !open ? "I" : sNX ? "I" : "I+NX" },
+  );
   const marks: Mark[] = [{ x: S(p, f)(f.r), y: f.r, color, guides: true }];
   return (
-    <Chart title="Saving and investment market" xLabel="Saving, investment" yLabel="Real rate, r (%)" xDomain={[0, 60]} yDomain={[0, 10]}
+    <Chart title={sNX && open ? "Saving minus net exports, and investment" : "Saving and investment market"} xLabel={sNX && open ? "S - NX, I" : "Saving, investment"} yLabel="Real rate, r (%)" xDomain={[0, 60]} yDomain={[0, 10]}
       xTicks={3} yTicks={5} aspect={0.95} series={series} marks={marks} />
   );
 }
@@ -77,17 +82,18 @@ function Labour({ p, f, p0, ghosts, color }: Ctx) {
   );
 }
 
-type Ctx = { p: Params; f: Frame; p0: Params; f0: Frame; ghosts: boolean; color: string };
+type Ctx = { p: Params; f: Frame; p0: Params; f0: Frame; ghosts: boolean; color: string; sNX?: boolean };
 
 /** The three side markets: saving and investment, money, and labour, plus the balance of payments when open. */
-export default function SideMarkets({ sim, view }: { sim: Simulation; view: View }) {
-  const ctx: Ctx = { p: view.params, f: view.frame, p0: sim.before, f0: sim.baseline, ghosts: view.ghosts, color: pointColor(view.at) };
+/** `sNX` draws the open-economy goods market as S - NX against I (the simulator); the lessons keep S against I + NX. */
+export default function SideMarkets({ sim, view, sNX = false }: { sim: Simulation; view: View; sNX?: boolean }) {
+  const ctx: Ctx = { p: view.params, f: view.frame, p0: sim.before, f0: sim.baseline, ghosts: view.ghosts, color: pointColor(view.at), sNX };
   const s = sideMarkets(view.params, view.frame);
   const open = view.params.regime !== "closed";
   return (
     <div className="space-y-4">
       <div className="grid gap-6 md:grid-cols-3">
-        <Panel title="Saving and investment" note={`Rate ${view.frame.r.toFixed(2)}%; investment ${s.investment.toFixed(1)}.`}>
+        <Panel title="Saving and investment" note={sNX && open ? `Rate ${view.frame.r.toFixed(2)}%; I = S - NX = ${s.investment.toFixed(1)}. A higher NX lowers S - NX and moves IS right.` : `Rate ${view.frame.r.toFixed(2)}%; investment ${s.investment.toFixed(1)}.`}>
           <SavingInvestment {...ctx} />
         </Panel>
         <Panel title="Money" note={`Real balances ${s.moneySupplyReal.toFixed(1)}; price level ${view.frame.P.toFixed(3)}.`}>
