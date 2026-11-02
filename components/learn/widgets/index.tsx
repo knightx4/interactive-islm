@@ -8,6 +8,7 @@ import { FEHandoff, GrowthCalculator, HiringWidget, ProductionFunctionWidget } f
 import { BigMacWidget, CarryWidget, RegimeSpectrum, StrongCurrencyWidget, UipWidget } from "./fx";
 import { GeSandbox, LmPuzzle, MoneyNeutrality, PriceLM, RecipeTwoShocks } from "./fullmodel";
 import { IdentityWidget, LedgerWidget, NxShiftersWidget } from "./open";
+import { HurricaneWidget, OilLab, PolicyDilemma, Us1970s } from "./supply";
 import { CpiBasketWidget, ExpenditureSorter, ImportsDemo, RealNominalWidget, ThreeWaysWidget } from "./measuring";
 
 /** Interactive pieces a lesson section can name by id. */
@@ -47,6 +48,10 @@ const registry: Record<string, ComponentType> = {
   "money-neutrality": MoneyNeutrality,
   "lm-puzzle": LmPuzzle,
   "ge-sandbox": GeSandbox,
+  "oil-lab": OilLab,
+  "policy-dilemma": PolicyDilemma,
+  hurricane: HurricaneWidget,
+  "us-1970s": Us1970s,
 };
 
 export default function Widget({ id }: { id: string }) {

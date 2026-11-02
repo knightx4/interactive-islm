@@ -602,9 +602,104 @@ export const lessons: Lesson[] = [
   },
   {
     n: 7, slug: "supply-shocks", part: 2, title: "Supply shocks and stagflation",
-    summary: "Why an oil shock lowers output and raises prices at once, and why policy has no good answer.",
+    summary: "Why an oil shock lowers output and raises prices at once, and why policy has no good answer to it.",
     covers: ["A fall in A moves FE left", "Policy after a supply shock", "Combined supply and demand shocks", "The 1970s, 2021-22 and the 1990s productivity boom"],
-    lab: { regime: "closed", shocks: ["productivity-down", "productivity-up", "capital-down", "capital-up"], defaultShock: "productivity-down" },
+    body: [
+      "A supply shock changes how much the economy can produce. It moves the FE line, not IS or LM. That single fact explains why supply shocks behave so differently from demand shocks: output and prices move in opposite directions, and the central bank cannot repair both.",
+      "In this lesson an oil price rise stands in for a fall in total factor productivity A, because dearer energy means less output from the same workers and machines. It is a stand-in, not a measurement: real oil shocks also hit demand and the terms of trade. All model numbers are index units from a toy economy.",
+    ],
+    takeaways: [
+      "A fall in A shifts FE left, lowers labour demand, and lowers the real wage and full-employment employment. IS and LM do not move, so the economy first stays where it was.",
+      "Output at that point is now above FE, which is scarcity: prices rise, real money shrinks, LM moves left, and the economy settles at lower output, a higher price level and a slightly higher real interest rate. That mix is stagflation.",
+      "A favourable supply shock (a productivity boom, more capital, cheaper energy) is the mirror image: FE moves right, there is slack, prices fall and output rises.",
+      "Policy cannot lift output above FE for long. Easing money only raises prices once they adjust; tightening gets inflation down sooner but costs output now, and if large enough pushes output below the new FE.",
+      "When a shock hits supply and demand together, output falls for certain but the price level can go either way, depending on which effect is larger.",
+    ],
+    sections: [
+      {
+        heading: "A fall in A moves FE",
+        paras: [
+          "Output comes from labour and capital through the production function, Y = A K^a N^(1-a). A fall in A lowers the marginal product of labour at every level of employment. Labour demand, which is the marginal product of labour, shifts down. Firms will pay a lower real wage for the same number of workers, so the market-clearing real wage falls, fewer people choose to work, and full-employment employment drops.",
+          "Less employment and lower productivity give a lower full-employment output. The vertical FE line moves left. Nothing in saving, investment or money demand has changed, so IS and LM have not moved.",
+        ],
+      },
+      {
+        heading: "Sitting still, then sliding left",
+        paras: [
+          "Because IS and LM have not moved, the short-run point B is the same as the old point A: output has not changed yet and neither has the interest rate. But the FE line has moved to the left, so that point now lies to the right of FE. Output is above what the economy can sustain, and there is scarcity.",
+          "Scarcity pushes prices up. A higher price level lowers real money balances, which shifts LM left, so the interest rate rises and output falls along IS until the point reaches the new FE. At C output is lower, the price level is higher, employment and the real wage are lower, and the real interest rate is a little higher. Play it below, then try the other three supply shocks.",
+          "Stagflation is the word for falling output together with rising prices. Reading the signs backward helps: if output falls and prices rise, the shock is more likely to have moved FE left than to have moved IS or LM left, since those two make prices fall.",
+        ],
+        widget: "oil-lab",
+      },
+      {
+        heading: "The reverse, a boom in productivity or capital",
+        paras: [
+          "Run the same steps with a rise in A, or a rise in the capital stock that raises the marginal product of capital and with it output per worker. FE moves right, and IS and LM stay put, so the old point is now left of FE: slack. Prices fall, real money rises, LM shifts right, the interest rate falls and output rises until the point reaches the new FE.",
+          "A technology that makes energy much cheaper, such as the shale oil and gas boom, works like a rise in A for economies that use a lot of energy. It lowers prices and raises capacity at the same time, which is an unusually pleasant combination. In the toy economy a rise in the capital stock stands in for a rise in the marginal product of capital; the model does not draw a separate line for it.",
+        ],
+      },
+      {
+        heading: "Policy has no good answer",
+        paras: [
+          "After a demand slump a central bank can aim at the old output level. After an adverse supply shock it cannot, because the old output level is no longer sustainable: it lies to the right of the new FE. Anything that holds output above FE leaves scarcity in place and keeps prices rising.",
+          "So the choice is between two bad paths. Easing the money supply holds output up for a while, but as prices adjust the whole gain turns into a higher price level, and output still ends at the lower FE. Tightening brings the price level down sooner, but output falls immediately, and if the tightening is large it takes output below the new FE, a deeper slump than the shock caused on its own. Move the slider across zero and watch the two paths.",
+        ],
+        widget: "policy-dilemma",
+      },
+      {
+        heading: "Combined shocks",
+        paras: [
+          "Real events rarely move just one curve. A hurricane destroys capital, which is a supply loss, and it also wipes out household wealth and interrupts spending, which are demand losses. The supply loss moves FE left and tends to raise prices; the demand loss moves IS left and LM right, and tends to lower them.",
+          "Output falls in the long run whatever the mix, because capacity is lost. But whether the price level ends higher or lower depends on which effect is larger. That is why a headline about prices alone is a weak guide to which curve moved: check output and the labour market too.",
+        ],
+        widget: "hurricane",
+      },
+      {
+        heading: "The 1970s as a test",
+        paras: [
+          "In the 1970s US inflation and unemployment rose together, which a pure demand story struggles to explain, and a leftward FE shift predicts. The chart shows approximate annual values. Oil was not the only cause, and policy was also loose in the early part of the decade, so the figures should be read as consistent with the model, not as a clean experiment.",
+        ],
+        widget: "us-1970s",
+      },
+    ],
+    predictions: [
+      { q: "An oil price rise lowers productivity A. Right after the shock, before prices move, where is the economy?", options: ["At a point left of the old FE, with output already fallen", "At the same IS-LM point as before, now right of the new FE", "At a lower IS-LM point, because IS has moved left"], answer: 1, why: "A supply shock moves FE, not IS or LM. The IS-LM point is unchanged and is now above the lower FE, which creates scarcity." },
+      { q: "After the prices have fully adjusted, compared with the start, an adverse supply shock leaves output and the price level…", options: ["Output lower, price level higher", "Output lower, price level lower", "Output unchanged, price level higher"], answer: 0, why: "FE has moved left, so output ends lower. Scarcity raises prices on the way, so the price level ends higher: stagflation." },
+      { q: "After an adverse supply shock the central bank raises the money supply to hold output up. In the long run, what is different from doing nothing?", options: ["Output is higher", "The price level is higher, with the same output", "The real interest rate is lower and output is higher"], answer: 1, why: "In the long run output is on FE whatever the money supply does. More money only raises the price level." },
+      { q: "A productivity boom shifts FE right. Which of these follows?", options: ["Slack, then falling prices and rising output", "Scarcity, then rising prices", "No change, because IS and LM did not move"], answer: 0, why: "The old point is left of the new FE, which is slack. Prices fall, LM moves right, output rises to the new FE." },
+      { q: "A hurricane destroys capital and also cuts demand. What can you say for sure about the long run?", options: ["Output is lower", "The price level is higher", "The price level is lower"], answer: 0, why: "Lost capital lowers capacity. The price level depends on whether the supply or the demand effect is larger." },
+      { q: "Output falls and prices rise together. Which curve most likely moved?", options: ["IS to the left", "LM to the left", "FE to the left"], answer: 2, why: "A fall in IS or LM lowers prices in the long run. Only a fall in FE gives falling output together with rising prices." },
+    ],
+    newsColumns: ["In the news", "Driver", "Curve moved", "Effect"],
+    news: [
+      { headline: "A shipping lane closes and fuel costs jump, forcing factories to cut shifts.", driver: "Energy costs rise, A falls", curve: "FE left", effect: "Output falls, prices rise, real wages fall." },
+      { headline: "A new extraction technique makes domestic gas much cheaper and factories expand.", driver: "Energy costs fall, A rises", curve: "FE right", effect: "Output rises, prices fall, real wages rise." },
+      { headline: "Storm destroys ports and warehouses, and shoppers hold back spending.", driver: "Capital lost and wealth lost", curve: "FE left, IS left", effect: "Output falls; the price effect depends on which is larger." },
+      { headline: "Central bank cuts rates to cushion a fuel-price jump; analysts warn of faster inflation later.", driver: "Easing after a supply shock", curve: "LM right", effect: "Output held up for a while; the long-run result is a higher price level." },
+    ],
+    cases: [
+      {
+        heading: "The 1973 and 1979 oil shocks",
+        text: "Oil prices rose several-fold in 1973 and 1974, after an embargo during the Arab-Israeli war of October 1973, and roughly doubled again around 1979 after the Iranian revolution. In the United States inflation climbed to around 11 percent in 1974 and again to over 13 percent in 1980, while unemployment rose to near 9 percent in the mid-1970s and near 10 percent in 1982. Output fell in 1974 and 1975. Monetary policy and price controls also played a part, so the data fit the model but are not a clean test of it.",
+        approx: "From memory and approximate: the size of the oil price rises, the inflation and unemployment rates and the dates. Check against BLS and BEA series.",
+      },
+      {
+        heading: "The 2021 and 2022 supply squeeze",
+        text: "As economies reopened after COVID, shipping delays and a shortage of microchips held back supply, and energy prices rose sharply again after Russia invaded Ukraine in early 2022. Inflation in the United States reached roughly 9 percent over twelve months in mid-2022, and in much of Europe it reached about 10 percent late that year. Unemployment stayed low in the US, which shows that demand was also strong, so it is a mixed case and not a pure stagflation.",
+        approx: "From memory and approximate: the inflation peaks, the timing and the unemployment level. Check against official releases.",
+      },
+      {
+        heading: "The 1990s productivity boom",
+        text: "US output per hour grew by about 1.5 percent a year from the early 1970s to the mid-1990s and by roughly 2.5 percent a year in the late 1990s and early 2000s, a pickup usually tied to computers and networks. Unemployment fell to about 4 percent around 2000 while inflation stayed around 2 to 3 percent, as a rightward FE shift predicts.",
+        approx: "From memory and approximate: both productivity growth rates and the unemployment and inflation levels. Check against BLS productivity data.",
+      },
+      {
+        heading: "Shale oil in the 2010s",
+        text: "US crude oil production roughly doubled between 2008 and 2015, from about 5 million to about 9 million barrels a day, as fracking spread. World oil prices fell by more than half between 2014 and early 2016. For oil-importing economies that was a positive supply shock; for oil-producing ones it was a negative one.",
+        approx: "From memory and approximate: production levels and the size and dates of the price fall. Check against US Energy Information Administration data.",
+      },
+    ],
   },
   {
     n: 8, slug: "demand-shocks", part: 2, title: "Demand shocks and sticky prices",
