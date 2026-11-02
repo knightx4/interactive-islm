@@ -36,7 +36,7 @@ export const lessons: Lesson[] = [
   {
     n: 2, slug: "goods-market-is", part: 1, title: "The goods market and the IS curve",
     summary: "Spending, the multiplier, and why higher interest rates lower demand.",
-    regime: "closed", defaultShock: "invest-up",
+    regime: "closed", defaultShock: "investment-outlook-up",
     body: [
       "Total spending is consumption plus investment plus government purchases. Households spend part of each extra dollar of income, which is why a change in spending ripples into a larger change in output: the multiplier.",
       "Investment falls when the interest rate is higher, so the combinations of output and interest rate that clear the goods market slope downward. That is the IS curve. Anything that raises spending at a given rate shifts it right.",
@@ -47,7 +47,7 @@ export const lessons: Lesson[] = [
   {
     n: 3, slug: "money-market-lm", part: 1, title: "The money market and the LM curve",
     summary: "Real money balances, money demand, and an upward-sloping LM.",
-    regime: "closed", defaultShock: "money-up",
+    regime: "closed", defaultShock: "money-supply-up",
     body: [
       "People hold money to make purchases, so demand for it rises with income, and falls with the interest rate, which is the cost of holding cash instead of bonds. Supply is the central bank's nominal stock divided by the price level.",
       "Holding real balances fixed, higher income needs a higher interest rate to keep money demand equal to supply. That upward-sloping relationship is the LM curve. More real money, whether from the central bank or from a lower price level, shifts it right.",
@@ -69,7 +69,7 @@ export const lessons: Lesson[] = [
   {
     n: 5, slug: "is-lm-fe", part: 2, title: "Putting IS, LM and FE together",
     summary: "Short-run equilibrium, and where it sits relative to full employment.",
-    regime: "closed", defaultShock: "consume-down",
+    regime: "closed", defaultShock: "future-income-down",
     body: [
       "In the short run prices are stuck, so the economy sits where IS and LM cross. That point may be left or right of FE. The IS-LM crossing tells you output and the interest rate; the FE line tells you whether output is high or low relative to capacity.",
       "Run a shock below and watch the crossing move first, then the LM curve drift as prices respond.",
@@ -80,7 +80,7 @@ export const lessons: Lesson[] = [
   {
     n: 6, slug: "demand-shocks", part: 2, title: "Demand shocks",
     summary: "Sentiment, spending and money demand moving the economy off FE.",
-    regime: "closed", defaultShock: "consume-down",
+    regime: "closed", defaultShock: "future-income-down",
     body: [
       "A demand shock moves IS or LM. If it is contractionary, output falls below FE, prices start to fall, real money balances grow, LM shifts right and output recovers.",
       "In the long run demand shocks leave output where it was. They change prices and, for IS shocks, the interest rate.",
@@ -91,7 +91,7 @@ export const lessons: Lesson[] = [
   {
     n: 7, slug: "supply-shocks", part: 2, title: "Supply shocks",
     summary: "Moves in productive capacity and what they do to prices.",
-    regime: "closed", defaultShock: "supply-down",
+    regime: "closed", defaultShock: "productivity-down",
     body: [
       "A supply shock moves FE. A loss of capacity puts the economy above its new potential, so prices rise and squeeze real money balances until output falls to the new, lower FE.",
       "A productivity gain does the reverse. Prices drift lower and output grows to the new FE.",
@@ -102,7 +102,7 @@ export const lessons: Lesson[] = [
   {
     n: 8, slug: "price-adjustment", part: 2, title: "How prices adjust",
     summary: "The time path from the short run to the long run.",
-    regime: "closed", defaultShock: "money-down",
+    regime: "closed", defaultShock: "money-supply-down",
     body: [
       "The rule is simple: when output is above FE, prices rise; below, they fall. The speed is set by a single parameter. Each price change moves real money balances and so shifts LM.",
       "The time-path panel shows output, prices and the interest rate converging. Whatever the shock, they end where FE and IS dictate.",
@@ -113,7 +113,7 @@ export const lessons: Lesson[] = [
   {
     n: 9, slug: "fiscal-policy", part: 3, title: "Fiscal policy",
     summary: "Spending and taxes, the multiplier, and crowding out.",
-    regime: "closed", defaultShock: "fiscal-spend",
+    regime: "closed", defaultShock: "gov-spending-up",
     body: [
       "More government purchases shift IS right. Output and the interest rate both rise at first. Higher rates crowd out some private investment, so the final boost is smaller than the pure multiplier suggests.",
       "A tax cut works through household spending, so its effect is smaller per dollar than a spending increase.",
@@ -124,7 +124,7 @@ export const lessons: Lesson[] = [
   {
     n: 10, slug: "monetary-policy", part: 3, title: "Monetary policy",
     summary: "Money supply, interest rates and neutrality in the long run.",
-    regime: "closed", defaultShock: "money-up",
+    regime: "closed", defaultShock: "money-supply-up",
     body: [
       "More nominal money shifts LM right, lowering the interest rate and raising output. As prices rise, real balances shrink back, and in the long run only the price level has changed.",
       "That long-run result is called monetary neutrality: money changes nominal values, not real ones.",
@@ -135,7 +135,7 @@ export const lessons: Lesson[] = [
   {
     n: 11, slug: "policy-tradeoffs", part: 3, title: "Policy tradeoffs",
     summary: "Closing a gap with policy versus waiting for prices.",
-    regime: "closed", defaultShock: "consume-down",
+    regime: "closed", defaultShock: "future-income-down",
     body: [
       "If demand falls, prices will eventually restore output, but it can take a while. Policy can shorten the slump by shifting IS or LM back.",
       "Try a negative demand shock, then compare it to the policy shocks in the picker. Policy that arrives late risks overshooting.",
@@ -157,7 +157,7 @@ export const lessons: Lesson[] = [
   {
     n: 13, slug: "floating-rates", part: 4, title: "Floating exchange rates",
     summary: "Monetary policy is strong, fiscal policy is offset.",
-    regime: "floating", defaultShock: "money-up",
+    regime: "floating", defaultShock: "money-supply-up",
     body: [
       "With a floating rate the central bank sets money. LM, with r fixed at the world rate, pins down output. Fiscal expansion raises the currency, crowds out net exports, and leaves output unchanged.",
       "Monetary expansion weakens the currency, boosts net exports and raises output.",
@@ -168,7 +168,7 @@ export const lessons: Lesson[] = [
   {
     n: 14, slug: "fixed-rates", part: 4, title: "Fixed exchange rates",
     summary: "Monetary policy is given up, fiscal policy is strong.",
-    regime: "fixed", defaultShock: "fiscal-spend",
+    regime: "fixed", defaultShock: "gov-spending-up",
     body: [
       "To hold a peg, the central bank must buy or sell its currency, so the money supply moves to whatever keeps the exchange rate. It is no longer a free policy tool.",
       "Fiscal expansion raises output because the central bank accommodates it. A money-supply shock is simply undone. Over time prices adjust, shifting the real exchange rate even though the nominal one is fixed.",

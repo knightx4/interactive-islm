@@ -76,7 +76,7 @@ export default function LessonLab({ regime, defaultShock }: { regime: Regime; de
       </section>
 
       <section className="border-t border-ink pt-4"><h2 className="text-xl">Recipe: work it out step by step</h2><div className="mt-3">
-          <RecipeStepper key={shock.id} steps={recipeFor(sim, regime, shock.label)} chain={chainFor(sim, regime)} />
+          <RecipeStepper key={shock.id} steps={recipeFor(sim, regime, shock)} chain={chainFor(sim, regime, shock)} />
         </div>
       </section>
 

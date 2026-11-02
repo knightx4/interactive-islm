@@ -1,31 +1,21 @@
-import { autonomous, Ystar, type Regime, type Simulation } from "./model";
+import type { Regime, Simulation } from "./model";
 import { direction, type Direction } from "./predict";
+import type { Curve, Shock } from "./shocks";
 
-export type Curve = "IS" | "LM" | "FE";
+export type { Curve };
 export type Shift = { curve: Curve; dir: "right" | "left" };
 
-/** Which curve a shock moves, found by comparing the economy before and after. */
-export function detectShift(sim: Simulation): Shift {
-  const a = sim.before, b = sim.after;
-  const fe = direction(Ystar(a), Ystar(b));
-  if (fe !== "same") return { curve: "FE", dir: fe === "up" ? "right" : "left" };
-  const lmReal = direction(a.M / a.h, b.M / b.h);
-  const kyDir = direction(a.ky / a.h, b.ky / b.h);
-  if (lmReal !== "same") return { curve: "LM", dir: lmReal === "up" ? "right" : "left" };
-  if (kyDir !== "same") return { curve: "LM", dir: kyDir === "up" ? "left" : "right" };
-  const is = direction(autonomous(a), autonomous(b));
-  if (is !== "same") return { curve: "IS", dir: is === "up" ? "right" : "left" };
-  // world rate: moves the horizontal line the economy is pinned to
-  return { curve: "IS", dir: b.rw > a.rw ? "left" : "right" };
-}
+/** Which curve a shock moves: read off the shift table row. */
+export const detectShift = (shock: Shock): Shift => ({ curve: shock.curve, dir: shock.dir });
 
 const word = (d: Direction) => (d === "up" ? "rises" : d === "down" ? "falls" : "stays put");
 
 export type RecipeStep = { title: string; text: string };
 
 /** A fixed five-step recipe, filled in with this shock's results. */
-export function recipeFor(sim: Simulation, regime: Regime, shockLabel: string): RecipeStep[] {
-  const s = detectShift(sim);
+export function recipeFor(sim: Simulation, regime: Regime, shock: Shock): RecipeStep[] {
+  const s = detectShift(shock);
+  const shockLabel = shock.label;
   const b = sim.baseline, i = sim.impact, lr = sim.longRun;
   const yS = direction(b.Y, i.Y), rS = direction(b.r, i.r), pL = direction(b.P, lr.P);
   const gap = i.Y - i.Ystar;
@@ -46,8 +36,8 @@ export function recipeFor(sim: Simulation, regime: Regime, shockLabel: string): 
 }
 
 /** A cause-and-effect chain in plain words, driven by the simulation's own results. */
-export function chainFor(sim: Simulation, regime: Regime): string[] {
-  const s = detectShift(sim);
+export function chainFor(sim: Simulation, regime: Regime, shock: Shock): string[] {
+  const s = detectShift(shock);
   const b = sim.baseline, i = sim.impact, lr = sim.longRun;
   const out: string[] = [`${s.curve} shifts ${s.dir}`];
   const yS = direction(b.Y, i.Y);

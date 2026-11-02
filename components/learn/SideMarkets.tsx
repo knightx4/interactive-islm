@@ -29,7 +29,8 @@ export default function SideMarkets({ sim, index }: { sim: Simulation; index: nu
       <Bar label="Saving and investment" aLabel="Total saving" bLabel={open ? "Investment + net exports" : "Investment"}
         a={s.privateSaving + s.publicSaving} b={s.investment + s.netExports} max={40} color="var(--c-is)" />
       <Bar label="Money market (real)" aLabel="Supply M/P" bLabel="Demand" a={s.moneySupplyReal} b={s.moneyDemand} max={60} color="var(--c-money)" />
-      <Bar label="Labor market" aLabel="Employment" bLabel="Full employment" a={s.labor} b={s.laborFull} max={120} color="var(--c-labour)" />
+      <Bar label="Labour market: employment" aLabel="Employment N" bLabel="At full employment" a={s.employment} b={s.employmentFE} max={120} color="var(--c-labour)" />
+      <Bar label="Labour market: real wage" aLabel="Real wage w" bLabel="At full employment" a={s.realWage} b={s.realWageFE} max={1.5} color="var(--c-labour)" />
     </div>
   );
 }
