@@ -12,6 +12,7 @@ import { DemandLab, IsDemandSpeed, LiquidityTrap, LmDemandSpeed, MultiplierDemo,
 import { Classifier, Contributions2008, NgdpTarget, RecessionLab, RecessionTypes, TaylorRule } from "./policy";
 import { HurricaneWidget, OilLab, PolicyDilemma, Us1970s } from "./supply";
 import { TariffPredict, TariffRecord, TariffShocks } from "./tariffs";
+import { GermanyUk, Timeline } from "./reunification";
 import { CpiBasketWidget, ExpenditureSorter, ImportsDemo, RealNominalWidget, ThreeWaysWidget } from "./measuring";
 
 /** Interactive pieces a lesson section can name by id. */
@@ -42,6 +43,8 @@ const registry: Record<string, ComponentType> = {
   "big-mac": BigMacWidget,
   "regime-spectrum": RegimeSpectrum,
   uip: UipWidget,
+  "germany-uk": GermanyUk,
+  "reunification-timeline": Timeline,
   "tariff-shocks": TariffShocks,
   "tariff-predict": TariffPredict,
   "tariff-record": TariffRecord,

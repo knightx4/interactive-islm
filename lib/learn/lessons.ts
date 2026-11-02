@@ -1216,10 +1216,70 @@ export const lessons: Lesson[] = [
     ],
   },
   {
-    n: 13, slug: "reunification-capital-flows", part: 3, title: "Reunification and capital flows",
-    summary: "Large shifts in saving and investment across borders, and what pegs and reserves do under strain.",
-    covers: ["Shocks that move capital across borders", "Pegs, reserves and speculative attacks", "Linked economies"],
-    lab: { regime: "fixed", mobility: 0.5, shocks: ["devaluation-fear", "peg-undervalued", "foreign-rate-up"], defaultShock: "devaluation-fear" },
+    n: 13, slug: "reunification-capital-flows", part: 3, title: "German reunification and the 1992 pound",
+    summary: "How one country's spending boom, under a fixed exchange-rate system, forced its neighbours into slumps and broke the pound.",
+    covers: ["Reunification as a fiscal shock to West Germany", "The Bundesbank's response and its spill-over to pegged partners", "Why markets doubted Britain's peg, and the exit on 16 September 1992"],
+    body: [
+      "In 1990 West Germany took on East Germany, and in doing so it took on a very large bill. The country needed to rebuild roads, pay pensions and benefits in the east, and absorb firms that could not survive without help. The money came mostly from the government budget and from borrowing. That was a demand shock, and Germany's central bank, the Bundesbank, had to respond to it.",
+      "The rest of western Europe was tied to the mark. The countries in the exchange-rate system had promised to keep their currencies within narrow bands of each other, and the mark was the anchor. When the anchor's interest rate rises, a follower with a fixed exchange rate cannot go its own way. This lesson follows that chain on two linked sets of curves, Germany and the United Kingdom, then sets the model against the dated record.",
+      "The German reunification case study used in some courses is not used here. This lesson is built from the standard framework and from public history, in our own words. Model numbers are index units; every date and size in the history is from memory and approximate.",
+    ],
+    takeaways: [
+      "Reunification spending and absorbing East German firms raised demand at every interest rate: Germany's IS shifted right. Output and the German rate rose.",
+      "The Bundesbank tightened to hold down inflation: LM shifted left, so German rates rose further.",
+      "A partner pegged to the mark has to match the German rate to stop money leaving, even if its own economy is in slump. The peg takes its rate out of its own hands.",
+      "Once markets judge a peg unsustainable, holding the currency needs a premium; reserves drain, rates go up, output falls, and the peg breaks when reserves would run out.",
+      "After the exit the currency falls, net exports rise, and the central bank regains control of its rate. A country that never pegged would have had that adjustment sooner.",
+    ],
+    sections: [
+      {
+        heading: "Germany's boom and the Bundesbank",
+        paras: [
+          "Government spending is a shock to the IS curve. When the German government spent heavily in the east and gave generous support to eastern households, desired saving at each interest rate fell, relative to desired investment and net exports. IS shifted right. Output rose above its starting level, and the real interest rate had to rise to hold the money market in balance.",
+          "The Bundesbank has a legal mandate to keep prices stable. A large spending boom threatens inflation. Its response is to tighten: reduce money growth, which shifts LM left. The result is a higher German rate than the fiscal shock alone would have produced, and a smaller boom than the fiscal shock alone would have produced. Both effects are visible in the first two scenarios below.",
+        ],
+      },
+      {
+        heading: "The anchor and its followers",
+        paras: [
+          "Britain joined the exchange-rate system in October 1990 at a fixed central rate against the mark. Capital moves freely across borders, so investors compare returns. If the German rate is higher and the exchange rate cannot change, they prefer German assets. Money leaves Britain, reserves fall, and the money supply shrinks, unless the Bank of England raises its own rate to match.",
+          "That is the constraint: Britain's rate follows Germany's. And Britain's economy at the time was in recession. The peg made the central bank hold a high rate when its own economy needed a low one.",
+          "The model's linked pair of curves shows exactly this. Germany sits on the left, the UK on the right; the shocks start in Germany, and the UK is dragged along. Step through the scenarios, then play each from A to C.",
+        ],
+        widget: "germany-uk",
+      },
+      {
+        heading: "The dated record",
+        paras: [
+          "The history below puts dates to the story. It also shows the pattern of the rates: the German discount rate rises through 1991 and 1992 while the British rate falls only slowly, because Britain was trying to stay within its band. Dates and rates are from memory, rounded, and approximate; check them against central bank series.",
+        ],
+        widget: "reunification-timeline",
+      },
+      {
+        heading: "Why the peg was not believed",
+        paras: [
+          "A peg is credible while people believe the country will pay the cost of keeping it. Keeping Britain's rate high in a slump meant more unemployment, and pressure on the government to give way. Traders could see that the cost of keeping the peg was rising, and that the central bank's reserves were small compared with the amounts that could move in a day. A one-way bet appeared: if the peg held, little was lost; if it broke, the sterling holders would lose and those who had sold it would gain.",
+          "That expectation becomes a premium on holding sterling, and the premium forces up the rate the Bank of England has to pay. Raising it enough to calm the market would have deepened the slump. On 16 September 1992 the bank raised its rate from 10 to 12 percent and announced a further rise to 15 percent within the same day, and still could not hold. The pound left the system that evening.",
+          "The open-economy lesson tells the same event as a short cause chain, with the speculator's side of the trade. Here the point is the link to Germany: the peg broke because the cost of following the German rate had become too high for the British economy. A floating pound would have fallen with the German shock from the start, as the last scenario shows.",
+          "The lab below lets you try the pieces separately. Start with a rise in the foreign rate, which is the German shock seen from Britain.",
+        ],
+      },
+    ],
+    lab: { regime: "fixed", mobility: 0.5, shocks: ["foreign-rate-up", "devaluation-fear", "peg-overvalued"], defaultShock: "foreign-rate-up" },
+    newsColumns: ["In the news", "Driver", "Curve moved", "Effect"],
+    news: [
+      { headline: "Government agrees a multi-year package to rebuild the former eastern regions.", driver: "Fiscal expansion", curve: "IS shifts right", effect: "Output and the interest rate rise." },
+      { headline: "The central bank raises its key rate again, warning that inflation is above its target.", driver: "Monetary tightening", curve: "LM shifts left", effect: "The rate rises further, and output growth slows." },
+      { headline: "Neighbours with fixed rates raise their own rates, though their economies are weak.", driver: "Peg to the high-rate currency", curve: "LM shifts left in the follower", effect: "Output falls in the follower; reserves leak." },
+      { headline: "Traders sell the currency heavily; the central bank doubles its rate within hours.", driver: "A devaluation premium", curve: "IS shifts left, LM shifts left", effect: "The peg is on the edge; the slump deepens." },
+    ],
+    predictions: [
+      { q: "A big German spending boom, with the exchange rate pegged, leaves Britain's rate…", options: ["unchanged, since it has its own central bank", "pulled up toward the German rate", "pushed down, since German demand helps British exports"], answer: 1, why: "Money would leave for higher German returns, so the pegged central bank must raise its rate or lose reserves." },
+      { q: "The Bundesbank tightens to fight inflation from the boom. In Germany's IS-LM diagram…", options: ["LM shifts left", "IS shifts left", "FE shifts left"], answer: 0, why: "Less money at each price raises the interest rate needed to clear the money market: LM shifts left." },
+      { q: "A pegged country's economy is in recession and its partner's rate rises. The central bank's choice is…", options: ["cut rates to help output; the peg is free", "raise rates, or lose reserves and risk the peg", "do nothing; the exchange rate adjusts on its own"], answer: 1, why: "A peg fixes the exchange rate, so the rate has to follow the partner's or reserves leak." },
+      { q: "Traders come to believe a devaluation is likely. To hold the currency they now demand…", options: ["a lower rate than before", "a premium over the anchor country's rate", "no change, since the exchange rate is fixed"], answer: 1, why: "A possible loss from devaluation must be paid for by a higher return on holding the currency." },
+      { q: "Had the pound floated from 1990 with the same German shocks, UK output would have…", options: ["fallen even further", "been supported by a weaker pound raising net exports", "been unchanged"], answer: 1, why: "A float depreciates; a lower e raises net exports and offsets the rate pressure." },
+    ],
   },
   {
     n: 0, slug: "practice", part: 4, kind: "practice", title: "Practice",
