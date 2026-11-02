@@ -1283,7 +1283,7 @@ export const lessons: Lesson[] = [
   },
   {
     n: 0, slug: "practice", part: 4, kind: "practice", title: "Practice",
-    summary: "Mixed problems across all parts, with the shocks to try and the answers to check against.",
+    summary: "Forty-plus prediction questions across every lesson, by lesson or mixed, with the curves and a reason for each answer.",
     covers: ["Predict-then-check drills", "Reading a news item as a shock", "Putting the whole recipe together"],
   },
 ];

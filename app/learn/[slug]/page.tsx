@@ -10,7 +10,7 @@ import Widget from "@/components/learn/widgets";
 import { lessonBySlug, lessons, parts } from "@/lib/learn/lessons";
 
 export function generateStaticParams() {
-  return lessons.map((l) => ({ slug: l.slug }));
+  return lessons.filter((l) => l.kind !== "practice").map((l) => ({ slug: l.slug }));
 }
 
 const heading = (l: { n: number; title: string }) => (l.n ? `${l.n}. ${l.title}` : l.title);
