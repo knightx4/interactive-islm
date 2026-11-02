@@ -320,9 +320,95 @@ export const lessons: Lesson[] = [
     ],
   },
   {
-    n: 4, slug: "saving-investment", part: 1, title: "Saving and investment",
-    summary: "Households save, firms invest, and the real interest rate brings the two together.",
+    n: 4, slug: "saving-investment", part: 1, title: "Saving, investment and the IS curve",
+    summary: "Build the IS curve from the market for saving and investment, and trace every shifter.",
     covers: ["Desired saving and what shifts it", "Desired investment and what shifts it", "The real interest rate that clears the market"],
+    body: [
+      "The IS curve answers one question: for each level of output, at what real interest rate does the goods market clear? In this model the goods market clears when what people want to save equals what firms want to invest. Build the curve from that market and every news item about spending, confidence, wealth or the budget has a place to land.",
+      "Desired saving comes from households and the government. Desired investment comes from firms deciding how much capital to add. Both respond to the real interest rate r, and saving also responds to income. Everything below uses index units, not data.",
+    ],
+    takeaways: [
+      "Households smooth consumption: a temporary income change is mostly saved or borrowed against, a permanent one is mostly spent, and a wealth change is spread over the years ahead.",
+      "National saving is private saving plus government saving: S = S_private + (T − G).",
+      "Desired investment rises with the expected future productivity of capital and falls with r, with depreciation and with taxes on investment.",
+      "IS is every (Y, r) pair at which desired saving equals desired investment. Higher Y raises saving, so r must fall: IS slopes down.",
+      "Anything that lowers desired saving or raises desired investment at a given r shifts IS right; the opposite shifts it left.",
+      "Whether a tax cut shifts IS depends on how much of it households save. That is the question behind Ricardian equivalence, and it is still debated.",
+    ],
+    sections: [
+      {
+        heading: "Why households smooth",
+        paras: [
+          "Most people would rather spend a similar amount each year than feast one year and starve the next. So spending follows lifetime resources, not this year's pay. Think of the whole stream of income you expect, plus any wealth you have, and spread it across the years you will live. Two shocks look alike in this year's paycheque and are very different in lifetime terms.",
+          "An income shock that lasts one year is a small change to lifetime resources, so most of it is saved. An income shock that lasts for good is a large change, so spending follows it one for one. A wealth shock, such as a rise in the value of a house, is spread across the remaining years. Try all three.",
+        ],
+        widget: "smoothing",
+      },
+      {
+        heading: "Saving, public and private",
+        paras: [
+          "Private saving is what households keep from their income after taxes and consumption. Government saving is the difference between taxes and government purchases, T − G. It is negative when there is a deficit. Total desired saving is the sum, and it is what is available to fund investment. Saving increases when interest rates are higher, because the reward to waiting rises, and it increases with current income.",
+          "Several things change desired saving at a given r. People who expect higher income in future spend more today, so saving falls. Greater wealth lowers saving out of income. A rise in government purchases lowers public saving. A rise in taxes raises public saving by the full amount, while private saving falls by only part of it, so total saving rises.",
+        ],
+      },
+      {
+        heading: "Investment",
+        paras: [
+          "Firms add capital as long as an extra unit earns more than it costs. The return is the expected future marginal product of capital, the MPK, reduced by taxes on investment. The cost is the real interest rate, which is the price of funds, plus depreciation, the share of the machine that wears out. So desired investment falls when r rises, when depreciation rises, or when taxes on investment rise, and it rises when firms expect capital to be more productive next period. Expected future productivity can change because of new technology or an improved business outlook.",
+        ],
+      },
+      {
+        heading: "Building IS point by point",
+        paras: [
+          "Put desired saving and desired investment on one diagram with r on the vertical axis. Saving rises with r and investment falls with r. They cross at the interest rate that clears the market. That rate depends on income, because income shifts saving: with higher income, saving is higher at every r, so the crossing moves to a lower interest rate. Each output level and the r that clears the market at that output are one point on IS. Collect them and the curve slopes down.",
+        ],
+        widget: "saving-market",
+      },
+      {
+        heading: "Every IS shifter",
+        paras: [
+          "A change in anything other than Y and r shifts a curve in the market and with it IS. Five are played below: expected future productivity, expected future income, wealth, government purchases and taxes. The sixth, net exports, enters when the economy is opened in the later lessons. Each comes with its cause chain. Read the chain from left to right as the picture moves.",
+        ],
+        widget: "is-shifters",
+      },
+      {
+        heading: "Ricardian equivalence, an open question",
+        paras: [
+          "Suppose the government cuts taxes today and borrows to cover the gap. The debt has to be repaid, so taxes will be higher later. A household that sees this might save the whole cut to pay the future bill. If so, total saving does not change: public saving falls by exactly what private saving rises, and IS does not move. This is Ricardian equivalence. A household that does not look ahead, or cannot borrow when it wants to, spends much of the cut, and IS shifts right.",
+          "The evidence is mixed. In 2001 and 2008 the US sent rebate cheques to households as part of tax measures. Economists read the same episodes differently: surveys at the time suggested that many people said they would mostly save or repay debt, while studies that followed actual spending found that a sizeable share was spent within a few months. Both readings are consistent with some households smoothing and others spending, so the share f in the widget is a parameter to estimate, not a number the model supplies.",
+        ],
+        widget: "ricardian",
+      },
+    ],
+    predictions: [
+      { q: "A household's pay is raised for one year only. Compared with a permanent raise of the same size, it will spend…", options: ["much less this year", "the same", "much more"], answer: 0, why: "Smoothing spreads a one-year gain over all the years ahead, so most of it is saved." },
+      { q: "The government raises its purchases of goods and services and leaves taxes unchanged. What happens to desired saving and to IS?", options: ["Saving falls and IS moves right", "Saving rises and IS moves right", "Saving falls and IS moves left"], answer: 0, why: "Public saving T − G falls, so total saving falls at each r. At the old rate investment exceeds saving, and r has to rise: IS moves right." },
+      { q: "Firms expect the machines they buy now to be much more productive next year. What happens?", options: ["The I curve moves right and IS moves right", "The S curve moves right and IS moves left", "Nothing, because r has not changed"], answer: 0, why: "A higher expected MPK raises desired investment at each r, so IS shifts right." },
+      { q: "Households learn that their homes are worth much more. What do they do to saving and IS?", options: ["Save less, and IS moves right", "Save more, and IS moves left", "Nothing changes"], answer: 0, why: "Greater wealth lowers desired saving at each r, so IS shifts right. The model also raises money demand, which moves LM in the lesson that follows." },
+      { q: "Households believe in full Ricardian equivalence. The government cuts taxes with a deficit. IS…", options: ["does not move", "moves right", "moves left"], answer: 0, why: "Households save the whole cut to meet future taxes, so private saving rises by what public saving falls and total saving is unchanged." },
+      { q: "Output rises and everything else is unchanged. What happens to the market-clearing interest rate?", options: ["It falls", "It rises", "It does not change"], answer: 0, why: "Higher income raises desired saving at each r, so the saving curve shifts right and r falls to clear the market. That is the downward slope of IS." },
+    ],
+    newsColumns: ["In the news", "Driver", "Curve moved", "Effect"],
+    news: [
+      { headline: "Surveys show households expect their incomes to grow much faster over the next five years.", driver: "Expected future income rises", curve: "S left, so IS right", effect: "Households save less today. Short-run output and r both rise." },
+      { headline: "Consumers say they are worried and start putting more aside.", driver: "Expected future income falls, or caution", curve: "S right, so IS left", effect: "Saving rises at each r. Short-run output and r fall." },
+      { headline: "Parliament approves a large road-building programme with no tax rise.", driver: "G rises", curve: "S left, so IS right", effect: "Public saving falls. Output and r rise in the short run." },
+      { headline: "House prices rise by a fifth in two years.", driver: "Wealth rises", curve: "S left, so IS right", effect: "Households save less. LM also moves, through money demand." },
+      { headline: "A tax on new factories is cut.", driver: "Tax on investment falls", curve: "I right, so IS right", effect: "Desired investment rises at each r." },
+      { headline: "Firms report that new machines wear out and need replacing faster than expected.", driver: "Depreciation rises", curve: "I left, so IS left", effect: "The net return to capital falls, and investment with it." },
+    ],
+    cases: [
+      {
+        heading: "Tax rebates in 2001 and 2008",
+        text: "In 2001 the US government sent households rebate cheques of up to a few hundred dollars each as part of a tax-cutting law, worth some tens of billions of dollars. In 2008 it did so again, with larger rebates, about 100 billion dollars in all. Researchers who surveyed households at the time reported that most said they planned to save the money or pay off debts. Researchers who tracked actual spending after the cheques arrived found that households spent a significant fraction of them within a few months, with the share larger for households that were short of cash. Economists therefore disagree about how close households are to the Ricardian benchmark, and they disagree about the number that goes into f.",
+        approx: "From memory and approximate: the sizes of the 2001 and 2008 rebate programmes, and the survey and spending shares. Neither source is given here. Check the original studies before quoting a number. The widget uses f as a free parameter for that reason.",
+      },
+      {
+        heading: "Euro-area household saving and a confidence slump",
+        text: "Households in the euro area normally saved something like 12 to 13 percent of their disposable income. In 2020, with shops closed and uncertainty high, the rate jumped to a peak above 20 percent, and it stayed well above the old average for several years. Separately, an index of euro-area consumer confidence fell to record lows in 2022, when energy prices soared and inflation rose. In the model, a loss of confidence about the future acts like lower expected future income and greater caution, which raises desired saving at each r and shifts IS to the left. In the data it was accompanied by weak consumer spending.",
+        approx: "From memory and approximate: the normal saving rate, the 2020 peak, the persistence of a high saving rate afterwards, and the timing and depth of the 2022 confidence slump. Check the Eurostat and European Commission series before quoting a figure. Saving also rose in 2020 because spending was blocked, which is not the same as a confidence effect.",
+      },
+    ],
   },
   {
     n: 5, slug: "money-inflation", part: 1, title: "Money and inflation",
