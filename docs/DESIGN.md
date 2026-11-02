@@ -30,8 +30,9 @@ financial-press chart, not a component kit.
    with the name set at the line end in the curve's colour, no corner legends.
    Equilibrium is a small ink dot with dotted guides to the axes. Charts fill
    their column; they are never squashed into a corner.
-6. **Dark mode** follows `prefers-color-scheme`; `data-theme="light|dark"` on
-   `<html>` overrides. Only tokens change, never component code.
+6. **Light by default.** The app is light whatever the device prefers. The dark
+   tokens apply only with `data-theme="dark"` on `<html>`. Only tokens change,
+   never component code.
 7. **Responsive.** Reading width is 40rem for prose; layouts must work at
    390px and 1440px.
 

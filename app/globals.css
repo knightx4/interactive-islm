@@ -1,10 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Light is the default whatever the device prefers; dark only with data-theme="dark". */
 @custom-variant dark {
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) & { @slot; }
-  }
   :root[data-theme="dark"] & { @slot; }
 }
 
@@ -134,27 +132,6 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-  --paper: #111317;
-  --ink: #e7e9ed;
-  --ink-soft: #b7bdc6;
-  --ink-faint: #8a929d;
-  --rule: #2b3037;
-  --rule-strong: #e7e9ed;
-  --wash: #191c21;
-  --c-is: #6fa3d6;
-  --c-lm: #e57d72;
-  --c-fe: #6dba7d;
-  --c-labour: #dba04a;
-  --c-money: #a594d6;
-  --pt-a: #f2f3f5;
-  --pt-b: #ff7b6e;
-  --pt-c: #7ab0ff;
-  --destructive: #e57d72;
-  color-scheme: dark;
-  }
-}
 :root[data-theme="dark"] {
   --paper: #111317;
   --ink: #e7e9ed;
