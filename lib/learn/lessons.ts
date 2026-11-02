@@ -411,9 +411,101 @@ export const lessons: Lesson[] = [
     ],
   },
   {
-    n: 5, slug: "money-inflation", part: 1, title: "Money and inflation",
-    summary: "What people hold money for, what central banks control, and how inflation expectations enter.",
+    n: 5, slug: "money-inflation", part: 1, title: "Money and the LM curve",
+    summary: "Build the LM curve from the money market, and read a central bank move as a shift of it.",
     covers: ["Money demand and the nominal interest rate", "How the money supply is set", "Inflation, expected inflation and the real rate"],
+    body: [
+      "The LM curve answers a question about money: for each level of output, at what real interest rate does the amount of money people want to hold equal the amount there is? When a news story says a central bank raised interest rates, this is where it lands in the model: the central bank has chosen a smaller money supply, and the LM curve has moved.",
+      "This lesson builds the curve from the money market, step by step, and ends with the tools a central bank uses. The numbers in the figures are index units, not data.",
+    ],
+    takeaways: [
+      "Money serves as a medium of exchange, a unit of account and a store of value. M1 is the most liquid measure; M2 adds assets that are close to money.",
+      "Banks create deposits when they lend, so the money supply is the monetary base times a multiplier, about 1 ÷ the reserve ratio with no cash drain.",
+      "Nominal money demand is P × L(Y, r + expected inflation, wealth, riskiness and liquidity of other assets, payment technology). Real demand rises with Y and wealth, and falls with the nominal interest rate.",
+      "LM is every (Y, r) pair at which real money demand equals real money supply M/P. Raising Y shifts demand right, so r must rise: LM slopes up.",
+      "LM moves right when M rises, when expected inflation rises, when other assets become more liquid, or when payment technology improves; it moves left when P rises, wealth rises, or other assets become riskier.",
+      "A higher policy rate is a smaller money supply, which is a leftward LM.",
+    ],
+    sections: [
+      {
+        heading: "What money is and how it is measured",
+        paras: [
+          "Money does three jobs. It is a medium of exchange: you can swap it for goods without finding someone who wants what you have. It is a unit of account: prices are quoted in it. And it is a store of value: it keeps purchasing power until you spend it. High inflation damages all three, as the cases below show.",
+          "Economists measure the money supply in layers. The narrowest widely used measure, M1, is currency in circulation and balances you can spend straight away, such as chequing deposits. M2 adds assets that are not quite as handy but can be turned into cash quickly, such as savings accounts, small time deposits and retail money-market funds. The exact definitions are set by each central bank and have been revised from time to time. For example, in 2020 the US Federal Reserve moved savings deposits into its M1 measure, so older textbooks draw the line differently.",
+        ],
+      },
+      {
+        heading: "How banks create money",
+        paras: [
+          "Most money is not printed cash. It is deposits in banks. When a bank receives a deposit it keeps a share as reserves and lends the rest. The borrower spends the loan, and the seller deposits it in a bank, which again lends most of it. Each round creates a new deposit that is smaller than the last by the share held as reserves. Add them up and 100 of new reserves can support deposits of 100 ÷ rr, where rr is the reserve ratio.",
+          "That is the money multiplier. It shrinks if the public holds more cash, because cash held outside the banks cannot be lent. Central banks do not control the multiplier directly, but they can change the reserve requirement.",
+        ],
+        widget: "multiplier",
+      },
+      {
+        heading: "Money demand and the LM curve",
+        paras: [
+          "People hold money because it is convenient for buying things, even though it pays little or no interest. Nominal money demand is MD = P × L(Y, r + expected inflation, wealth, risk and liquidity of other assets, payment technology). It is proportional to the price level, since it takes twice the cash to buy the same things when prices double. The remaining arguments set real demand L.",
+          "More income means more purchases, so L rises with Y. A higher nominal interest rate, the real rate plus expected inflation, makes holding money costlier compared with bonds, so L falls. More wealth raises demand for all assets, including money. If other assets become riskier, people want more safe money; if other assets become easier to sell, or if payments technology makes cash less needed, they want less.",
+          "Now fix the real money supply M/P at some level and ask which interest rate makes people willing to hold exactly that. Raise Y: demand shifts right, so the rate that clears the market has to rise. Each pair of output and that rate is a point on LM, and the curve slopes up. Every other argument is a shifter. The panel lets you move all of them.",
+        ],
+        widget: "money-market",
+      },
+      {
+        heading: "Every LM shifter",
+        paras: [
+          "Anything that changes money demand or real supply at a given output and interest rate shifts LM. The price level is the one that surprises people: when P rises with M fixed, real balances M/P fall, and LM moves left. This is the channel through which prices adjust the economy back to full employment, as the IS-LM-FE lesson shows.",
+        ],
+        widget: "lm-shifters",
+      },
+      {
+        heading: "Central bank tools",
+        paras: [
+          "A central bank cannot choose the money supply, the interest rate and the price level separately. In practice most set a short-term policy rate and supply whatever reserves are needed to hold it. That is why a rate rise in the news is, in the model, a tightening of the money supply.",
+          "The four classic tools differ in how they get there. Open market operations buy or sell government bonds. The policy rate is the target for interbank lending. The discount rate is the price of borrowing reserves from the central bank. Reserve requirements change the multiplier. The Taylor rule, which asks how the policy rate should respond to inflation and output, waits for the recessions lesson.",
+        ],
+        widget: "policy-rate",
+      },
+    ],
+    predictions: [
+      { q: "The reserve ratio is 20 percent and there is no cash drain. A bank receives a new deposit of 1,000. In the end, deposits can rise by about…", options: ["5,000", "1,200", "200"], answer: 0, why: "The multiplier is 1 ÷ 0.2 = 5, so 1,000 of new reserves supports about 5,000 of deposits." },
+      { q: "Households start using a phone payment system that makes it easier to pay without holding cash. What happens to LM?", options: ["It moves right", "It moves left", "It does not move"], answer: 0, why: "Money demand falls at each Y and r, so the rate that clears the market falls and LM moves right." },
+      { q: "The price level rises 10 percent and the nominal money supply is unchanged. What happens to LM?", options: ["It moves left", "It moves right", "It does not move, since M is unchanged"], answer: 0, why: "Real balances M/P fall, so the interest rate that clears the market is higher at each Y." },
+      { q: "People start to expect higher inflation, with everything else unchanged. What happens to LM, in terms of the real rate?", options: ["It moves right", "It moves left", "It does not move"], answer: 0, why: "At the old real rate the nominal rate is higher, which lowers money demand. A lower real rate is needed to clear the market, so LM moves right." },
+      { q: "The central bank announces it will raise its policy rate. In the model it has…", options: ["reduced the money supply, moving LM left", "increased the money supply, moving LM right", "shifted IS left, and not LM"], answer: 0, why: "To hold a higher short-term rate, the central bank supplies fewer reserves, which means less money. LM moves left." },
+      { q: "Investors become much more worried about the safety of stocks and bonds. What happens?", options: ["Money demand rises and LM moves left", "Money demand falls and LM moves right", "Only IS is affected"], answer: 0, why: "Safe money becomes more attractive, so at each Y and r people want more of it. The clearing rate rises and LM moves left." },
+    ],
+    newsColumns: ["In the news", "Driver", "Curve moved", "Effect"],
+    news: [
+      { headline: "The central bank announces it will buy government bonds every month.", driver: "Money supply rises (open market purchase)", curve: "LM right", effect: "The interest rate that clears the money market falls at each level of output." },
+      { headline: "The central bank raises its key rate by a quarter point.", driver: "Policy rate up, money supply down", curve: "LM left", effect: "Higher real rate and lower short-run output, other things equal." },
+      { headline: "A survey shows families expect prices to rise faster next year.", driver: "Expected inflation rises", curve: "LM right", effect: "People hold less money, so the real rate that clears the market falls. IS and the nominal rate matter too." },
+      { headline: "Stock markets tumble and investors seek safe assets.", driver: "Risk of alternatives rises", curve: "LM left", effect: "Money demand rises at each output and rate." },
+      { headline: "Banks are allowed to hold a smaller share of deposits in reserve.", driver: "Reserve requirement falls", curve: "LM right (through a larger M)", effect: "The multiplier rises, so the same reserves support more money." },
+      { headline: "Prices rise 8 percent over the year and the central bank leaves the money supply unchanged.", driver: "P rises", curve: "LM left", effect: "Real balances fall, pushing the interest rate up at each output." },
+    ],
+    cases: [
+      {
+        heading: "Zimbabwe's hyperinflation and the 2024 ZiG",
+        text: "In the late 2000s the Reserve Bank of Zimbabwe financed government spending by creating money on a huge scale. The price level rose so fast that, by late 2008, prices were roughly doubling every day or so by some estimates, and notes of enormous face value circulated. In the model's terms, a vast rise in M leads to a matching rise in P, so real balances M/P do not rise at all. Money lost its use as a store of value and a unit of account, and people turned to foreign currencies. The country dropped its own currency in 2009 in favour of the US dollar and others. Later attempts to reintroduce a domestic currency lost value repeatedly. In 2024 the central bank launched a new unit, the Zimbabwe Gold, or ZiG, partly backed by gold and foreign exchange reserves. Its early record is a test of whether backing can restore trust in a currency, and the result is open.",
+        approx: "From memory and approximate: the date and the doubling time at the peak of the hyperinflation (estimates differ widely, and official statistics stopped), the timing of dollarisation, the launch of the ZiG in 2024, its backing, and its exchange-rate record afterwards. Check against the Reserve Bank of Zimbabwe and IMF documents.",
+      },
+      {
+        heading: "Turkey cuts rates into high inflation",
+        text: "In late 2021 Turkey's central bank lowered its policy rate by several points, while inflation was already high and rising. The model gives a clear reading. A rate cut is a larger money supply, so LM moves right, which pushes the real interest rate down. With inflation high and expected to stay high, the real rate fell sharply, and the lira fell in value against the dollar. Inflation went on to reach levels around or above 80 percent in 2022, according to official figures. The central bank later reversed course and raised its policy rate to very high levels in 2023 and 2024.",
+        approx: "From memory and approximate: the size and dates of the rate cuts (a few points in autumn and winter 2021), the peak of annual inflation in 2022, and the later policy rate. Official and independent inflation estimates differed, so check against Central Bank of the Republic of Turkey releases.",
+      },
+      {
+        heading: "El Salvador and bitcoin as a payment technology",
+        text: "El Salvador already used the US dollar as its currency. In 2021 it made bitcoin legal tender alongside the dollar, and the government launched a digital wallet. If a cheap new way of paying were widely adopted, the model's payment-technology term would apply: people would need to hold less of the old form of money, and LM would shift right. In practice, surveys found that very few people used bitcoin for ordinary purchases, and in the following years the government rolled back the requirement that businesses accept it. The case shows that a payment technology only shifts LM if people actually adopt it.",
+        approx: "From memory and approximate: the date of the law (September 2021), the low use reported in surveys, and the later change to voluntary acceptance under an IMF programme. Check against the IMF and Salvadoran central bank documents.",
+      },
+      {
+        heading: "The Fed's balance sheet",
+        text: "Before the 2008 crisis the US Federal Reserve held assets worth under a trillion dollars. During and after the crisis, and again in 2020, it bought large quantities of government and mortgage-backed bonds, paying with newly created reserves, and its balance sheet grew to several trillion dollars, a peak of roughly nine trillion in 2022. These purchases are open market operations on a very large scale. From 2022 the Fed let bonds mature without replacing them, which shrinks reserves, a move in the opposite direction.",
+        approx: "From memory and approximate: the size of the balance sheet before 2008 (under 1 trillion dollars), at its 2022 peak (about 9 trillion), and its later fall. Check against the Federal Reserve's H.4.1 releases.",
+      },
+    ],
   },
   {
     n: 6, slug: "is-lm-fe", part: 2, title: "The IS-LM-FE model",

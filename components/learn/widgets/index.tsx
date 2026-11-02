@@ -3,6 +3,7 @@
 import type { ComponentType } from "react";
 import { LafferWidget, LinkedPanels, OkunConverter, PhillipsWidget, UsUnemployment } from "./labour";
 import { IsShifters, RicardianWidget, SavingMarketIS, SmoothingWidget } from "./saving";
+import { LmShifters, MoneyMarketLM, MultiplierWidget, PolicyRateWidget } from "./money";
 import { FEHandoff, GrowthCalculator, HiringWidget, ProductionFunctionWidget } from "./productivity";
 import { CpiBasketWidget, ExpenditureSorter, ImportsDemo, RealNominalWidget, ThreeWaysWidget } from "./measuring";
 
@@ -17,6 +18,10 @@ const registry: Record<string, ComponentType> = {
   hiring: HiringWidget,
   "growth-calc": GrowthCalculator,
   "fe-handoff": FEHandoff,
+  multiplier: MultiplierWidget,
+  "money-market": MoneyMarketLM,
+  "lm-shifters": LmShifters,
+  "policy-rate": PolicyRateWidget,
   smoothing: SmoothingWidget,
   "saving-market": SavingMarketIS,
   "is-shifters": IsShifters,
