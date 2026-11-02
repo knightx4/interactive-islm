@@ -9,6 +9,7 @@ import { BigMacWidget, CarryWidget, RegimeSpectrum, StrongCurrencyWidget, UipWid
 import { GeSandbox, LmPuzzle, MoneyNeutrality, PriceLM, RecipeTwoShocks } from "./fullmodel";
 import { IdentityWidget, LedgerWidget, NxShiftersWidget } from "./open";
 import { HurricaneWidget, OilLab, PolicyDilemma, Us1970s } from "./supply";
+import { TariffPredict, TariffRecord, TariffShocks } from "./tariffs";
 import { CpiBasketWidget, ExpenditureSorter, ImportsDemo, RealNominalWidget, ThreeWaysWidget } from "./measuring";
 
 /** Interactive pieces a lesson section can name by id. */
@@ -39,6 +40,9 @@ const registry: Record<string, ComponentType> = {
   "big-mac": BigMacWidget,
   "regime-spectrum": RegimeSpectrum,
   uip: UipWidget,
+  "tariff-shocks": TariffShocks,
+  "tariff-predict": TariffPredict,
+  "tariff-record": TariffRecord,
   "saving-nx": IdentityWidget,
   ledger: LedgerWidget,
   "nx-shifters": NxShiftersWidget,

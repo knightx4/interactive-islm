@@ -940,10 +940,75 @@ export const lessons: Lesson[] = [
     ],
   },
   {
-    n: 12, slug: "tariffs-trade", part: 3, title: "Tariffs and trade",
-    summary: "What tariffs do to net exports, the exchange rate and output.",
-    covers: ["Tariffs and net exports", "Retaliation and a partner's tariff", "Why a float can offset a tariff"],
+    n: 12, slug: "tariffs-trade", part: 3, title: "The 2025 tariffs",
+    summary: "Play chief economist: forecast the US, the euro area and China under the April 2025 tariffs, then compare with what happened.",
+    covers: ["A tariff as a supply shock, a demand shock and an uncertainty shock", "Why three central banks faced different choices", "Model against the public record"],
+    body: [
+      "On 2 April 2025 the United States announced a new set of tariffs: a baseline rate on nearly all imports and higher rates on many trading partners. Over the following weeks rates were raised, paused, and renegotiated, most dramatically between the US and China. This lesson uses the episode as a case, not as news: the aim is to practise turning an event into shocks on the curves and then into a policy call.",
+      "A tariff is a tax on imports. The textbook effect on net exports is simple, and the lab at the bottom of the page plays it. But a large, sudden and unpredictable tariff does more than shift NX. It raises the cost of inputs, it invites retaliation and weakens confidence, and it makes firms delay decisions. Each of those is a different shock to a different curve.",
+      "Sizes in the exercise are teaching assumptions chosen to reflect who pays the tariff and who faces it, not estimates. Real-world facts are from memory, approximate, and kept apart from the model.",
+    ],
+    takeaways: [
+      "A tariff can be read as three shocks: costlier inputs (supply: FE shifts left), weaker export demand and confidence (demand: IS shifts left), and postponed investment (uncertainty: IS shifts left again).",
+      "A supply shock moves FE left, leaves output where it was at impact, and pushes prices up. A demand shock moves IS left, lowers output and the real rate, and pushes prices down. Together they pull the price level in opposite directions, so the net effect depends on the sizes.",
+      "A central bank facing price pressure and weak demand together is boxed in: easing helps output now but adds to prices later. A central bank with little price pressure is free to ease.",
+      "A tightly managed rate cannot absorb an export shock, so output carries more of it, and reserves or the currency must give.",
+      "Model predictions are about direction and mechanism. They can miss when a shock changes risk perceptions, as the 2025 dollar did.",
+    ],
+    sections: [
+      {
+        heading: "One tariff, three shocks",
+        paras: [
+          "Supply. Many goods that are made at home use imported parts and materials. A tariff makes those inputs dearer, so each worker produces less for a given set of inputs. In the model this lowers productivity and shifts FE left. The economy does not feel it at once in output, because output is demand-determined in the short run, but prices have to rise to restore balance.",
+          "Demand. Other countries tariff back, or buy less because their buyers face higher prices. Export demand falls. Households and firms also worry about the future and save more. Both move IS left.",
+          "Uncertainty. A firm that cannot tell whether a tariff will be doubled or removed in a month will often wait before building anything. In the model that is a fall in the return firms expect on new capital, which also moves IS left.",
+          "Play each shock on its own, then all three. Watch the points A, B and C: the curves move the same way for the demand shocks, but the supply shock moves a different curve.",
+        ],
+        widget: "tariff-shocks",
+      },
+      {
+        heading: "Three economies, three constraints",
+        paras: [
+          "The three shocks do not hit evenly. A country that imposes tariffs bears the input shock; a country that is tariffed bears the export shock. The United States imposes, the euro area and China are tariffed, and China faces the largest tariffs and the tightest exchange-rate management.",
+          "A central bank watches two things the model also tracks: output relative to capacity, and price pressure. If both point toward easing, it eases. If they conflict, it has to weigh them. The exercise below fixes a simple rule for that weighing, so that your forecast has a definite answer to check.",
+        ],
+      },
+      {
+        heading: "Your forecast",
+        paras: [
+          "Mark your prediction for each economy: the direction of output and the real interest rate right after the shock, the price level once prices have adjusted, and what you expect the central bank to do. Reveal the model's answer once all twelve are filled in. Then replay with each bank easing and see what it buys.",
+        ],
+        widget: "tariff-predict",
+      },
+      {
+        heading: "What happened in 2025",
+        paras: [
+          "The public record is the test of the exercise, not of the model's size parameters. Compare what you predicted, and what the model said, with the decisions central banks actually took. The notes are from memory and approximate. Fill in sources from public reporting, and add what came after.",
+        ],
+        widget: "tariff-record",
+      },
+      {
+        heading: "A plain tariff on the curves",
+        paras: [
+          "The lab below isolates the textbook case. A home tariff raises NX at every exchange rate, so IS shifts right; with a floating rate and capital mobility the currency appreciates, which pushes NX back down. A partner's tariff does the reverse for us: IS left, and a floating currency depreciates.",
+        ],
+      },
+    ],
     lab: { regime: "floating", mobility: 0.5, shocks: ["tariff-up", "partner-tariff-up"], defaultShock: "tariff-up" },
+    newsColumns: ["In the news", "Driver", "Curve moved", "Effect"],
+    news: [
+      { headline: "Manufacturers say imported parts now cost a fifth more and they will raise prices.", driver: "Costlier inputs", curve: "FE shifts left", effect: "Price pressure rises; output at impact is unchanged but is now above capacity." },
+      { headline: "Orders from overseas customers dry up as trading partners impose their own duties.", driver: "Retaliation", curve: "IS shifts left", effect: "Output and the real rate fall; with slack, prices drift down." },
+      { headline: "Companies freeze capital spending until trade policy becomes clearer.", driver: "Uncertainty", curve: "IS shifts left", effect: "Investment and the real rate fall." },
+      { headline: "Central bank holds rates, citing both a slowing economy and a risk of higher inflation.", driver: "Conflicting signals", curve: "No curve moved by the bank", effect: "A bank facing price pressure and weak demand together is boxed in." },
+    ],
+    predictions: [
+      { q: "A tariff raises the cost of imported inputs. Which curve moves?", options: ["IS shifts left", "FE shifts left", "LM shifts left"], answer: 1, why: "Costlier inputs lower what workers can produce, which is a fall in productivity: full-employment output falls, so FE shifts left." },
+      { q: "With only the supply shock, output at impact (prices fixed) is…", options: ["lower", "unchanged", "higher"], answer: 1, why: "Output at impact is determined by demand, which has not moved. It now sits above the new, lower FE, which pushes prices up." },
+      { q: "A weaker export demand and a loss of confidence together shift IS left. In the long run the price level…", options: ["falls", "rises", "is unchanged"], answer: 0, why: "Output is below FE after the shock, so slack pulls prices down until real balances rise enough to return to FE." },
+      { q: "A central bank sees a big input-cost shock and weakening demand. Easing would…", options: ["lift output now and raise prices later", "lift output and lower prices", "do nothing"], answer: 0, why: "More money raises output at impact, but with FE already lower the price level must rise by more in the long run. That is the box." },
+      { q: "An economy with a tightly managed exchange rate faces a drop in export demand. Compared with a floating economy, output falls…", options: ["by less, because reserves buffer it", "by more, because the exchange rate cannot absorb it", "by the same"], answer: 1, why: "A float lets e fall, which cushions NX. A tight rate cannot, so output and reserves carry the hit." },
+    ],
   },
   {
     n: 13, slug: "reunification-capital-flows", part: 3, title: "Reunification and capital flows",
