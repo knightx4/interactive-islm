@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useSyncExternalStore } from "react";
+import { SlidersHorizontal } from "lucide-react";
+import { Sheet, SheetTrigger, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import ModelControls from "@/components/islm/ModelControls";
 import ExpenditureIdentityCard from "@/components/islm/ExpenditureIdentityCard";
 import MacroFeedbackBar from "@/components/islm/layout/MacroFeedbackBar";
@@ -15,6 +17,18 @@ import {
   computeIslmEquilibrium,
   type ModelParams,
 } from "@/lib/islmModel";
+
+function useIsDesktop() {
+  return useSyncExternalStore(
+    (cb) => {
+      const m = window.matchMedia("(min-width: 1024px)");
+      m.addEventListener("change", cb);
+      return () => m.removeEventListener("change", cb);
+    },
+    () => window.matchMedia("(min-width: 1024px)").matches,
+    () => true,
+  );
+}
 
 type SolvedEquilibrium = { output: number; rate: number };
 
@@ -70,14 +84,25 @@ export default function HomePage() {
     });
   }, [params]);
 
+  const isDesktop = useIsDesktop();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const controls = (
+    <ModelControls
+      params={params}
+      updateParam={updateParam}
+      equilibriumOutput={solvedEquilibrium?.output ?? null}
+      onSetBaseline={() => setBaselineParams({ ...params })}
+      onAfterReset={() => setBaselineParams(null)}
+    />
+  );
   const fig = { params, baselineParams, equilibrium: solvedEquilibrium };
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-8 md:px-6">
+    <div className="mx-auto w-full max-w-7xl px-4 pb-24 pt-8 lg:pb-16 md:px-6">
       <header className="max-w-2xl">
         <h1 className="text-3xl md:text-4xl">The IS-LM model</h1>
         <p className="prose-text mt-3 text-lg text-foreground/90">
-          Move a driver on the left and watch equilibrium move. All values are model index units,
+          Move a driver (on a phone, open Drivers at the bottom) and watch equilibrium move. All values are model index units,
           not billions or percentage points. The goods market uses{" "}
           <i>I</i> + <i>NX</i> = <i>S</i>, and the accounting table shows{" "}
           <i>Y</i> = <i>C</i> + <i>I</i> + <i>G</i> + <i>NX</i>.
@@ -85,18 +110,14 @@ export default function HomePage() {
       </header>
 
       <div className="mt-8 grid gap-10 lg:grid-cols-[22rem_minmax(0,1fr)] lg:gap-12">
-        <aside
-          aria-label="Model controls"
-          className="order-2 lg:order-1 lg:sticky lg:top-16 lg:max-h-[calc(100vh-5rem)] lg:self-start lg:overflow-y-auto lg:pr-2"
-        >
-          <ModelControls
-            params={params}
-            updateParam={updateParam}
-            equilibriumOutput={solvedEquilibrium?.output ?? null}
-            onSetBaseline={() => setBaselineParams({ ...params })}
-            onAfterReset={() => setBaselineParams(null)}
-          />
-        </aside>
+        {isDesktop && (
+          <aside
+            aria-label="Model controls"
+            className="order-2 lg:order-1 lg:sticky lg:top-16 lg:max-h-[calc(100vh-5rem)] lg:self-start lg:overflow-y-auto lg:pr-2"
+          >
+            {controls}
+          </aside>
+        )}
 
         <div className="order-1 min-w-0 lg:order-2">
           <figure>
@@ -167,6 +188,29 @@ export default function HomePage() {
           </section>
         </div>
       </div>
+
+      {!isDesktop && (
+        <Sheet open={sheetOpen} onOpenChange={setSheetOpen} modal={false}>
+          <div className="fixed inset-x-0 bottom-0 z-40 border-t border-ink bg-paper px-4 py-2">
+            <SheetTrigger className="flex h-11 w-full items-center justify-center gap-2 border border-ink font-sans text-sm font-semibold">
+              <SlidersHorizontal className="h-4 w-4" aria-hidden />
+              Drivers
+            </SheetTrigger>
+          </div>
+          <SheetContent
+            side="bottom"
+            overlay={false}
+            onInteractOutside={(e) => e.preventDefault()}
+            className="flex h-[88dvh] flex-col gap-0 border-t border-ink bg-paper p-0 shadow-none"
+          >
+            <SheetTitle className="sr-only">Model drivers</SheetTitle>
+            <div className="shrink-0 border-b border-rule bg-paper px-4 pb-2 pt-3">
+              <IslmFigure {...fig} />
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">{controls}</div>
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }
