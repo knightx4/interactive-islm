@@ -1,35 +1,28 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { RecipeStep } from "@/lib/macro/recipe";
 
-export default function RecipeStepper({ steps, chain }: { steps: RecipeStep[]; chain: string[] }) {
-  const [n, setN] = useState(0);
+/** The eight recipe steps. The current step drives the figures; earlier steps stay readable. */
+export default function RecipeStepper({
+  steps, step, onStep, enabled,
+}: { steps: RecipeStep[]; step: number; onStep: (n: number) => void; enabled: boolean }) {
   return (
-    <div className="space-y-4">
-      <ol className="space-y-2">
+    <div className="space-y-3">
+      <ol className="space-y-1">
         {steps.map((s, k) => (
-          <li key={k} className={`border-l-2 py-1 pl-3 text-sm ${k === n ? "border-ink" : k < n ? "border-rule" : "border-transparent opacity-50"}`}>
-            <div className="font-semibold">{k + 1}. {s.title}</div>
-            {k <= n && <p className="mt-1 text-foreground/85">{s.text}</p>}
+          <li key={k} className={`border-l-2 pl-3 text-sm ${k === step ? "border-ink" : k < step ? "border-rule" : "border-transparent opacity-50"}`}>
+            <button type="button" disabled={!enabled} onClick={() => onStep(k)} aria-current={k === step ? "step" : undefined}
+              className="text-left font-semibold enabled:hover:underline underline-offset-4">
+              {k + 1}. {s.title}
+            </button>
+            {k === step && <p className="mt-1 text-foreground/85" aria-live="polite">{s.text}</p>}
           </li>
         ))}
       </ol>
       <div className="flex gap-2">
-        <Button type="button" size="sm" variant="outline" disabled={n === 0} onClick={() => setN(n - 1)}>Back</Button>
-        <Button type="button" size="sm" disabled={n >= steps.length - 1} onClick={() => setN(n + 1)}>Next step</Button>
-      </div>
-      <div>
-        <div className="mb-1 text-sm font-semibold">Cause chain</div>
-        <div className="flex flex-wrap items-center gap-1 text-sm">
-          {chain.map((c, k) => (
-            <span key={k} className="flex items-center gap-1">
-              <span className="border-b border-ink px-1 py-0.5">{c}</span>
-              {k < chain.length - 1 && <span aria-hidden>→</span>}
-            </span>
-          ))}
-        </div>
+        <Button type="button" size="sm" variant="outline" disabled={!enabled || step === 0} onClick={() => onStep(step - 1)}>Back</Button>
+        <Button type="button" size="sm" disabled={!enabled || step >= steps.length - 1} onClick={() => onStep(step + 1)}>Next step</Button>
       </div>
     </div>
   );

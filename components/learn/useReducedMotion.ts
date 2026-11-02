@@ -1,0 +1,16 @@
+"use client";
+
+import { useSyncExternalStore } from "react";
+
+const QUERY = "(prefers-reduced-motion: reduce)";
+
+function subscribe(cb: () => void) {
+  const mq = window.matchMedia(QUERY);
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+}
+
+/** True when the visitor asks the system for less motion; the lab then jumps between points. */
+export default function useReducedMotion(): boolean {
+  return useSyncExternalStore(subscribe, () => window.matchMedia(QUERY).matches, () => false);
+}

@@ -464,3 +464,6 @@ export function sideMarkets(p: Params, f: Frame) {
     laborFull: employmentFE(p),
   };
 }
+
+/** Labour supply as a wage: the real wage at which N workers are willing to work. */
+export const wageForSupply = (p: Params, N: number) => (p.w0 / (1 - p.tauL)) * Math.pow(N / p.Ns0, 1 / p.eL);

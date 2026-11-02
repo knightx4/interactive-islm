@@ -22,14 +22,20 @@ export type Series = {
   label?: string;
   /** Earlier position of a curve: dashed and lighter, labelled "label′" by convention. */
   ghost?: boolean;
+  /** Thin dotted trace (a path through time), no direct label. */
+  trace?: boolean;
 };
 export type RefLine = { orientation: "v" | "h"; value: number; curve: CurveKey; label?: string; ghost?: boolean };
-export type Mark = { x: number; y: number; label?: string; guides?: boolean };
+/** A point on the figure. `color` is a CSS colour; `dx`/`dy` nudge the label (px). */
+export type Mark = { x: number; y: number; label?: string; guides?: boolean; color?: string; hollow?: boolean; dx?: number; dy?: number };
+/** A shift arrow from an old position to a new one, in a curve's colour. */
+export type Arrow = { from: { x: number; y: number }; to: { x: number; y: number }; curve: CurveKey };
 
 export type ChartProps = {
   series: Series[];
   refLines?: RefLine[];
   marks?: Mark[];
+  arrows?: Arrow[];
   xDomain: [number, number];
   yDomain: [number, number];
   xLabel: string;
@@ -64,7 +70,7 @@ function useWidth<T extends HTMLElement>(initial = 520) {
 }
 
 export default function Chart({
-  series, refLines = [], marks = [], xDomain, yDomain, xLabel, yLabel, title,
+  series, refLines = [], marks = [], arrows = [], xDomain, yDomain, xLabel, yLabel, title,
   aspect = 0.72, xTicks = 5, yTicks = 5, hideTickValues = false, className,
 }: ChartProps) {
   const [ref, W] = useWidth<HTMLDivElement>();
@@ -78,7 +84,7 @@ export default function Chart({
     pts.map((p, i) => `${i ? "L" : "M"}${x(p.x).toFixed(1)},${y(p.y).toFixed(1)}`).join(" ");
 
   // Direct labels at line ends, nudged apart vertically.
-  const labelled = series.filter((s) => s.label && s.points.length);
+  const labelled = series.filter((s) => s.label && s.points.length && !s.trace);
   const wantedY = labelled.map((s) => {
     const e = s.points[s.points.length - 1];
     return Math.min(H - M.b, Math.max(M.t, y(e.y)));
@@ -103,7 +109,7 @@ export default function Chart({
           <g key={`x${v}`}>
             <line x1={x(v)} x2={x(v)} y1={H - M.b} y2={H - M.b + 4} stroke="var(--ink)" />
             {!hideTickValues && (
-              <text x={x(v)} y={H - M.b + 17} textAnchor="middle" fontSize={FONT} fill="var(--ink-faint)" className="num">{v}</text>
+              <text x={x(v)} y={H - M.b + 17} textAnchor="middle" fontSize={FONT} fill="var(--ink-faint)" className="num">{+v.toFixed(6)}</text>
             )}
           </g>
         ))}
@@ -111,7 +117,7 @@ export default function Chart({
           <g key={`y${v}`}>
             <line x1={M.l - 4} x2={M.l} y1={y(v)} y2={y(v)} stroke="var(--ink)" />
             {!hideTickValues && (
-              <text x={M.l - 8} y={y(v) + 4} textAnchor="end" fontSize={FONT} fill="var(--ink-faint)" className="num">{v}</text>
+              <text x={M.l - 8} y={y(v) + 4} textAnchor="end" fontSize={FONT} fill="var(--ink-faint)" className="num">{+v.toFixed(6)}</text>
             )}
           </g>
         ))}
@@ -126,8 +132,8 @@ export default function Chart({
               : <line key={i} x1={M.l} x2={W - M.r} y1={y(r.value)} y2={y(r.value)} {...common} />;
           })}
           {series.map((s) => (
-            <path key={s.id} d={path(s.points)} stroke={COLOR[s.curve]} strokeWidth={s.ghost ? 1.5 : 2}
-              strokeDasharray={s.ghost ? "5 4" : undefined} opacity={s.ghost ? 0.6 : 1} strokeLinecap="round" strokeLinejoin="round" />
+            <path key={s.id} d={path(s.points)} stroke={COLOR[s.curve]} strokeWidth={s.trace ? 1.25 : s.ghost ? 1.5 : 2}
+              strokeDasharray={s.trace ? "1.5 3" : s.ghost ? "5 4" : undefined} opacity={s.ghost ? 0.6 : 1} strokeLinecap="round" strokeLinejoin="round" />
           ))}
           {marks.filter((m) => m.guides !== false).map((m, i) => (
             <g key={`gd${i}`} stroke="var(--ink)" strokeDasharray="1.5 3" strokeWidth={1}>
@@ -148,12 +154,27 @@ export default function Chart({
           <text key={`l${s.id}`} x={W - M.r + 5} y={labelY[i] + 4} fontSize={FONT + 1} fontWeight={600}
             fill={COLOR[s.curve]} opacity={s.ghost ? 0.75 : 1}>{s.label}</text>
         ))}
-        {marks.map((m, i) => (
-          <g key={`m${i}`}>
-            <circle cx={x(m.x)} cy={y(m.y)} r={4.5} fill="var(--ink)" stroke="var(--paper)" strokeWidth={1.5} />
-            {m.label && <text x={x(m.x) + 8} y={y(m.y) - 8} fontSize={FONT + 1} fontStyle="italic" fill="var(--ink)">{m.label}</text>}
-          </g>
-        ))}
+        {arrows.map((a, i) => {
+          const x1 = x(a.from.x), y1 = y(a.from.y), x2 = x(a.to.x), y2 = y(a.to.y);
+          const len = Math.hypot(x2 - x1, y2 - y1);
+          if (len < 6) return null;
+          const ux = (x2 - x1) / len, uy = (y2 - y1) / len, hs = 8;
+          return (
+            <g key={`a${i}`} stroke={COLOR[a.curve]} fill={COLOR[a.curve]} strokeWidth={2} data-testid="shift-arrow">
+              <line x1={x1} y1={y1} x2={x2 - ux * hs * 0.6} y2={y2 - uy * hs * 0.6} />
+              <path stroke="none" d={`M${x2},${y2} L${x2 - ux * hs - uy * hs * 0.45},${y2 - uy * hs + ux * hs * 0.45} L${x2 - ux * hs + uy * hs * 0.45},${y2 - uy * hs - ux * hs * 0.45} Z`} />
+            </g>
+          );
+        })}
+        {marks.map((m, i) => {
+          const c = m.color ?? "var(--ink)";
+          return (
+            <g key={`m${i}`}>
+              <circle cx={x(m.x)} cy={y(m.y)} r={4.5} fill={m.hollow ? "var(--paper)" : c} stroke={m.hollow ? c : "var(--paper)"} strokeWidth={m.hollow ? 2 : 1.5} />
+              {m.label && <text x={x(m.x) + (m.dx ?? 8)} y={y(m.y) + (m.dy ?? -8)} fontSize={FONT + 1} fontWeight={600} fill={c}>{m.label}</text>}
+            </g>
+          );
+        })}
       </svg>
     </div>
   );

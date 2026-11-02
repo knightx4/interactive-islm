@@ -22,6 +22,9 @@ financial-press chart, not a component kit.
 
    Tailwind: `text-is`, `stroke-lm`, `bg-fe`, etc. Colour is never the only cue:
    curves are also labelled directly.
+   **Points.** A (start), B (impact) and C (long run) are black, red and blue
+   (`--pt-a`, `--pt-b`, `--pt-c`) and always carry their letter. Ghost curves are
+   dashed with a shift arrow in the curve's colour.
 5. **Charts** (see `components/chart`): hairline axes with ticks, no box, light
    horizontal gridlines only, axis labels at least 12px in sans, curves 2px
    with the name set at the line end in the curve's colour, no corner legends.
@@ -36,3 +39,8 @@ financial-press chart, not a component kit.
 Defined in `app/globals.css`: `--paper`, `--ink`, `--ink-soft`, `--ink-faint`,
 `--rule`, `--wash`, plus the curve colours. shadcn names (`--background`,
 `--border`, ...) map onto these.
+
+## Motion
+Animation never carries information that a still frame lacks. With
+`prefers-reduced-motion: reduce`, transitions are off and the lab jumps between
+points A, B and C. See `docs/learn/LESSON-STANDARD.md` for lesson rules.

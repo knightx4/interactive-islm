@@ -81,6 +81,9 @@
   --c-fe: #2e6b3c;
   --c-labour: #a8670f;
   --c-money: #5a4a86;
+  --pt-a: #111317;
+  --pt-b: #c8281f;
+  --pt-c: #1f5fd0;
 
   --background: var(--paper);
   --foreground: var(--ink);
@@ -145,6 +148,9 @@
   --c-fe: #6dba7d;
   --c-labour: #dba04a;
   --c-money: #a594d6;
+  --pt-a: #f2f3f5;
+  --pt-b: #ff7b6e;
+  --pt-c: #7ab0ff;
   --destructive: #e57d72;
   color-scheme: dark;
   }
@@ -162,6 +168,9 @@
   --c-fe: #6dba7d;
   --c-labour: #dba04a;
   --c-money: #a594d6;
+  --pt-a: #f2f3f5;
+  --pt-b: #ff7b6e;
+  --pt-c: #7ab0ff;
   --destructive: #e57d72;
   color-scheme: dark;
 }
@@ -208,5 +217,15 @@
   :focus-visible {
     outline: 2px solid var(--ink);
     outline-offset: 2px;
+  }
+}
+
+/* Motion: animation is optional everywhere. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }

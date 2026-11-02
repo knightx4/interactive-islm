@@ -208,14 +208,21 @@ describe("textbook directions", () => {
     const sim = simulate(baselineEconomy(r), shockById(id)!.apply);
     return Object.fromEntries(questionsFor(sim, r).map((q) => [q.id, q.answer]));
   };
-  it("closed fiscal expansion: Y and r up, then crowding out and higher P", () => {
-    expect(dirs("closed", "gov-spending-up")).toMatchObject({ "Y-short": "up", "r-short": "up", "Y-long": "same", "P-long": "up" });
+  it("closed fiscal expansion: Y and r up, then crowding out (I and C down) and higher P", () => {
+    expect(dirs("closed", "gov-spending-up")).toMatchObject({
+      "Y-short": "up", "r-short": "up", "P-short": "same", "Y-long": "same", "r-long": "up", "P-long": "up", "I-long": "down",
+    });
   });
-  it("productivity: Y* rises, P falls", () => {
-    expect(dirs("closed", "productivity-up")).toMatchObject({ "Y-long": "up", "P-long": "down" });
+  it("productivity: Y* rises, P falls, wages rise", () => {
+    expect(dirs("closed", "productivity-up")).toMatchObject({ "Y-long": "up", "P-long": "down", "w-long": "up", "N-long": "up" });
   });
-  it("small open economy (replaced next step): money lifts Y under a float, not under a peg", () => {
-    expect(dirs("floating", "money-supply-up")["Y-short"]).toBe("up");
+  it("the check covers Y, r, P, C, I, N, w, e and NX when open, and leaves out e and NX when closed", () => {
+    const open = Object.keys(dirs("floating", "money-supply-up")).filter((k) => k.endsWith("-short")).map((k) => k.split("-")[0]);
+    expect(open).toEqual(["Y", "r", "P", "C", "I", "N", "w", "e", "NX"]);
+    expect(Object.keys(dirs("closed", "money-supply-up")).some((k) => k.startsWith("e-") || k.startsWith("NX-"))).toBe(false);
+  });
+  it("open economy at perfect mobility: money lifts Y and weakens e under a float, nothing under a peg", () => {
+    expect(dirs("floating", "money-supply-up")).toMatchObject({ "Y-short": "up", "e-short": "down" });
     expect(dirs("fixed", "money-supply-up")["Y-short"]).toBe("same");
     expect(dirs("fixed", "gov-spending-up")["Y-short"]).toBe("up");
   });

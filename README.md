@@ -35,4 +35,4 @@ ISC (see `package.json`).
 
 ## Learn course
 
-`/learn` lists numbered lessons in four parts; each has a page at `/learn/<slug>`. Lessons run on a separate model in [`lib/macro/model.ts`](lib/macro/model.ts) (IS, LM and FE curves, prices that adjust over time, and a small open economy with floating or fixed exchange rate). The simulator keeps its own model in `lib/islmModel.ts`. Lesson text lives in `lib/learn/lessons.ts`; shocks in `lib/macro/shocks.ts`.
+`/learn` lists thirteen numbered lessons in three parts, then a Practice page as the fourth; each has a page at `/learn/<slug>` (old addresses redirect). Lessons run on a separate model in [`lib/macro/model.ts`](lib/macro/model.ts): IS, LM and FE curves with a labour market, prices that adjust over time, and an open economy with capital mobility, floating or pegged rates, reserves and a linked partner. The simulator keeps its own model in `lib/islmModel.ts`. Lesson text lives in `lib/learn/lessons.ts`; shocks (the shift table) in `lib/macro/shocks.ts`. Rules for lesson authors: [`docs/learn/LESSON-STANDARD.md`](docs/learn/LESSON-STANDARD.md).
