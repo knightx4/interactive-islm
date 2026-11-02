@@ -9,7 +9,7 @@
  *      riskiness and liquidity of alternatives, payment technology).
  *
  * Prices adjust slowly toward the level that puts output back on FE.
- * Independent of lib/islmModel.ts (the simulator's model). All numbers are index
+ * The simulator (lib/macro/sim.ts) runs on this same model. All numbers are index
  * units, not calibrated to real data.
  *
  * Y = output, r = real interest rate (%), P = price level, N = employment,
@@ -72,6 +72,7 @@ export type Params = {
   liq: number; // liquidity of alternative assets (index)
   kTech: number;
   tech: number; // payment technology (index)
+  L0: number; // direct shift in money demand (index; the simulator's money-demand slider)
   // price adjustment speed
   phi: number;
   // open economy
@@ -146,7 +147,7 @@ export const investmentConst = (p: Params) => p.i0 + p.kF * p.mpkF - p.kD * p.de
 
 /** Constant in L = Lc + kY Y - h (r + piE). */
 export const moneyDemandConst = (p: Params) =>
-  p.kW * p.W + p.kRisk * p.risk - p.kLiq * p.liq - p.kTech * p.tech;
+  p.kW * p.W + p.kRisk * p.risk - p.kLiq * p.liq - p.kTech * p.tech + p.L0;
 
 export const desiredSaving = (p: Params, Y: number, r: number) => savingConst(p) + p.sY * Y + p.sR * r;
 export const desiredInvestment = (p: Params, r: number) => investmentConst(p) - p.b * r;
@@ -290,7 +291,7 @@ export function baselineEconomy(regime: Regime, mobility = 1): Params {
     A: 1, K: 100, a: 0.3, Ns0: 100, eL: 0.5, w0: 1, tauL: 0.2,
     s0: 0, sY: 0.4, sR: 0.5, sF: 0.2, sW: 0.15, T: 20, G: 20, Yf: 100, W: 100,
     i0: 40, b: 4, kF: 1, mpkF: 10, kD: 1, delta: 5, kT: 0.3, tauI: 10,
-    kY: 0.5, h: 4, M: 0, piE: 2, kW: 0.1, kRisk: 4, risk: 1, kLiq: 4, liq: 1, kTech: 4, tech: 1,
+    kY: 0.5, h: 4, M: 0, piE: 2, kW: 0.1, kRisk: 4, risk: 1, kLiq: 4, liq: 1, kTech: 4, tech: 1, L0: 0,
     phi: 0.5,
     rw: 5, m: 0.15, mp: 0.15, Yp: 100, x0: 0, sigma: 40, tariff: 0, tariffP: 0, zt: 1,
     mobility, prem: 0, E0: 1, D: 0, Res: 40, dev: 0.2, Pf: 1,

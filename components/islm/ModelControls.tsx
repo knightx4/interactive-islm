@@ -1,713 +1,97 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import { ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { ModelParams } from "@/lib/islmModel";
 import { cn } from "@/lib/utils";
+import {
+  causesOf, clampIdx, parentValue, parents, type Group, type ParentId, type SimState,
+} from "@/lib/macro/sim";
 
-/** Nested driver lists: fixed cap + scroll so expanding doesn’t resize the whole controls card */
-function expandPanelClassName(borderClass: string) {
-  return cn(
-    "mt-1.5 space-y-3 border-l pl-3",
-    borderClass
-  );
-}
+const GROUPS: { id: Group; title: string; tone: string; note: string }[] = [
+  { id: "IS", title: "IS: goods and loanable funds", tone: "text-is", note: "Desired saving against desired investment at each interest rate." },
+  { id: "LM", title: "LM: money", tone: "text-lm", note: "Real money supplied against money demanded." },
+  { id: "FE", title: "FE: full employment", tone: "text-fe", note: "What the economy can produce when the labour market clears." },
+];
 
-type EffectDirection = "up" | "down";
+const toneOf = (g: Group) => GROUPS.find((x) => x.id === g)!.tone;
 
-function EffectArrow({ direction }: { direction: EffectDirection }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center text-[11px] font-semibold",
-        direction === "up" ? "text-fe" : "text-lm"
-      )}
-      aria-label={
-        direction === "up"
-          ? "Increasing this raises the parent factor"
-          : "Increasing this lowers the parent factor"
-      }
-      title={
-        direction === "up"
-          ? "Increasing this raises the parent factor"
-          : "Increasing this lowers the parent factor"
-      }
-    >
-      {direction === "up" ? "↑" : "↓"}
-    </span>
-  );
-}
+type Props = {
+  state: SimState;
+  onParent: (id: ParentId, value: number) => void;
+  onCause: (id: string, value: number) => void;
+  onOpen: (open: boolean) => void;
+  onReset: () => void;
+};
 
-interface ModelControlsProps {
-  params: ModelParams;
-  updateParam: (key: keyof ModelParams, value: number) => void;
-  equilibriumOutput: number | null;
-  /** Snapshot current sliders as dotted baseline on charts. */
-  onSetBaseline?: () => void;
-  /** Called after reset defaults so baseline overlay can be cleared. */
-  onAfterReset?: () => void;
-}
-
-export default function ModelControls({
-  params,
-  updateParam,
-  equilibriumOutput,
-  onSetBaseline,
-  onAfterReset,
-}: ModelControlsProps) {
-  const [showSavingsComponents, setShowSavingsComponents] = useState(false);
-  const [showInvestmentComponents, setShowInvestmentComponents] = useState(false);
-  const [showMoneySupplyComponents, setShowMoneySupplyComponents] = useState(false);
-  const [showMoneyDemandComponents, setShowMoneyDemandComponents] = useState(false);
-  const [showFullEmploymentComponents, setShowFullEmploymentComponents] = useState(false);
-
-  const updateSavingsComponent = (component: keyof ModelParams, value: number) => {
-    const futureY = component === "futureY" ? value : params.futureY || 50;
-    const wealth = component === "wealth" ? value : params.wealth || 50;
-    const governmentSavings =
-      component === "governmentSpending" ? value : params.governmentSpending ?? 0;
-
-    const newSavings = Math.round(
-      ((100 - futureY) + (100 - wealth) + (governmentSavings + 50)) / 3
-    );
-
-    updateParam(component, value);
-    updateParam("savings", newSavings);
-
-    if (component === "wealth") {
-      const expectedInflation = params.expectedInflation || 50;
-      const riskiness = params.riskiness || 50;
-      const liquidity = params.liquidity || 50;
-      const newMoneyDemand = Math.round(
-        (value + (100 - expectedInflation) + riskiness + (100 - liquidity)) / 4
-      );
-      updateParam("moneyDemand", newMoneyDemand);
-    }
-  };
-
-  const updateInvestmentComponent = (component: keyof ModelParams, value: number) => {
-    const futureMPK = component === "futureMPK" ? value : params.futureMPK || 50;
-
-    const newInvestment = futureMPK;
-
-    updateParam(component, value);
-    updateParam("investment", newInvestment);
-  };
-
-  const updateMoneySupplyComponent = (component: keyof ModelParams, value: number) => {
-    const centralBankSupply = component === "centralBankSupply" ? value : params.centralBankSupply || 50;
-    const priceLevel = component === "priceLevel" ? value : params.priceLevel || 50;
-
-    const newMoneySupply = Math.round(
-      (centralBankSupply * (100 - priceLevel)) / 50
-    );
-
-    updateParam(component, value);
-    updateParam("moneySupply", newMoneySupply);
-  };
-
-  const updateMoneyDemandComponent = (component: keyof ModelParams, value: number) => {
-    const wealth = component === "wealth" ? value : params.wealth || 50;
-    const expectedInflation = component === "expectedInflation" ? value : params.expectedInflation || 50;
-    const riskiness = component === "riskiness" ? value : params.riskiness || 50;
-    const liquidity = component === "liquidity" ? value : params.liquidity || 50;
-
-    const newMoneyDemand = Math.round(
-      (wealth + (100 - expectedInflation) + riskiness + (100 - liquidity)) / 4
-    );
-
-    updateParam(component, value);
-    updateParam("moneyDemand", newMoneyDemand);
-
-    if (component === "wealth") {
-      const futureY = params.futureY || 50;
-      const governmentSavings = params.governmentSpending ?? 0;
-      const newSavings = Math.round(
-        ((100 - futureY) + (100 - value) + (governmentSavings + 50)) / 3
-      );
-      updateParam("savings", newSavings);
-    }
-  };
-
-  const updateFullEmploymentComponent = (component: keyof ModelParams, value: number) => {
-    const productivity = component === "productivity" ? value : params.productivity || 50;
-    const capital = component === "capital" ? value : params.capital || 50;
-    const labor = component === "labor" ? value : params.labor || 50;
-
-    const newFullEmployment = Math.round(
-      (productivity + capital + labor) / 3
-    );
-
-    updateParam(component, value);
-    updateParam("fullEmployment", newFullEmployment);
-  };
-
+/** The five market sliders, grouped by curve, each with the causes that move it. */
+export default function ModelControls({ state, onParent, onCause, onOpen, onReset }: Props) {
+  const [shown, setShown] = useState<Record<string, boolean>>({});
   return (
     <Card className="flex w-full max-w-full flex-col gap-2 border-ink py-3">
       <CardHeader className="px-0 pb-0 pt-0">
-        <CardTitle className="font-serif text-lg">Parameters</CardTitle>
+        <CardTitle className="font-serif text-lg">Drivers</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col px-0 pb-0 pt-1">
-        <div className="space-y-4">
-          {/* Investment Section */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-1">
-                <Label htmlFor="investment" className="text-sm font-medium">
-                  Investment (I)
-                </Label>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0"
-                  onClick={() => setShowInvestmentComponents(!showInvestmentComponents)}
-                >
-                  {showInvestmentComponents ? (
-                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </Button>
-              </div>
-              <span className="num text-sm font-semibold text-is">
-                {params.investment}
-              </span>
-            </div>
-            <Slider
-              id="investment"
-              min={0}
-              max={100}
-              step={1}
-              value={[params.investment]}
-              onValueChange={(val) => updateParam("investment", val[0])}
-              className="cursor-pointer"
-            />
+      <CardContent className="flex flex-col gap-5 px-0 pb-0 pt-1">
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={state.open} onChange={(e) => onOpen(e.target.checked)} className="h-4 w-4 accent-[var(--ink)]" />
+          <span>Open economy (trade, floating exchange rate)</span>
+        </label>
 
-            {/* Investment Components */}
-            {showInvestmentComponents && (
-              <div className={expandPanelClassName("border-rule")}>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="futureMPK" className="text-xs font-medium">
-                      <span className="inline-flex items-center gap-1">
-                        Future Marginal Productivity of Capital
-                        <EffectArrow direction="up" />
-                      </span>
-                    </Label>
-                    <span className="num text-xs font-semibold text-is">
-                      {params.futureMPK || 50}
-                    </span>
-                  </div>
-                  <Slider
-                    id="futureMPK"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={[params.futureMPK || 50]}
-                    onValueChange={(val) => updateInvestmentComponent("futureMPK", val[0])}
-                    className="cursor-pointer"
-                  />
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <Label htmlFor="netExports" className="text-xs font-medium">
-                        <span className="inline-flex items-center gap-1">
-                          Net exports (NX)
-                          <EffectArrow direction="up" />
-                        </span>
-                      </Label>
-                      <span className="num text-xs font-semibold text-is">
-                        {params.netExports ?? 0}
-                      </span>
+        {GROUPS.map((g) => (
+          <section key={g.id} aria-label={g.title} className="space-y-3">
+            <div className="border-b border-rule pb-1">
+              <h3 className={cn("text-sm font-semibold", g.tone)}>{g.title}</h3>
+              <p className="text-xs text-muted-foreground">{g.note}</p>
+            </div>
+            {parents.filter((p) => p.group === g.id).map((p) => {
+              const value = parentValue(p.id, state);
+              const cs = causesOf(p.id);
+              const open = !!shown[p.id];
+              return (
+                <div key={p.id} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1">
+                      <Label htmlFor={`parent-${p.id}`} className="text-sm font-medium">{p.label} ({p.symbol})</Label>
+                      {cs.length > 0 && (
+                        <Button type="button" variant="ghost" size="sm" className="h-6 w-6 p-0" aria-expanded={open}
+                          aria-label={`${open ? "Hide" : "Show"} what moves ${p.label.toLowerCase()}`}
+                          onClick={() => setShown((s) => ({ ...s, [p.id]: !open }))}>
+                          {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                        </Button>
+                      )}
                     </div>
-                    <p className="text-[10px] leading-snug text-muted-foreground">
-                      Positive = trade surplus, negative = deficit. Shifts IS with I in I + NX = S.
-                    </p>
-                    <Slider
-                      id="netExports"
-                      min={-50}
-                      max={50}
-                      step={1}
-                      value={[params.netExports ?? 0]}
-                      onValueChange={(val) => updateParam("netExports", val[0])}
-                      className="cursor-pointer"
-                    />
+                    <span className={cn("num text-sm font-semibold", toneOf(g.id))}>{value.toFixed(0)}</span>
                   </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Savings Section */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-1">
-                <Label htmlFor="savings" className="text-sm font-medium">
-                  Savings (S)
-                </Label>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0"
-                  onClick={() => setShowSavingsComponents(!showSavingsComponents)}
-                >
-                  {showSavingsComponents ? (
-                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <Slider id={`parent-${p.id}`} min={0} max={100} step={1} value={[clampIdx(value)]}
+                    onValueChange={(v) => onParent(p.id, v[0])} className="cursor-pointer" />
+                  {open && (
+                    <div className="mt-1.5 space-y-3 border-l border-rule pl-3">
+                      {cs.map((c) => {
+                        const x = state.causes[c.id] ?? 0;
+                        return (
+                          <div key={c.id} className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor={`cause-${c.id}`} className="text-xs font-medium">{c.label}</Label>
+                              <span className={cn("num text-xs font-semibold", toneOf(g.id))}>{x > 0 ? "+" : ""}{x}</span>
+                            </div>
+                            <Slider id={`cause-${c.id}`} min={c.min} max={c.max} step={c.step} value={[x]}
+                              onValueChange={(v) => onCause(c.id, v[0])} className="cursor-pointer" />
+                          </div>
+                        );
+                      })}
+                    </div>
                   )}
-                </Button>
-              </div>
-              <span className="num text-sm font-semibold text-is">
-                {params.savings}
-              </span>
-            </div>
-            <Slider
-              id="savings"
-              min={0}
-              max={100}
-              step={1}
-              value={[params.savings]}
-              onValueChange={(val) => updateParam("savings", val[0])}
-              className="cursor-pointer"
-            />
-
-            {/* Savings Components */}
-            {showSavingsComponents && (
-              <div className={expandPanelClassName("border-rule")}>
-                {/* Current Income */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label className="text-xs font-medium">
-                      Current Income (Y)
-                    </Label>
-                    <span className="num text-xs font-semibold text-is">
-                      {equilibriumOutput ? equilibriumOutput.toFixed(1) : "50.0"}
-                    </span>
-                  </div>
                 </div>
+              );
+            })}
+          </section>
+        ))}
 
-                {/* Future Income */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="futureY" className="text-xs font-medium">
-                      <span className="inline-flex items-center gap-1">
-                        Expected Future Income (Yf)
-                        <EffectArrow direction="down" />
-                      </span>
-                    </Label>
-                    <span className="num text-xs font-semibold text-is">
-                      {params.futureY || 50}
-                    </span>
-                  </div>
-                  <Slider
-                    id="futureY"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={[params.futureY || 50]}
-                    onValueChange={(val) => updateSavingsComponent("futureY", val[0])}
-                    className="cursor-pointer"
-                  />
-                </div>
-
-                {/* Wealth */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="wealth" className="text-xs font-medium">
-                      <span className="inline-flex items-center gap-1">
-                        Wealth
-                        <EffectArrow direction="down" />
-                      </span>
-                    </Label>
-                    <span className="num text-xs font-semibold text-is">
-                      {params.wealth || 50}
-                    </span>
-                  </div>
-                  <Slider
-                    id="wealth"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={[params.wealth || 50]}
-                    onValueChange={(val) => updateSavingsComponent("wealth", val[0])}
-                    className="cursor-pointer"
-                  />
-                </div>
-
-                {/* Government savings */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="governmentSpending" className="text-xs font-medium">
-                      <span className="inline-flex items-center gap-1">
-                        Government savings (T-G)
-                        <EffectArrow direction="up" />
-                      </span>
-                    </Label>
-                    <span className="num text-xs font-semibold text-is">
-                      {params.governmentSpending}
-                    </span>
-                  </div>
-                  <Slider
-                    id="governmentSpending"
-                    min={-50}
-                    max={50}
-                    step={1}
-                    value={[params.governmentSpending]}
-                    onValueChange={(val) =>
-                      updateSavingsComponent("governmentSpending", val[0])
-                    }
-                    className="cursor-pointer"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Money Supply section */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-1">
-                <Label htmlFor="moneySupply" className="text-sm font-medium">
-                  Money Supply (Ms/P)
-                </Label>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0"
-                  onClick={() => setShowMoneySupplyComponents(!showMoneySupplyComponents)}
-                >
-                  {showMoneySupplyComponents ? (
-                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </Button>
-              </div>
-              <span className="num text-sm font-semibold text-money">
-                {params.moneySupply}
-              </span>
-            </div>
-            <Slider
-              id="moneySupply"
-              min={0}
-              max={100}
-              step={1}
-              value={[params.moneySupply]}
-              onValueChange={(val) => updateParam("moneySupply", val[0])}
-              className="cursor-pointer"
-            />
-
-            {/* Money Supply Components */}
-            {showMoneySupplyComponents && (
-              <div className={expandPanelClassName("border-rule")}>
-                {/* Central Bank Supply */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="centralBankSupply" className="text-xs font-medium">
-                      <span className="inline-flex items-center gap-1">
-                        Central Bank Designated Supply (Ms)
-                        <EffectArrow direction="up" />
-                      </span>
-                    </Label>
-                    <span className="num text-xs font-semibold text-money">
-                      {params.centralBankSupply || 50}
-                    </span>
-                  </div>
-                  <Slider
-                    id="centralBankSupply"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={[params.centralBankSupply || 50]}
-                    onValueChange={(val) => updateMoneySupplyComponent("centralBankSupply", val[0])}
-                    className="cursor-pointer"
-                  />
-                </div>
-
-                {/* Price Level */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="priceLevel" className="text-xs font-medium">
-                      <span className="inline-flex items-center gap-1">
-                        Price Level (P)
-                        <EffectArrow direction="down" />
-                      </span>
-                    </Label>
-                    <span className="num text-xs font-semibold text-money">
-                      {params.priceLevel || 50}
-                    </span>
-                  </div>
-                  <Slider
-                    id="priceLevel"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={[params.priceLevel || 50]}
-                    onValueChange={(val) => updateMoneySupplyComponent("priceLevel", val[0])}
-                    className="cursor-pointer"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Money Demand section */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-1">
-                <Label htmlFor="moneyDemand" className="text-sm font-medium">
-                  Money Demand (L)
-                </Label>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0"
-                  onClick={() => setShowMoneyDemandComponents(!showMoneyDemandComponents)}
-                >
-                  {showMoneyDemandComponents ? (
-                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </Button>
-              </div>
-              <span className="num text-sm font-semibold text-lm">
-                {params.moneyDemand}
-              </span>
-            </div>
-            <Slider
-              id="moneyDemand"
-              min={0}
-              max={100}
-              step={1}
-              value={[params.moneyDemand]}
-              onValueChange={(val) => updateParam("moneyDemand", val[0])}
-              className="cursor-pointer"
-            />
-
-            {/* Money Demand Components */}
-            {showMoneyDemandComponents && (
-              <div className={expandPanelClassName("border-rule")}>
-                {/* Wealth (same as Savings → Wealth) */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="wealth-money-demand" className="text-xs font-medium">
-                      <span className="inline-flex items-center gap-1">
-                        Wealth
-                        <EffectArrow direction="up" />
-                      </span>
-                    </Label>
-                    <span className="num text-xs font-semibold text-lm">
-                      {params.wealth || 50}
-                    </span>
-                  </div>
-                  <Slider
-                    id="wealth-money-demand"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={[params.wealth || 50]}
-                    onValueChange={(val) => updateMoneyDemandComponent("wealth", val[0])}
-                    className="cursor-pointer"
-                  />
-                </div>
-
-                {/* Expected Inflation */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="expectedInflation" className="text-xs font-medium">
-                      <span className="inline-flex items-center gap-1">
-                        Expected Inflation
-                        <EffectArrow direction="down" />
-                      </span>
-                    </Label>
-                    <span className="num text-xs font-semibold text-lm">
-                      {params.expectedInflation || 50}
-                    </span>
-                  </div>
-                  <Slider
-                    id="expectedInflation"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={[params.expectedInflation || 50]}
-                    onValueChange={(val) => updateMoneyDemandComponent("expectedInflation", val[0])}
-                    className="cursor-pointer"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Full Employment section */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-1">
-                <Label htmlFor="fullEmployment" className="text-sm font-medium">
-                  Full Employment (FE)
-                </Label>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0"
-                  onClick={() => setShowFullEmploymentComponents(!showFullEmploymentComponents)}
-                >
-                  {showFullEmploymentComponents ? (
-                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </Button>
-              </div>
-              <span className="num text-sm font-semibold text-fe">
-                {params.fullEmployment}
-              </span>
-            </div>
-            <Slider
-              id="fullEmployment"
-              min={0}
-              max={100}
-              step={1}
-              value={[params.fullEmployment]}
-              onValueChange={(val) => updateParam("fullEmployment", val[0])}
-              className="cursor-pointer"
-            />
-
-            {/* Full Employment Components */}
-            {showFullEmploymentComponents && (
-              <div className={expandPanelClassName("border-rule")}>
-                {/* Productivity */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="productivity" className="text-xs font-medium">
-                      <span className="inline-flex items-center gap-1">
-                        Productivity
-                        <EffectArrow direction="up" />
-                      </span>
-                    </Label>
-                    <span className="num text-xs font-semibold text-fe">
-                      {params.productivity || 50}
-                    </span>
-                  </div>
-                  <Slider
-                    id="productivity"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={[params.productivity || 50]}
-                    onValueChange={(val) => updateFullEmploymentComponent("productivity", val[0])}
-                    className="cursor-pointer"
-                  />
-                </div>
-
-                {/* Capital */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="capital" className="text-xs font-medium">
-                      <span className="inline-flex items-center gap-1">
-                        Capital
-                        <EffectArrow direction="up" />
-                      </span>
-                    </Label>
-                    <span className="num text-xs font-semibold text-fe">
-                      {params.capital || 50}
-                    </span>
-                  </div>
-                  <Slider
-                    id="capital"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={[params.capital || 50]}
-                    onValueChange={(val) => updateFullEmploymentComponent("capital", val[0])}
-                    className="cursor-pointer"
-                  />
-                </div>
-
-                {/* Labor */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="labor" className="text-xs font-medium">
-                      <span className="inline-flex items-center gap-1">
-                        Labor
-                        <EffectArrow direction="up" />
-                      </span>
-                    </Label>
-                    <span className="num text-xs font-semibold text-fe">
-                      {params.labor || 50}
-                    </span>
-                  </div>
-                  <Slider
-                    id="labor"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={[params.labor || 50]}
-                    onValueChange={(val) => updateFullEmploymentComponent("labor", val[0])}
-                    className="cursor-pointer"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="shrink-0 space-y-2 border-t border-rule pt-2">
-          {onSetBaseline && (
-            <Button
-              type="button"
-              variant="default"
-              className="w-full"
-              onClick={() => onSetBaseline()}
-            >
-              Set baseline
-            </Button>
-          )}
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => {
-              const defaultParams: ModelParams = {
-                investment: 50,
-                savings: 50,
-                futureY: 50,
-                wealth: 50,
-                futureMPK: 50,
-                moneySupply: 50,
-                moneyDemand: 50,
-                expectedInflation: 50,
-                riskiness: 50,
-                liquidity: 50,
-                fullEmployment: 50,
-                centralBankSupply: 50,
-                priceLevel: 50,
-                productivity: 50,
-                capital: 50,
-                labor: 50,
-                governmentSpending: 0,
-                netExports: 0,
-              };
-
-              (Object.keys(defaultParams) as Array<keyof ModelParams>).forEach((key) => {
-                updateParam(key, defaultParams[key]);
-              });
-
-              onAfterReset?.();
-
-              setShowSavingsComponents(false);
-              setShowInvestmentComponents(false);
-              setShowMoneySupplyComponents(false);
-              setShowMoneyDemandComponents(false);
-              setShowFullEmploymentComponents(false);
-            }}
-          >
-            Reset
-          </Button>
-        </div>
+        <Button type="button" variant="outline" size="sm" onClick={onReset} className="self-start">Reset all</Button>
       </CardContent>
     </Card>
   );

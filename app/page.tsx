@@ -1,22 +1,18 @@
 "use client";
 
-import { useState, useEffect, useSyncExternalStore } from "react";
+import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { Sheet, SheetTrigger, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import ModelControls from "@/components/islm/ModelControls";
 import ExpenditureIdentityCard from "@/components/islm/ExpenditureIdentityCard";
 import MacroFeedbackBar from "@/components/islm/layout/MacroFeedbackBar";
+import Playback from "@/components/islm/Playback";
+import CurvesFigure from "@/components/learn/CurvesFigure";
+import SideMarkets from "@/components/learn/SideMarkets";
+import TimePath from "@/components/learn/TimePath";
 import {
-  IslmFigure,
-  LabourFigure,
-  LoanableFundsFigure,
-  MoneyFigure,
-} from "@/components/islm/Figures";
-import {
-  computeIslmAlgebraicIntersection,
-  computeIslmEquilibrium,
-  type ModelParams,
-} from "@/lib/islmModel";
+  baselineState, run, setCause, setParent, viewAt, type ParentId, type SimState,
+} from "@/lib/macro/sim";
 
 function useIsDesktop() {
   return useSyncExternalStore(
@@ -30,160 +26,94 @@ function useIsDesktop() {
   );
 }
 
-type SolvedEquilibrium = { output: number; rate: number };
-
-const defaultParams: ModelParams = {
-  investment: 50,
-  savings: 50,
-  futureY: 50,
-  wealth: 50,
-  futureMPK: 50,
-  moneySupply: 50,
-  moneyDemand: 50,
-  expectedInflation: 50,
-  riskiness: 50,
-  liquidity: 50,
-  fullEmployment: 50,
-  centralBankSupply: 50,
-  priceLevel: 50,
-  productivity: 50,
-  capital: 50,
-  labor: 50,
-  governmentSpending: 0,
-  netExports: 0,
-};
-
 export default function HomePage() {
-  const [params, setParams] = useState<ModelParams>(defaultParams);
+  const [state, setState] = useState<SimState>(baselineState);
+  const [playing, setPlaying] = useState(false);
 
-  const [solvedEquilibrium, setSolvedEquilibrium] =
-    useState<SolvedEquilibrium | null>({
-      output: 50,
-      rate: 10,
-    });
-  const [baselineParams, setBaselineParams] = useState<ModelParams | null>(null);
+  // the solution depends on everything except the playback position
+  const key = JSON.stringify([state.offsets, state.causes, state.speed, state.open]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const rn = useMemo(() => run(state), [key]);
+  const view = viewAt(rn.sim, state.t);
+  const last = rn.length - 1;
 
-  const updateParam = (key: keyof ModelParams, value: number) => {
-    setParams((p) => ({ ...p, [key]: value }));
-  };
-
-  useEffect(() => {
-    const bounded = computeIslmEquilibrium(params);
-    if (bounded) {
-      setSolvedEquilibrium({
-        output: bounded.equilibriumX,
-        rate: bounded.equilibriumY,
-      });
-      return;
-    }
-
-    const algebraic = computeIslmAlgebraicIntersection(params);
-    setSolvedEquilibrium({
-      output: algebraic.equilibriumX,
-      rate: algebraic.equilibriumY,
-    });
-  }, [params]);
+  const edit = useCallback((f: (s: SimState) => SimState) => { setPlaying(false); setState(f); }, []);
+  const onParent = (id: ParentId, v: number) => edit((s) => setParent(s, id, v));
+  const onCause = (id: string, v: number) => edit((s) => setCause(s, id, v));
+  const onOpen = (open: boolean) => edit((s) => ({ ...s, open, t: 1 }));
+  const onReset = () => edit((s) => ({ ...baselineState(), speed: s.speed }));
+  const onT = useCallback((t: number) => setState((s) => ({ ...s, t })), []);
+  const onSpeed = (speed: number) => setState((s) => ({ ...s, speed }));
 
   const isDesktop = useIsDesktop();
   const [sheetOpen, setSheetOpen] = useState(false);
-  const controls = (
-    <ModelControls
-      params={params}
-      updateParam={updateParam}
-      equilibriumOutput={solvedEquilibrium?.output ?? null}
-      onSetBaseline={() => setBaselineParams({ ...params })}
-      onAfterReset={() => setBaselineParams(null)}
-    />
+  const controls = <ModelControls state={state} onParent={onParent} onCause={onCause} onOpen={onOpen} onReset={onReset} />;
+
+  const label =
+    view.at === "A" ? "Point A: before the change" : view.at === "B" ? "Point B: the first move, prices not yet changed" :
+    view.at === "C" ? "Point C: prices fully adjusted, output back at full employment" : `Prices adjusting: period ${view.t}`;
+  const playback = (
+    <Playback t={Math.min(state.t, last)} length={rn.length} playing={playing} speed={state.speed} label={label}
+      onT={onT} onPlaying={setPlaying} onSpeed={onSpeed} />
   );
-  const fig = { params, baselineParams, equilibrium: solvedEquilibrium };
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 pb-24 pt-8 lg:pb-16 md:px-6">
       <header className="max-w-2xl">
         <h1 className="text-3xl md:text-4xl">The IS-LM model</h1>
         <p className="prose-text mt-3 text-lg text-foreground/90">
-          Move a driver (on a phone, open Drivers at the bottom) and watch equilibrium move. All values are model index units,
-          not billions or percentage points. The goods market uses{" "}
-          <i>I</i> + <i>NX</i> = <i>S</i>, and the accounting table shows{" "}
-          <i>Y</i> = <i>C</i> + <i>I</i> + <i>G</i> + <i>NX</i>.
+          Move a driver (on a phone, open Drivers at the bottom) and see the short-run point <b>B</b>, then play the
+          prices adjusting until output is back at full employment, point <b>C</b>. This is the same model as the
+          lessons. Values are model index units, not billions or percentage points.
         </p>
       </header>
 
       <div className="mt-8 grid gap-10 lg:grid-cols-[22rem_minmax(0,1fr)] lg:gap-12">
         {isDesktop && (
-          <aside
-            aria-label="Model controls"
-            className="order-2 lg:order-1 lg:sticky lg:top-16 lg:max-h-[calc(100vh-5rem)] lg:self-start lg:overflow-y-auto lg:pr-2"
-          >
+          <aside aria-label="Model controls"
+            className="order-2 lg:order-1 lg:sticky lg:top-16 lg:max-h-[calc(100vh-5rem)] lg:self-start lg:overflow-y-auto lg:pr-2">
             {controls}
           </aside>
         )}
 
         <div className="order-1 min-w-0 lg:order-2">
           <figure>
-            <MacroFeedbackBar
-              equilibriumOutput={solvedEquilibrium?.output ?? null}
-              fullEmployment={params.fullEmployment}
-            />
-            <IslmFigure {...fig} />
+            <MacroFeedbackBar frame={view.frame} />
+            <CurvesFigure sim={rn.sim} view={view} />
+            {playback}
             <figcaption className="mt-2 text-sm text-muted-foreground">
-              <b className="font-semibold text-foreground">Figure 1.</b> Equilibrium <i>E</i> is
-              where <span className="font-semibold text-is">IS</span> meets{" "}
-              <span className="font-semibold text-lm">LM</span>;{" "}
-              <span className="font-semibold text-fe">Y*</span> is full-employment output.
-              {baselineParams ? " Dashed curves are the saved baseline." : " Use “Set baseline” to keep a dashed copy of the current curves."}
+              <b className="font-semibold text-foreground">Figure 1.</b> <span className="font-semibold text-is">IS</span>,{" "}
+              <span className="font-semibold text-lm">LM</span> and <span className="font-semibold text-fe">FE</span>.{" "}
+              <b style={{ color: "var(--pt-a)" }}>A</b> is the start, <b style={{ color: "var(--pt-b)" }}>B</b> the first move
+              with prices fixed, <b style={{ color: "var(--pt-c)" }}>C</b> the long run. Dashed curves are where they were.
             </figcaption>
           </figure>
 
-          <div className="mt-10 grid gap-8 border-t border-ink pt-6 md:grid-cols-3">
-            <figure>
-              <LoanableFundsFigure {...fig} />
-              <figcaption className="mt-2 text-sm text-muted-foreground">
-                <b className="font-semibold text-foreground">Figure 2.</b> Goods market: investment
-                plus net exports against saving.
-              </figcaption>
-            </figure>
-            <figure>
-              <MoneyFigure {...fig} />
-              <figcaption className="mt-2 text-sm text-muted-foreground">
-                <b className="font-semibold text-foreground">Figure 3.</b> Money market: real
-                balances supplied and demanded.
-              </figcaption>
-            </figure>
-            <figure>
-              <LabourFigure {...fig} />
-              <figcaption className="mt-2 text-sm text-muted-foreground">
-                <b className="font-semibold text-foreground">Figure 4.</b> Labour market, shifted by
-                the output gap.
-              </figcaption>
-            </figure>
-          </div>
+          <section className="mt-10 border-t border-ink pt-4" aria-label="The markets behind the curves">
+            <h2 className="text-2xl">The markets behind the curves</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Saving and investment, money and labour, all at the point on show above.</p>
+            <div className="mt-4 space-y-6">
+              <SideMarkets sim={rn.sim} view={view} />
+              <TimePath sim={rn.sim} index={view.t} />
+            </div>
+          </section>
 
-          <ExpenditureIdentityCard
-            params={params}
-            equilibriumOutput={solvedEquilibrium?.output ?? null}
-          />
+          <ExpenditureIdentityCard params={view.params} frame={view.frame} />
 
           <section className="mt-10 max-w-2xl border-t border-ink pt-4">
             <h2 className="text-2xl">About this model</h2>
             <div className="prose-text mt-3 space-y-4">
               <p>
-                The <span className="font-semibold text-is">IS curve</span> summarises
-                goods-market equilibrium in (<i>Y</i>, <i>r</i>) space: planned spending meets income
-                with <i>I</i> + <i>NX</i> = <i>S</i>. The{" "}
-                <span className="font-semibold text-lm">LM curve</span> summarises money-market
-                equilibrium for a given price level; a higher real money supply shifts LM right.
+                The <span className="font-semibold text-is">IS curve</span> is where desired saving equals desired investment
+                (plus net exports when the economy is open) for each output; the{" "}
+                <span className="font-semibold text-lm">LM curve</span> is where real money supplied equals money demanded; the{" "}
+                <span className="font-semibold text-fe">FE line</span> is the output the labour market supports.
               </p>
               <p>
-                Figure 3 shows a vertical real money supply <i>Ms</i>/<i>P</i> and a downward-sloping
-                money demand in (quantity, rate) space; Figure 2 plots <i>I</i> + <i>NX</i> against{" "}
-                <i>S</i>.
+                A driver moves one curve. Output then sits above or below FE, so prices rise or fall, real money balances change, and
+                LM shifts until output returns to FE. Slow prices (sticky) make that take longer.
               </p>
-              <p>
-                Axes are index units for teaching, not calibrated data. Fiscal <i>G</i> and the
-                components under Savings move the combined IS schedule; use Net exports under
-                Investment for <i>NX</i>.
-              </p>
+              <p>Axes are index units for teaching, not calibrated data.</p>
             </div>
           </section>
         </div>
@@ -197,15 +127,11 @@ export default function HomePage() {
               Drivers
             </SheetTrigger>
           </div>
-          <SheetContent
-            side="bottom"
-            overlay={false}
-            onInteractOutside={(e) => e.preventDefault()}
-            className="flex h-[88dvh] flex-col gap-0 border-t border-ink bg-paper p-0 shadow-none"
-          >
+          <SheetContent side="bottom" overlay={false} onInteractOutside={(e) => e.preventDefault()}
+            className="flex h-[88dvh] flex-col gap-0 border-t border-ink bg-paper p-0 shadow-none">
             <SheetTitle className="sr-only">Model drivers</SheetTitle>
             <div className="shrink-0 border-b border-rule bg-paper px-4 pb-2 pt-3">
-              <IslmFigure {...fig} />
+              <CurvesFigure sim={rn.sim} view={view} />
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">{controls}</div>
           </SheetContent>

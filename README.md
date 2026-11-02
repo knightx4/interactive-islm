@@ -18,7 +18,7 @@ Open [http://localhost:3000](http://localhost:3000). The layout is aimed at desk
 - **Money supply / demand** (and subcomponents): move the money-market panel and the **LM** curve.
 - **Full employment Y*** (and subcomponents): vertical reference in the IS-LM chart; used with equilibrium **Y** to describe output gaps.
 
-Core math lives in [`lib/islmModel.ts`](lib/islmModel.ts) so all charts stay consistent.
+Core math lives in [`lib/macro/model.ts`](lib/macro/model.ts) so the simulator and the lessons give the same answers; the simulator's sliders map onto it in [`lib/macro/sim.ts`](lib/macro/sim.ts).
 
 ## Scripts
 
@@ -35,4 +35,4 @@ ISC (see `package.json`).
 
 ## Learn course
 
-`/learn` lists thirteen numbered lessons in three parts, then a Practice page as the fourth; each has a page at `/learn/<slug>` (old addresses redirect). Lessons run on a separate model in [`lib/macro/model.ts`](lib/macro/model.ts): IS, LM and FE curves with a labour market, prices that adjust over time, and an open economy with capital mobility, floating or pegged rates, reserves and a linked partner. The simulator keeps its own model in `lib/islmModel.ts`. Lesson text lives in `lib/learn/lessons.ts`; shocks (the shift table) in `lib/macro/shocks.ts`. Rules for lesson authors: [`docs/learn/LESSON-STANDARD.md`](docs/learn/LESSON-STANDARD.md).
+`/learn` lists thirteen numbered lessons in three parts, then a Practice page as the fourth; each has a page at `/learn/<slug>` (old addresses redirect). Lessons and the simulator run on one model, [`lib/macro/model.ts`](lib/macro/model.ts): IS, LM and FE curves with a labour market, prices that adjust over time, and an open economy with capital mobility, floating or pegged rates, reserves and a linked partner. Lesson text lives in `lib/learn/lessons.ts`; shocks (the shift table) in `lib/macro/shocks.ts`. Rules for lesson authors: [`docs/learn/LESSON-STANDARD.md`](docs/learn/LESSON-STANDARD.md).
