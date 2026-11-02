@@ -545,7 +545,96 @@ export const lessons: Lesson[] = [
     n: 10, slug: "exchange-rates", part: 3, title: "Exchange rates",
     summary: "Nominal and real exchange rates, and what moves them under floating and fixed regimes.",
     covers: ["e and the real exchange rate", "Interest parity and expected currency moves", "Floating regimes against pegs"],
+    body: [
+      "A trade deficit, a cheap holiday abroad and a falling stock market in Tokyo can all trace back to one price: the price of one currency in terms of another. This lesson gives that price two forms. The nominal exchange rate says how many units of foreign money one unit of home money buys. The real exchange rate says how many foreign goods one home good buys. Trade follows the second; headlines report the first.",
+      "Throughout, e is the number of units of foreign currency per one unit of home currency, so a rise in e means the home currency has appreciated and a fall means it has depreciated. The real exchange rate is RER = e × P_home ÷ P_foreign, where each P is a price level in its own currency. Everything below keeps those two definitions fixed.",
+      "All model numbers are index units from a toy economy, not data. Real-world figures are from memory, approximate, and kept in separate boxes.",
+    ],
+    takeaways: [
+      "A rise in e is an appreciation of the home currency. With prices unchanged it makes home goods dearer abroad and foreign goods cheaper at home, so net exports fall.",
+      "RER = e × P_home ÷ P_foreign. A high RER means home goods are expensive relative to foreign goods; net exports fall as it rises.",
+      "Regimes run on a spectrum. The more tightly a country fixes its rate, the less room its central bank has for its own interest rate policy.",
+      "Uncovered interest parity: e₁ = e₀(1 + r_foreign) ÷ (1 + r_home). Money moves until the expected change in e cancels the gap in interest rates, so a higher rate is paired with an expected depreciation.",
+      "A carry trade earns the rate gap in calm times and loses when the funding currency jumps. Leverage multiplies both outcomes.",
+    ],
+    sections: [
+      {
+        heading: "What a strong currency does",
+        paras: [
+          "Suppose the dollar appreciates by 10 percent against the euro while prices in both places stay put. A car priced at the same number of dollars now costs a European buyer about 10 percent more euros. A bottle of wine priced at the same number of euros now costs an American buyer about 9 percent fewer dollars, because 1 ÷ 1.10 is about 0.91. Our goods got dearer to foreigners and theirs got cheaper to us.",
+          "So buyers on both sides lean toward foreign goods: our exports fall, our imports rise, and net exports NX fall. This is why the real exchange rate matters for the IS curve. In the model, NX sits inside IS and falls as the RER rises.",
+        ],
+        widget: "strong-currency",
+      },
+      {
+        heading: "Nominal against real, with a hamburger",
+        paras: [
+          "If prices are fixed, RER moves one for one with e. But prices are not fixed, and a currency can look strong in nominal terms while the country's prices have risen even faster. The real rate corrects for both.",
+          "One way to see the idea is to price a single standard good in two places. A widely sold burger is nearly the same everywhere, so the dollar price of the burger abroad, divided by its dollar price in the US, is a one-good RER. Above 1 means the foreign currency buys less burger than the dollar does, so that currency looks overvalued. Below 1 means it looks undervalued.",
+          "Read this as a rough gauge, not a forecast. A burger is partly local labour and rent, which are cheap in poorer countries, so such places tend to look undervalued even when nothing is wrong.",
+        ],
+        widget: "big-mac",
+      },
+      {
+        heading: "Regimes on a spectrum",
+        paras: [
+          "A country picks how much freedom to give its exchange rate. At one end the rate floats and the central bank sets interest rates for domestic goals. At the other, the country uses another country's money, so its rate cannot move at all and it has given up monetary policy entirely. In between sit bands, crawling bands, and currency boards that tie the money supply to reserves.",
+          "The trade-off is general. A fixed rate gives stable trade prices and an anchor against inflation. It costs the central bank its own interest rate: to hold the rate, the bank must move rates and the money supply with the anchor country's. Click through the regimes to see what each demands.",
+        ],
+        widget: "regime-spectrum",
+      },
+      {
+        heading: "Why money chases interest rates",
+        paras: [
+          "Investors compare a deposit at home with a deposit abroad. The foreign one pays its own rate, but the investor's return in home money also depends on how e moves while the money is away. If e is expected to fall, a foreign deposit's earnings buy less home money when converted back.",
+          "Setting the two returns equal gives uncovered interest parity: e₁ = e₀(1 + r_foreign) ÷ (1 + r_home). With r_home above r_foreign, the right-hand side is below e₀, so e is expected to fall: the high-interest currency is expected to depreciate. If the expected move is smaller than that, money flows toward the high rate, which pushes e up today and lowers the move still to come, until parity holds.",
+          "This is the link between the interest rate and the exchange rate in the model: raise the home rate and the currency appreciates now, with a depreciation expected afterwards.",
+        ],
+        widget: "uip",
+      },
+      {
+        heading: "The carry trade",
+        paras: [
+          "Parity is a statement about expectations. In practice many investors bet that e will not move as much as the rate gap implies. A carry trade borrows in a low-rate currency, converts the money, and lends it in a high-rate one. It pays the rate gap each year as long as the funding currency does not appreciate by more than the parity amount.",
+          "That makes the payoffs lopsided. Small, steady gains are collected when nothing happens. When a funding currency rises sharply, many investors rush to repay their loans at once, which buys the funding currency and pushes it up further. Borrowed money multiplies the loss. Try the widget at a 5× position and move the funding currency by 14 percent.",
+        ],
+        widget: "carry",
+      },
+      {
+        heading: "On the curves",
+        paras: [
+          "In the lab below the economy floats and capital is partly mobile. A rise in the money supply pushes the home interest rate down, so capital leaves, e falls, and the lower RER raises NX; that adds to the expansion. A rate rise abroad also pulls capital out, so e falls and NX rise. Fiscal expansion does the reverse: it raises the home rate, capital comes in, e rises and NX fall, which offsets part of the stimulus. Predict the direction of Y, r, P, C, I, N, w, e and NX before you reveal.",
+        ],
+      },
+    ],
     lab: { regime: "floating", mobility: 0.5, shocks: ["money-supply-up", "gov-spending-up", "foreign-rate-up"], defaultShock: "money-supply-up" },
+    cases: [
+      {
+        heading: "Reading a burger table",
+        text: "The Economist magazine has published a burger-based exchange-rate table since the mid-1980s. In recent editions, Switzerland has usually sat at the overvalued end, with the burger costing noticeably more in dollars than in the US, while China, India and Japan have sat at the undervalued end. The calculator above works the same way with its own rounded inputs.",
+        approx: "From memory and approximate: the direction of the gaps for these countries, and the rounded prices and rates in the calculator (early 2024). Take current values from the published table and overwrite the inputs. Not checked against any course material.",
+      },
+      {
+        heading: "The yen carry unwind of August 2024",
+        text: "For years the Bank of Japan kept rates near zero while US rates were far higher, and investors borrowed yen to hold dollar assets. On 31 July 2024 the Bank of Japan raised its rate to about a quarter of a percent, and US data pointed toward rate cuts. Within days the yen rose sharply, and on 5 August Japanese shares fell by around 12 percent in a day, among the largest one-day drops on record. The moves partly reversed within weeks.",
+        approx: "From memory and approximate: the yen's rise from about 162 to about 142 per dollar between early July and early August 2024, the rate near 0.25 percent, and the size of the 5 August fall in Japanese shares. Check against Bank of Japan and exchange data.",
+      },
+    ],
+    newsColumns: ["In the news", "Driver", "Curve moved", "Effect"],
+    news: [
+      { headline: "Overseas buyers are choosing local rivals as the dollar hits a multi-year high.", driver: "A higher e makes our goods dearer abroad", curve: "IS shifts left through lower NX", effect: "Net exports fall; with a floating rate, output is lower in the short run." },
+      { headline: "The central bank raises its policy rate while rates elsewhere hold steady.", driver: "Home rate rises above the foreign rate", curve: "LM shifts left", effect: "Capital flows in, e rises now and is expected to fall afterwards." },
+      { headline: "Traders unwind borrowed-yen positions and the yen jumps.", driver: "Funding currency appreciates sharply", curve: "IS shifts through the yen's NX effect", effect: "Carry losses mount; the yen's real rate rises, hurting Japan's exports." },
+      { headline: "A small country abandons its link to the dollar and its currency halves in value.", driver: "Regime change from peg to float", curve: "IS shifts right through higher NX", effect: "Imports get dearer, exports cheaper; the central bank regains control of the interest rate." },
+    ],
+    predictions: [
+      { q: "The home currency appreciates 10 percent and no price changes. Net exports…", options: ["rise, because home money buys more", "fall, because home goods are dearer abroad", "are unchanged, since only the nominal rate moved"], answer: 1, why: "With prices fixed, RER rises with e. Home goods cost more abroad and foreign goods cost less here, so buyers switch and NX fall." },
+      { q: "e is defined as euros per dollar. It goes from 0.90 to 0.95. Seen from the US, the dollar has…", options: ["appreciated", "depreciated", "gone neither way, because it is a ratio"], answer: 0, why: "A rise in e (foreign per home) means one dollar buys more euros: the dollar appreciated." },
+      { q: "A snack costs 300 pesos at home and 10 dollars in the US. The market rate is 20 pesos per dollar. The peso's real exchange rate against the dollar is…", options: ["0.5, undervalued", "1.0, at parity", "1.5, overvalued"], answer: 2, why: "e = 1 ÷ 20 = 0.05 dollars per peso. RER = 0.05 × 300 ÷ 10 = 1.5. The snack costs 50 percent more in dollars at home, so the peso looks overvalued." },
+      { q: "The home interest rate is 6 percent and the foreign rate is 2 percent. Uncovered interest parity says e is expected to…", options: ["rise by about 4 percent", "fall by about 4 percent", "stay the same"], answer: 1, why: "e₁ = e₀ × 1.02 ÷ 1.06, which is about 0.962 e₀. The high-rate currency is expected to depreciate by about 4 percent." },
+      { q: "A country with a currency board tied to the dollar sees the US raise its rate. Its own interest rate will…", options: ["stay put, because the board is independent", "have to rise too, or reserves drain out", "fall, because its currency is protected"], answer: 1, why: "Capital leaves for the higher US return. To keep the link, the board loses reserves and the money supply shrinks, which pushes the local rate up." },
+      { q: "A funding currency jumps 14 percent against the target. A carry trader who borrowed at 0.1 percent and lent at 5.3 percent has…", options: ["a loss, even though the rate gap was positive", "still a gain, because the rate gap is positive", "exactly broken even"], answer: 0, why: "Per unit borrowed the result is 1.053 ÷ 1.14 − 1.001 ≈ −0.077. The rate gap of about 5 percent is far smaller than the 14 percent move." },
+    ],
   },
   {
     n: 11, slug: "open-economy", part: 3, title: "The open economy",

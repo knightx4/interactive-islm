@@ -5,6 +5,7 @@ import { LafferWidget, LinkedPanels, OkunConverter, PhillipsWidget, UsUnemployme
 import { IsShifters, RicardianWidget, SavingMarketIS, SmoothingWidget } from "./saving";
 import { LmShifters, MoneyMarketLM, MultiplierWidget, PolicyRateWidget } from "./money";
 import { FEHandoff, GrowthCalculator, HiringWidget, ProductionFunctionWidget } from "./productivity";
+import { BigMacWidget, CarryWidget, RegimeSpectrum, StrongCurrencyWidget, UipWidget } from "./fx";
 import { CpiBasketWidget, ExpenditureSorter, ImportsDemo, RealNominalWidget, ThreeWaysWidget } from "./measuring";
 
 /** Interactive pieces a lesson section can name by id. */
@@ -31,6 +32,11 @@ const registry: Record<string, ComponentType> = {
   okun: OkunConverter,
   phillips: PhillipsWidget,
   "us-unemployment": UsUnemployment,
+  "strong-currency": StrongCurrencyWidget,
+  "big-mac": BigMacWidget,
+  "regime-spectrum": RegimeSpectrum,
+  uip: UipWidget,
+  carry: CarryWidget,
 };
 
 export default function Widget({ id }: { id: string }) {
