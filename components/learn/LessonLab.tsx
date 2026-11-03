@@ -137,9 +137,9 @@ export default function LessonLab({ lab }: { lab: LabSpec }) {
               <div className="mt-2"><OpenInSimulator shockId={shock.id} regime={regime} /></div>
               <p className="num mt-1 text-sm font-semibold" aria-live="polite">{label}</p>
               <p className="mt-0.5 text-sm text-muted-foreground">
-                <span className="font-semibold" style={{ color: "var(--pt-a)" }}>A</span> black: start.{" "}
-                <span className="font-semibold" style={{ color: "var(--pt-b)" }}>B</span> red: impact.{" "}
-                <span className="font-semibold" style={{ color: "var(--pt-c)" }}>C</span> blue: long run. Dashed lines show where curves were; arrows show the shift. Index units, not real data.
+                <span className="font-semibold" style={{ color: "var(--pt-a)" }}>A</span> grey: start.{" "}
+                <span className="font-semibold" style={{ color: "var(--pt-b)" }}>B</span> purple: impact.{" "}
+                <span className="font-semibold" style={{ color: "var(--pt-c)" }}>C</span> black: long run. Dashed lines show where curves were; arrows show the shift. Index units, not real data.
               </p>
             </div>
           </div>

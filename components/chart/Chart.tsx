@@ -126,14 +126,14 @@ export default function Chart({
 
         <g clipPath={`url(#${clipId})`} fill="none">
           {refLines.map((r, i) => {
-            const common = { stroke: COLOR[r.curve], strokeWidth: r.ghost ? 1.5 : 2, strokeDasharray: r.ghost ? "5 4" : undefined, opacity: r.ghost ? 0.6 : 1 };
+            const common = { stroke: COLOR[r.curve], strokeWidth: r.ghost ? 1.5 : 2.5, strokeDasharray: r.ghost ? "5 4" : undefined, opacity: r.ghost ? 0.45 : 1 };
             return r.orientation === "v"
               ? <line key={i} x1={x(r.value)} x2={x(r.value)} y1={M.t} y2={H - M.b} {...common} />
               : <line key={i} x1={M.l} x2={W - M.r} y1={y(r.value)} y2={y(r.value)} {...common} />;
           })}
           {series.map((s) => (
-            <path key={s.id} d={path(s.points)} stroke={COLOR[s.curve]} strokeWidth={s.trace ? 1.25 : s.ghost ? 1.5 : 2}
-              strokeDasharray={s.trace ? "1.5 3" : s.ghost ? "5 4" : undefined} opacity={s.ghost ? 0.6 : 1} strokeLinecap="round" strokeLinejoin="round" />
+            <path key={s.id} d={path(s.points)} stroke={COLOR[s.curve]} strokeWidth={s.trace ? 1.25 : s.ghost ? 1.5 : 2.5}
+              strokeDasharray={s.trace ? "1.5 3" : s.ghost ? "5 4" : undefined} opacity={s.ghost ? 0.45 : 1} strokeLinecap="round" strokeLinejoin="round" />
           ))}
           {marks.filter((m) => m.guides !== false).map((m, i) => (
             <g key={`gd${i}`} stroke="var(--ink)" strokeDasharray="1.5 3" strokeWidth={1}>

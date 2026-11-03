@@ -14,16 +14,19 @@ financial-press chart, not a component kit.
 
    | Curve  | Light     | Dark      | Token        |
    | ------ | --------- | --------- | ------------ |
-   | IS     | `#1f4e79` | `#6fa3d6` | `--c-is`     |
-   | LM     | `#a3302b` | `#e57d72` | `--c-lm`     |
-   | FE     | `#2e6b3c` | `#6dba7d` | `--c-fe`     |
-   | Labour | `#a8670f` | `#dba04a` | `--c-labour` |
-   | Money  | `#5a4a86` | `#a594d6` | `--c-money`  |
+   | IS     | `#0072b2` | `#56b4e9` | `--c-is`     |
+   | LM     | `#d55e00` | `#f5844c` | `--c-lm`     |
+   | FE     | `#009e73` | `#3cc59a` | `--c-fe`     |
+   | Labour | `#b07800` | `#e6a817` | `--c-labour` |
+   | Money  | `#b4558e` | `#e08dc0` | `--c-money`  |
 
+   The hues follow the Okabe-Ito palette, chosen to stay apart for colour-blind
+   readers and to differ in lightness as well as hue, so IS, LM and FE can be told
+   apart at a glance. Curves are drawn 2.5px; ghosts are 1.5px, dashed, at 45%.
    Tailwind: `text-is`, `stroke-lm`, `bg-fe`, etc. Colour is never the only cue:
    curves are also labelled directly.
-   **Points.** A (start), B (impact) and C (long run) are black, red and blue
-   (`--pt-a`, `--pt-b`, `--pt-c`) and always carry their letter. Ghost curves are
+   **Points.** A (start), B (impact) and C (long run) are grey, purple and black
+   (`--pt-a`, `--pt-b`, `--pt-c`), so none shares a hue with a curve, and always carry their letter. Ghost curves are
    dashed with a shift arrow in the curve's colour.
 5. **Charts** (see `components/chart`): hairline axes with ticks, no box, light
    horizontal gridlines only, axis labels at least 12px in sans, curves 2px
