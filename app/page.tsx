@@ -1,20 +1,23 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { Link2, SlidersHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { SlidersHorizontal } from "lucide-react";
 import { Sheet, SheetTrigger, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import ModelControls from "@/components/islm/ModelControls";
 import ExpenditureIdentityCard from "@/components/islm/ExpenditureIdentityCard";
-import MacroFeedbackBar from "@/components/islm/layout/MacroFeedbackBar";
-import Playback from "@/components/islm/Playback";
+import PhaseBar from "@/components/islm/PhaseBar";
+import { GLIDE_FAST_MS, GLIDE_SLOW_MS, usePlayer } from "@/components/islm/usePlayer";
+import { ScenarioChip } from "@/components/ui/scenario-chip";
+import { ResetPill } from "@/components/ui/reset-pill";
 import CurvesFigure from "@/components/learn/CurvesFigure";
 import SideMarkets from "@/components/learn/SideMarkets";
 import { ExchangeRateCard, NetExportsCard, PegCard, SavingIdentityCard, TwoCountry } from "@/components/islm/OpenPanels";
 import TimePath from "@/components/learn/TimePath";
 import {
-  baselineState, run, setCause, setParent, viewAt, isHardPeg, type ParentId, type RegimeChoice, type SimState,
+  baselineState, isBaseline, run, setCause, setParent, viewAt, isHardPeg, type ParentId, type RegimeChoice, type SimState,
 } from "@/lib/macro/sim";
+import { scenarios, stateForScenario } from "@/lib/macro/scenarios";
+import { SPEED_FAST, SPEED_SLOW, adjustsAtOnce, headlineFor, settleIndex, type Phase } from "@/lib/macro/playback";
 import { decodeState, encodeState } from "@/lib/macro/simUrl";
 
 function useIsDesktop() {
@@ -31,9 +34,9 @@ function useIsDesktop() {
 
 export default function HomePage() {
   const [state, setState] = useState<SimState>(baselineState);
-  const [playing, setPlaying] = useState(false);
   const [ready, setReady] = useState(false);
-  const [copied, setCopied] = useState<"" | "copied" | "failed">("");
+  /** The scenario chip last played, and whether the sliders have been edited since. */
+  const [scenario, setScenario] = useState<{ id: string; edited: boolean } | null>(null);
 
   // read the scenario from the link once, then keep the address in step without adding history entries
   useEffect(() => {
@@ -47,85 +50,88 @@ export default function HomePage() {
     if (url !== window.location.pathname + window.location.search + window.location.hash) window.history.replaceState(window.history.state, "", url);
   }, [state, ready]);
 
-  const copyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied("copied");
-    } catch {
-      setCopied("failed");
-    }
-    setTimeout(() => setCopied(""), 2500);
-  };
-
   // the solution depends on everything except the playback position
   const key = JSON.stringify([state.offsets, state.causes, state.speed, state.open, state.regime, state.mobility, state.partner]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const rn = useMemo(() => run(state), [key]);
-  const view = viewAt(rn.sim, state.t);
   const last = rn.length - 1;
+  const settle = useMemo(() => settleIndex(rn.sim), [rn]);
+  const atRest = isBaseline(state);
+  // nothing has moved: the economy sits at A whatever the playback position says
+  const shownT = atRest ? 0 : Math.min(state.t, last);
+  const view = viewAt(rn.sim, shownT);
+  const atOnce = adjustsAtOnce(state.speed);
+  const glideMs = atOnce ? GLIDE_FAST_MS : GLIDE_SLOW_MS;
 
-  const edit = useCallback((f: (s: SimState) => SimState) => { setPlaying(false); setState(f); }, []);
+  const onT = useCallback((t: number) => setState((s) => ({ ...s, t })), []);
+  const player = usePlayer(onT);
+  const edit = useCallback((f: (s: SimState) => SimState) => { player.stop(); setScenario((c) => (c ? { ...c, edited: true } : c)); setState(f); }, [player]);
   const onParent = (id: ParentId, v: number) => edit((s) => setParent(s, id, v));
   const onCause = (id: string, v: number) => edit((s) => setCause(s, id, v));
   const onOpen = (open: boolean) => edit((s) => ({ ...s, open, t: 1 }));
   const onRegime = (regime: RegimeChoice) => edit((s) => ({ ...s, regime, t: 1 }));
   const onMobility = (mobility: number) => edit((s) => ({ ...s, mobility, t: 1 }));
   const onPartner = (partner: boolean) => edit((s) => ({ ...s, partner, t: 1 }));
-  const onReset = () => edit((s) => ({ ...baselineState(), speed: s.speed }));
-  const onT = useCallback((t: number) => setState((s) => ({ ...s, t })), []);
-  const onSpeed = (speed: number) => setState((s) => ({ ...s, speed }));
+  const onReset = () => { player.stop(); setScenario(null); setState((s) => ({ ...baselineState(), speed: s.speed, t: 0 })); };
+  const onAdjust = (fast: boolean) => setState((s) => ({ ...s, speed: fast ? SPEED_FAST : SPEED_SLOW }));
+
+  const playScenario = (id: string) => {
+    const sc = scenarios.find((q) => q.id === id)!;
+    const st = stateForScenario(sc, state.speed);
+    const nrn = run(st);
+    setScenario({ id, edited: false });
+    setState(st);
+    player.playAll(settleIndex(nrn.sim), nrn.length - 1, adjustsAtOnce(st.speed) ? GLIDE_FAST_MS : GLIDE_SLOW_MS);
+  };
+  const onPhase = (p: Phase) => {
+    if (p === "A") player.goA();
+    else if (p === "B") player.goB();
+    else player.goC(shownT, settle, last, glideMs);
+  };
+  const onPlay = () => player.playAll(settle, last, glideMs);
 
   const isDesktop = useIsDesktop();
   const [sheetOpen, setSheetOpen] = useState(false);
   const controls = <ModelControls state={state} onParent={onParent} onCause={onCause} onOpen={onOpen} onRegime={onRegime} onMobility={onMobility} onPartner={onPartner} onReset={onReset} price={view.frame.P} />;
 
-  const label =
-    view.at === "A" ? "Point A: before the change" : view.at === "B" ? "Point B: the first move, prices not yet changed" :
-    view.at === "C" ? "Point C: prices fully adjusted, output back at full employment" : `Prices adjusting: period ${view.t}`;
-  const playback = (
-    <Playback t={Math.min(state.t, last)} length={rn.length} playing={playing} speed={state.speed} label={label}
-      onT={onT} onPlaying={setPlaying} onSpeed={onSpeed} />
-  );
+  const headline = headlineFor(state, view.at, view.frame.Y, view.frame.Ystar);
+  const subline = `Y ${view.frame.Y.toFixed(1)} · Y* ${view.frame.Ystar.toFixed(1)} · index units, not real data`;
+  const chartLabel = `IS, LM and FE curves with the points A, B and C. ${headline}.`;
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 pb-24 pt-8 lg:pb-16 md:px-6">
-      <header className="max-w-2xl">
-        <h1 className="text-3xl md:text-4xl">The IS-LM model</h1>
-        <p className="prose-text mt-3 text-lg text-foreground/90">
-          Move a driver (on a phone, open Drivers at the bottom) and see the short-run point <b>B</b>, then play the
-          prices adjusting until output is back at full employment, point <b>C</b>. This is the same model as the
-          lessons. Values are model index units, not billions or percentage points.
-        </p>
-      </header>
+    <div className="mx-auto w-full max-w-[1360px] px-4 pb-24 pt-6 lg:pb-16 md:px-8">
+      <section aria-label="Scenarios" className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:overflow-visible md:px-0">
+        <span className="mr-1 shrink-0 text-[13px] text-muted-foreground">Try a scenario</span>
+        {scenarios.map((sc) => (
+          <ScenarioChip key={sc.id} active={scenario?.id === sc.id} onClick={() => playScenario(sc.id)}>{sc.name}</ScenarioChip>
+        ))}
+        <ResetPill className="md:ml-auto" onClick={onReset} />
+      </section>
 
-      <div className="mt-8 grid gap-10 lg:grid-cols-[22rem_minmax(0,1fr)] lg:gap-12">
-        {isDesktop && (
-          <aside aria-label="Model controls"
-            className="order-2 lg:order-1 lg:sticky lg:top-16 lg:max-h-[calc(100vh-5rem)] lg:self-start lg:overflow-y-auto lg:pr-2">
-            {controls}
-          </aside>
-        )}
+      <div className="mt-6 flex flex-wrap items-start gap-6 lg:flex-nowrap">
+        <div className="min-w-0 flex-[999_1_640px]">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h1 className="text-[28px] leading-tight" aria-live="polite">{headline}</h1>
+            <p className="num text-sm text-muted-foreground">{subline}</p>
+          </div>
 
-        <div className="order-1 min-w-0 lg:order-2">
-          <figure>
-            <MacroFeedbackBar frame={view.frame} />
-            <CurvesFigure sim={rn.sim} view={view} />
-            {playback}
-            <div className="mt-2 flex items-center gap-3">
-              <Button type="button" size="sm" variant="outline" onClick={copyLink}>
-                <Link2 className="mr-1 h-4 w-4" aria-hidden />Copy link
-              </Button>
-              <span className="text-sm text-muted-foreground" aria-live="polite">
-                {copied === "copied" ? "Link copied: it reopens these settings." : copied === "failed" ? "Copy failed: copy the address from the address bar." : "Copies a link that reopens exactly these settings."}
-              </span>
+          {atRest && (
+            <div className="panel-wash mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3.5">
+              <span className="text-[15px] font-semibold">Nothing has moved yet…</span>
+              <span className="text-sm text-ink-soft">Pick a scenario above, or move a driver to shift a curve and watch the economy go from A to B to C.</span>
             </div>
-            <figcaption className="mt-2 text-sm text-muted-foreground">
-              <b className="font-semibold text-foreground">Figure 1.</b> <span className="font-semibold text-is">IS</span>,{" "}
-              <span className="font-semibold text-lm">LM</span> and <span className="font-semibold text-fe">FE</span>.{" "}
-              <b style={{ color: "var(--pt-a)" }}>A</b> is the start, <b style={{ color: "var(--pt-b)" }}>B</b> the first move
-              with prices fixed, <b style={{ color: "var(--pt-c)" }}>C</b> the long run. Dashed curves are where they were.
-            </figcaption>
+          )}
+
+          <figure className="panel mt-4 px-3 pb-1 pt-3">
+            <CurvesFigure sim={rn.sim} view={view} animateMs={player.playing ? 120 : 500} aspect={0.58} />
           </figure>
+          <figcaption className="mt-2 text-sm text-muted-foreground">
+            <span className="font-semibold text-is">IS</span>, <span className="font-semibold text-lm">LM</span> and{" "}
+            <span className="font-semibold text-fe">FE</span>: FE is the dashed vertical line. Fainter dashed curves are where they were.
+          </figcaption>
+          <span className="sr-only">{chartLabel}</span>
+
+          <div className="mt-4"><PhaseBar at={view.at} playing={player.playing} atOnce={atOnce} onPhase={onPhase} onPlay={onPlay} onAdjust={onAdjust} /></div>
 
           <section className="mt-10 border-t border-rule pt-4" aria-label="The markets behind the curves">
             <h2 className="text-2xl">The markets behind the curves</h2>
@@ -177,6 +183,12 @@ export default function HomePage() {
             </div>
           </section>
         </div>
+
+        {isDesktop && (
+          <aside aria-label="Model controls" className="panel w-full max-w-[26rem] shrink-0 p-4 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:flex-[1_1_360px] lg:overflow-y-auto">
+            {controls}
+          </aside>
+        )}
       </div>
 
       {!isDesktop && (

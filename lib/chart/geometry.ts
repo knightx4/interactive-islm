@@ -47,3 +47,41 @@ export function sample(f: (x: number) => number, x0: number, x1: number, n = 2) 
     return { x, y: f(x) };
   });
 }
+
+export type LabelBox = { x: number; y: number; w: number; h: number };
+
+/**
+ * Choose a label offset for each mark so that no label overlaps another label or any mark.
+ * `pts` are pixel positions; `label` widths are in px. Candidates are tried in order and the
+ * first free one wins; if none is free the one with the least overlap is used.
+ * Returns dx/dy (the text's x offset and baseline offset from the mark), in the original order.
+ */
+export function placeMarkLabels(
+  pts: { x: number; y: number; w: number }[],
+  bounds: { x0: number; x1: number; y0: number; y1: number },
+  opts: { h?: number; r?: number } = {},
+): { dx: number; dy: number }[] {
+  const h = opts.h ?? 15, r = opts.r ?? 7;
+  const cands = (w: number) => [
+    { dx: 9, dy: -9 }, { dx: 9, dy: 20 }, { dx: -w - 9, dy: -9 }, { dx: -w - 9, dy: 20 },
+    { dx: 11, dy: 5 }, { dx: -w - 11, dy: 5 }, { dx: -w / 2, dy: -13 }, { dx: -w / 2, dy: 24 },
+  ];
+  const boxOf = (p: { x: number; y: number }, w: number, c: { dx: number; dy: number }): LabelBox => ({ x: p.x + c.dx, y: p.y + c.dy - h + 3, w, h });
+  const hit = (a: LabelBox, b: LabelBox) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  const discs = pts.map((p): LabelBox => ({ x: p.x - r, y: p.y - r, w: 2 * r, h: 2 * r }));
+  const placed: LabelBox[] = [];
+  return pts.map((p) => {
+    let best = { dx: 9, dy: -9 }, bestScore = Infinity;
+    for (const c of cands(p.w)) {
+      const b = boxOf(p, p.w, c);
+      let score = 0;
+      if (b.x < bounds.x0 || b.x + b.w > bounds.x1 || b.y < bounds.y0 || b.y + b.h > bounds.y1) score += 1;
+      for (const d of discs) if (hit(b, d)) score += 1;
+      for (const o of placed) if (hit(b, o)) score += 1;
+      if (score < bestScore) { bestScore = score; best = c; }
+      if (score === 0) break;
+    }
+    placed.push(boxOf(p, p.w, best));
+    return best;
+  });
+}

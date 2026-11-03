@@ -20,7 +20,7 @@ const xAt = (f: (y: number) => number, r: number) => {
 const moved = (a: number, b: number) => Math.abs(a - b) > 0.05;
 
 /** IS, LM and FE with ghosts of where they were, shift arrows, and the points A, B and C. */
-export default function CurvesFigure({ sim, view }: { sim: Simulation; view: View }) {
+export default function CurvesFigure({ sim, view, animateMs = 0, aspect }: { sim: Simulation; view: View; animateMs?: number; aspect?: number }) {
   const now = curvesFor(view.params, view.curveFrame);
   const base = curvesFor(sim.before, sim.baseline);
   const atB = curvesFor(sim.after, sim.impact);
@@ -59,9 +59,9 @@ export default function CurvesFigure({ sim, view }: { sim: Simulation; view: Vie
     series.push({ id: "path", curve: "ink", points: path, trace: true });
   }
 
-  const marks: Mark[] = [{ x: a.Y, y: a.r, label: "A", color: "var(--pt-a)", dx: -18, dy: -8, guides: false }];
-  if (view.showB) marks.push({ x: b.Y, y: b.r, label: "B", color: "var(--pt-b)", dx: 8, dy: -8, guides: false });
-  if (view.showC) marks.push({ x: c.Y, y: c.r, label: "C", color: "var(--pt-c)", dx: 8, dy: 16, guides: false });
+  const marks: Mark[] = [{ x: a.Y, y: a.r, label: "A", color: "var(--pt-a)", guides: false }];
+  if (view.showB) marks.push({ x: b.Y, y: b.r, label: "B", color: "var(--pt-b)", guides: false });
+  if (view.showC) marks.push({ x: c.Y, y: c.r, label: "C", color: "var(--pt-c)", guides: false });
   if (view.at === "moving") marks.push({ x: view.frame.Y, y: view.frame.r, color: "var(--ink)", hollow: true });
 
   return (
@@ -69,7 +69,7 @@ export default function CurvesFigure({ sim, view }: { sim: Simulation; view: Vie
       title="IS, LM and FE curves with the points A, B and C"
       xLabel="Output, Y" yLabel="Interest rate, r (%)"
       xDomain={[X0, X1]} yDomain={[R0, R1]} xTicks={4} yTicks={5}
-      series={series} refLines={refLines} marks={marks} arrows={arrows}
+      series={series} refLines={refLines} marks={marks} arrows={arrows} animateMs={animateMs} aspect={aspect}
     />
   );
 }

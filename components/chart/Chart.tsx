@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { linearScale, niceTicks, nudgeLabels } from "@/lib/chart/geometry";
+import { linearScale, niceTicks, nudgeLabels, placeMarkLabels } from "@/lib/chart/geometry";
+import useReducedMotion from "@/components/learn/useReducedMotion";
 
 /** The fixed colour of each curve (tokens in app/globals.css). */
 export type CurveKey = "is" | "lm" | "fe" | "labour" | "money" | "ink";
@@ -49,7 +50,30 @@ export type ChartProps = {
   /** Hide numeric tick labels (stylised textbook diagrams). */
   hideTickValues?: boolean;
   className?: string;
+  /** Tween curves and points to new positions over this many ms (off when 0 or when reduced motion is asked for). */
+  animateMs?: number;
 };
+
+type Geo = { series: Series[]; refLines: RefLine[]; marks: Mark[] };
+const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
+function mixGeo(a: Geo, b: Geo, k: number): Geo {
+  const old = new Map(a.series.map((s) => [s.id, s]));
+  return {
+    series: b.series.map((s) => {
+      const o = old.get(s.id);
+      if (!o || o.points.length !== s.points.length || o.ghost !== s.ghost) return s;
+      return { ...s, points: s.points.map((p, i) => ({ x: lerp(o.points[i].x, p.x, k), y: lerp(o.points[i].y, p.y, k) })) };
+    }),
+    refLines: b.refLines.map((r, i) => {
+      const o = a.refLines[i];
+      return o && o.orientation === r.orientation && o.curve === r.curve && o.ghost === r.ghost ? { ...r, value: lerp(o.value, r.value, k) } : r;
+    }),
+    marks: b.marks.map((m) => {
+      const o = m.label ? a.marks.find((q) => q.label === m.label) : undefined;
+      return o ? { ...m, x: lerp(o.x, m.x, k), y: lerp(o.y, m.y, k) } : m;
+    }),
+  };
+}
 
 const M = { l: 48, r: 40, t: 14, b: 44 };
 const FONT = 12;
@@ -70,10 +94,31 @@ function useWidth<T extends HTMLElement>(initial = 520) {
 }
 
 export default function Chart({
-  series, refLines = [], marks = [], arrows = [], xDomain, yDomain, xLabel, yLabel, title,
-  aspect = 0.72, xTicks = 5, yTicks = 5, hideTickValues = false, className,
+  series: seriesIn, refLines: refLinesIn = [], marks: marksIn = [], arrows = [], xDomain, yDomain, xLabel, yLabel, title,
+  aspect = 0.72, xTicks = 5, yTicks = 5, hideTickValues = false, className, animateMs = 0,
 }: ChartProps) {
   const [ref, W] = useWidth<HTMLDivElement>();
+  const reduced = useReducedMotion();
+  const target: Geo = { series: seriesIn, refLines: refLinesIn, marks: marksIn };
+  const geoKey = JSON.stringify(target);
+  const [geo, setGeo] = useState<Geo>(target);
+  const geoRef = useRef<Geo>(target);
+  useEffect(() => {
+    if (!animateMs || reduced) { geoRef.current = target; setGeo(target); return; }
+    const from = geoRef.current, to = target, t0 = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const k = Math.min(1, (now - t0) / animateMs);
+      const g = k >= 1 ? to : mixGeo(from, to, 1 - Math.pow(1 - k, 3));
+      geoRef.current = g;
+      setGeo(g);
+      if (k < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [geoKey, animateMs, reduced]);
+  const { series, refLines, marks } = animateMs && !reduced ? geo : target;
   const clipId = useId();
   const H = Math.round(Math.min(560, Math.max(260, W * aspect)));
   const x = linearScale(xDomain[0], xDomain[1], M.l, W - M.r);
@@ -91,10 +136,13 @@ export default function Chart({
   });
   const labelY = nudgeLabels(wantedY, FONT + 3, M.t + FONT / 2, H - M.b - 2);
 
+  // mark labels: placed so they never overlap each other or another mark
+  const markPts = marks.map((m) => ({ x: x(m.x), y: y(m.y), w: m.label ? 9 * m.label.length + 2 : 0 }));
+  const autoOff = placeMarkLabels(markPts, { x0: M.l, x1: W - 4, y0: M.t, y1: H - M.b });
+
   return (
     <div ref={ref} className={className}>
       <svg width={W} height={H} role="img" aria-label={title} style={{ display: "block", maxWidth: "100%" }}>
-        <title>{title}</title>
         <defs>
           <clipPath id={clipId}><rect x={M.l} y={M.t} width={W - M.l - M.r} height={H - M.t - M.b} /></clipPath>
         </defs>
@@ -126,7 +174,7 @@ export default function Chart({
 
         <g clipPath={`url(#${clipId})`} fill="none">
           {refLines.map((r, i) => {
-            const common = { stroke: COLOR[r.curve], strokeWidth: r.ghost ? 1.5 : 2.5, strokeDasharray: r.ghost ? "5 4" : undefined, opacity: r.ghost ? 0.45 : 1 };
+            const common = { stroke: COLOR[r.curve], strokeWidth: r.ghost ? 1.5 : 2.5, strokeDasharray: r.ghost ? "5 4" : r.curve === "fe" ? "10 5" : undefined, opacity: r.ghost ? 0.45 : 1 };
             return r.orientation === "v"
               ? <line key={i} x1={x(r.value)} x2={x(r.value)} y1={M.t} y2={H - M.b} {...common} />
               : <line key={i} x1={M.l} x2={W - M.r} y1={y(r.value)} y2={y(r.value)} {...common} />;
@@ -171,7 +219,7 @@ export default function Chart({
           return (
             <g key={`m${i}`}>
               <circle cx={x(m.x)} cy={y(m.y)} r={4.5} fill={m.hollow ? "var(--paper)" : c} stroke={m.hollow ? c : "var(--paper)"} strokeWidth={m.hollow ? 2 : 1.5} />
-              {m.label && <text x={x(m.x) + (m.dx ?? 8)} y={y(m.y) + (m.dy ?? -8)} fontSize={FONT + 1} fontWeight={600} fill={c}>{m.label}</text>}
+              {m.label && <text x={x(m.x) + (m.dx ?? autoOff[i].dx)} y={y(m.y) + (m.dy ?? autoOff[i].dy)} fontSize={FONT + 1} fontWeight={600} fill={c}>{m.label}</text>}
             </g>
           );
         })}
