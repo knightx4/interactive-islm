@@ -14,7 +14,7 @@ export default function SiteTopBar() {
   const currentPath = pathname ?? "/";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-ink bg-paper">
+    <header className="sticky top-0 z-40 border-b border-rule bg-paper">
       <div className="mx-auto flex h-12 w-full max-w-7xl items-center justify-between gap-4 px-4 md:px-6">
         <Link href="/" className="font-serif text-lg font-semibold tracking-tight text-foreground">
           Interactive IS-LM

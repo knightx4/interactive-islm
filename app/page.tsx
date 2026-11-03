@@ -127,7 +127,7 @@ export default function HomePage() {
             </figcaption>
           </figure>
 
-          <section className="mt-10 border-t border-ink pt-4" aria-label="The markets behind the curves">
+          <section className="mt-10 border-t border-rule pt-4" aria-label="The markets behind the curves">
             <h2 className="text-2xl">The markets behind the curves</h2>
             <p className="mt-1 text-sm text-muted-foreground">Saving and investment, money and labour, all at the point on show above.</p>
             <div className="mt-4 space-y-6">
@@ -137,7 +137,7 @@ export default function HomePage() {
           </section>
 
           {state.open && (
-            <section className="mt-10 border-t border-ink pt-4" aria-label="The open economy">
+            <section className="mt-10 border-t border-rule pt-4" aria-label="The open economy">
               <h2 className="text-2xl">The open economy</h2>
               <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
                 {rn.defended
@@ -160,7 +160,7 @@ export default function HomePage() {
 
           <ExpenditureIdentityCard params={view.params} frame={view.frame} />
 
-          <section className="mt-10 max-w-2xl border-t border-ink pt-4">
+          <section className="mt-10 max-w-2xl border-t border-rule pt-4">
             <h2 className="text-2xl">About this model</h2>
             <div className="prose-text mt-3 space-y-4">
               <p>

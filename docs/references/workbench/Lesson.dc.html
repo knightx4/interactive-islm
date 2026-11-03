@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lesson: supply shocks</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#ffffff}
+a{color:#0072b2}a:hover{color:#15181d}
+.num{font-variant-numeric:tabular-nums}
+.prose p{font-family:'Source Serif 4',serif;font-size:19px;line-height:1.65;margin:0 0 18px;color:#1f2329}
+.show{min-height:40px;padding:0 14px;border-radius:8px;border:1px solid #c9ced6;background:#fff;font:500 14px 'IBM Plex Sans',sans-serif;color:#15181d;cursor:pointer}
+.show.on{background:#15181d;color:#fff;border-color:#15181d}
+.pick{min-width:44px;min-height:40px;border-radius:8px;border:1px solid #c9ced6;background:#fff;font:600 16px 'IBM Plex Sans',sans-serif;color:#15181d;cursor:pointer}
+.pick.on{border-color:#15181d;box-shadow:inset 0 0 0 1px #15181d}
+.pick.right{background:#e7f5ee;border-color:#0f7b3e}
+.pick.wrong{background:#fdecea;border-color:#b42318}
+.sec{padding:8px 0 24px;border-top:1px solid #e3e6eb}
+.sec.on h2{color:#15181d}
+</style>
+</helmet>
+<div style="font-family: 'IBM Plex Sans', sans-serif; color: #15181d; background: #ffffff; min-height: 100%;">
+  <header style="border-bottom: 1px solid #e3e6eb;">
+    <div style="max-width: 1240px; margin: 0 auto; padding: 0 32px; height: 60px; display: flex; align-items: center; gap: 32px;">
+      <a href="#" style="font-family: 'Source Serif 4', serif; font-weight: 600; font-size: 20px; text-decoration: none; color: #15181d;">IS-LM</a>
+      <nav style="display: flex; gap: 24px; font-size: 14px; flex-grow: 1;">
+        <a href="Main.dc.html" style="text-decoration: none; color: #5b6370;">Simulator</a>
+        <a href="#" style="text-decoration: none; font-weight: 600; color: #15181d;">Learn</a>
+      </nav>
+      <span style="font-size: 13px; color: #5b6370;">Lesson 7 of 13 · about 15 min</span>
+    </div>
+  </header>
+
+  <main style="max-width: 1240px; margin: 0 auto; padding: 40px 32px 64px; display: flex; flex-wrap: wrap; gap: 48px; align-items: flex-start;">
+    <article class="prose" style="flex: 999 1 560px; min-width: 0; max-width: 680px;">
+      <p style="font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #5b6370; margin-bottom: 8px;">Part 2 · The full model</p>
+      <h1 style="margin: 0 0 16px; font-family: 'Source Serif 4', serif; font-size: 44px; line-height: 1.1; font-weight: 600; letter-spacing: -0.01em;">Supply shocks and stagflation</h1>
+      <p>In late 1973 the price of crude oil roughly quadrupled in a few months. Within a year US inflation was above 12% and unemployment was on its way to 9%. Prices and joblessness rose together, which the standard story of the time said should not happen. This lesson shows why it does.</p>
+
+      <sc-for list="{{sections}}" as="s">
+        <section class="{{s.cls}}">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin: 20px 0 12px;">
+            <h2 style="margin: 0; font-family: 'Source Serif 4', serif; font-size: 26px; font-weight: 600; color: #3e4550;">{{s.title}}</h2>
+            <button type="button" class="{{s.btnCls}}" onClick="{{s.show}}">{{s.btn}}</button>
+          </div>
+          <p>{{s.body}}</p>
+        </section>
+      </sc-for>
+
+      <section style="border: 1px solid #e3e6eb; border-radius: 12px; padding: 20px; margin: 8px 0 28px; font-family: 'IBM Plex Sans', sans-serif;">
+        <h2 style="margin: 0 0 4px; font-size: 18px; font-weight: 600;">Predict, then check</h2>
+        <p style="font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; color: #5b6370; margin: 0 0 12px;">After the oil shock, once prices have adjusted (point C against point A), which way does each move?</p>
+        <sc-for list="{{quiz}}" as="q">
+          <div style="display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 8px 0; border-top: 1px solid #eef0f3;">
+            <span style="font-size: 15px;">{{q.name}}</span>
+            <span style="display: flex; gap: 6px;">
+              <sc-for list="{{q.opts}}" as="o"><button type="button" class="{{o.cls}}" aria-label="{{o.label}}" onClick="{{o.pick}}">{{o.sym}}</button></sc-for>
+            </span>
+            <sc-if value="{{q.showWhy}}" hint-placeholder-val="{{false}}"><span style="grid-column: 1 / -1; font-size: 14px; color: #3e4550;">{{q.why}}</span></sc-if>
+          </div>
+        </sc-for>
+        <button type="button" class="show on" onClick="{{reveal}}" style="margin-top: 12px;">Check my answers</button>
+      </section>
+
+      <section style="background: #f6f7f9; border-radius: 12px; padding: 20px; margin-bottom: 28px; font-family: 'IBM Plex Sans', sans-serif;">
+        <p style="font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #5b6370; margin: 0 0 6px;">In the real world · 1973 to 1975</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 24px;">
+          <div><span class="num" style="font-size: 28px; font-weight: 600;">×4</span><br><span style="font-size: 13px; color: #5b6370;">crude oil price, 1973–74</span></div>
+          <div><span class="num" style="font-size: 28px; font-weight: 600;">12.3%</span><br><span style="font-size: 13px; color: #5b6370;">US CPI inflation, Dec 1974</span></div>
+          <div><span class="num" style="font-size: 28px; font-weight: 600;">9.0%</span><br><span style="font-size: 13px; color: #5b6370;">US unemployment, May 1975</span></div>
+        </div>
+        <p style="font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; color: #5b6370; margin: 12px 0 0;">Sources: BLS consumer prices and unemployment series.</p>
+      </section>
+
+      <section style="font-family: 'IBM Plex Sans', sans-serif;">
+        <h2 style="margin: 0 0 8px; font-family: 'Source Serif 4', serif; font-size: 22px; font-weight: 600;">Headline to model</h2>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 15px;">
+            <sc-for list="{{news}}" as="n">
+              <tr style="border-top: 1px solid #e3e6eb;">
+                <td style="padding: 10px 12px 10px 0; font-style: italic;">{{n.head}}</td>
+                <td style="padding: 10px 0; font-weight: 500; color: {{n.color}}; white-space: nowrap;">{{n.move}}</td>
+              </tr>
+            </sc-for>
+          </table>
+        </div>
+      </section>
+    </article>
+
+    <aside style="flex: 1 1 420px; min-width: 0; position: sticky; top: 24px; display: flex; flex-direction: column; gap: 12px;">
+      <figure style="margin: 0; border: 1px solid #e3e6eb; border-radius: 12px; padding: 12px 12px 4px;">
+        <svg viewBox="0 0 520 380" role="img" aria-label="{{figLabel}}" style="width: 100%; height: auto; display: block;">
+          <path d="M48 16 V330 H508" fill="none" stroke="#15181d"></path>
+          <text x="278" y="360" text-anchor="middle" font-size="13" fill="#3e4550">Output, Y</text>
+          <text x="14" y="173" font-size="13" fill="#3e4550" transform="rotate(-90 14 173)" text-anchor="middle">Interest rate, r</text>
+          <g fill="none" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.4">
+            <sc-if value="{{showGhostFE}}" hint-placeholder-val="{{false}}"><path d="{{ghostFE}}" stroke="#009e73"></path></sc-if>
+            <sc-if value="{{showGhostLM}}" hint-placeholder-val="{{false}}"><path d="{{ghostLM}}" stroke="#d55e00"></path></sc-if>
+          </g>
+          <g fill="none" stroke-width="3" stroke-linecap="round">
+            <path d="{{fePath}}" stroke="#009e73" stroke-dasharray="10 5"></path>
+            <path d="{{isPath}}" stroke="#0072b2"></path>
+            <path d="{{lmPath}}" stroke="#d55e00"></path>
+          </g>
+          <text x="{{feX}}" y="30" font-size="14" font-weight="600" fill="#007a5a">FE</text>
+          <text x="486" y="300" font-size="14" font-weight="600" fill="#0072b2">IS</text>
+          <text x="{{lmX}}" y="30" font-size="14" font-weight="600" fill="#b84f00">LM</text>
+          <sc-for list="{{points}}" as="pt">
+            <g><circle cx="{{pt.x}}" cy="{{pt.y}}" r="7" fill="{{pt.fill}}" stroke="#fff" stroke-width="2"></circle>
+            <text x="{{pt.lx}}" y="{{pt.ly}}" font-size="14" font-weight="600" fill="{{pt.fill}}">{{pt.name}}</text></g>
+          </sc-for>
+        </svg>
+      </figure>
+      <figure style="margin: 0; border: 1px solid #e3e6eb; border-radius: 12px; padding: 10px 14px 6px;">
+        <figcaption style="display: flex; justify-content: space-between; gap: 8px; font-size: 13px;">
+          <strong>Over time</strong>
+          <span style="color: #5b6370;">Output solid · prices dashed · % from start</span>
+        </figcaption>
+        <svg viewBox="0 0 480 130" role="img" aria-label="Output falls and prices rise over time after the oil shock" style="width: 100%; height: auto; display: block;">
+          <rect x="{{shade.x}}" y="8" width="{{shade.w}}" height="100" fill="#f4f0f8"></rect>
+          <path d="M30 58 H476" stroke="#c9ced6"></path>
+          <path d="M30 8 V108" stroke="#15181d"></path>
+          <path d="{{tY}}" fill="none" stroke="#15181d" stroke-width="2.5"></path>
+          <path d="{{tP}}" fill="none" stroke="#8e3bb0" stroke-width="2.5" stroke-dasharray="6 4"></path>
+          <path d="{{tCursor}}" stroke="#15181d" stroke-dasharray="2 3"></path>
+          <sc-for list="{{tMarks}}" as="m"><text x="{{m.x}}" y="124" text-anchor="middle" font-size="11" font-weight="600" fill="{{m.fill}}">{{m.name}}</text></sc-for>
+        </svg>
+      </figure>
+      <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #3e4550;">{{caption}}</p>
+      <a href="Main.dc.html" style="font-size: 14px;">Open this shock in the simulator</a>
+    </aside>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+const x = (Y) => 48 + (Y - 60) / 80 * 460;
+const y = (r) => 16 + (10 - r) / 10 * 314;
+const isR = (Y) => 5 - 0.1 * (Y - 100);
+const lmR = (Y, h) => 5 + 0.08 * (Y - 100 - h);
+const line = (f, h) => { const p = []; for (let Y = 60; Y <= 140; Y += 2) { const r = f(Y, h); if (r >= -0.5 && r <= 10.5) p.push(x(Y).toFixed(1) + ' ' + y(Math.max(0, Math.min(10, r))).toFixed(1)); } return 'M' + p.join(' L'); };
+const FE_SHIFT = -10;
+const LM_C = FE_SHIFT - (isR(100 + FE_SHIFT) - 5) / 0.08;
+const P_C = 100 * (1 - LM_C * 0.012);
+const T = 40, SH = 6;
+const tx = (i) => 30 + (i / T) * 446;
+const kk = (i) => 1 - Math.exp(-(i - SH) / 7);
+const SPAN = Math.ceil(Math.max(Math.abs(FE_SHIFT), Math.abs(P_C - 100)));
+const tpath = (fn) => { const p = []; for (let i = 0; i <= T; i++) p.push(tx(i).toFixed(1) + ' ' + (58 - fn(i) / SPAN * 46).toFixed(1)); return 'M' + p.join(' L'); };
+const SECTIONS = [
+  { title: 'Where we start', body: 'The economy rests where IS, LM and FE meet: the goods market and the money market both clear, and output is what the economy can produce with everyone who wants a job working.', caption: 'A: all three curves meet. Output 100, interest rate 5%.' },
+  { title: 'The shock moves FE', body: 'Energy is an input to almost everything. When it costs four times as much, each worker produces less for the same cost, so firms want fewer workers at any wage. Full-employment output falls: FE shifts left. Nothing in the goods or money market has changed yet.', caption: 'FE shifts left. The economy is still at A, which is now beyond what it can sustain.' },
+  { title: 'The short run', body: 'Prices take time to move, so for now the economy stays where IS meets LM. That point is to the right of the new FE line: demand is running ahead of what the economy can produce. Shelves empty and order books lengthen.', caption: 'B: same IS and LM, so the short-run point has not moved, but it now sits right of FE.' },
+  { title: 'Prices adjust', body: 'Firms raise prices. With more money needed for the same purchases, the real money supply shrinks and LM shifts left. Output falls and the interest rate rises until the economy is back on the new FE line, with higher prices and lower output. That combination is stagflation.', caption: 'C: LM has shifted left to meet IS on the new FE line. Output lower, interest rate and prices higher.' }
+];
+const QUIZ = [
+  { id: 'Y', name: 'Output', answer: 'down', why: 'Down: the economy can produce less once each worker produces less.' },
+  { id: 'r', name: 'Interest rate', answer: 'up', why: 'Up: the leftward LM shift raises r along IS.' },
+  { id: 'P', name: 'Price level', answer: 'up', why: 'Up: prices rise because demand is ahead of the smaller supply.' },
+  { id: 'I', name: 'Investment', answer: 'down', why: 'Down: a higher interest rate makes new projects less attractive.' }
+];
+const NEWS = [
+  { head: '“Oil jumps 40% as supply is cut”', move: 'FE shifts left', color: '#007a5a' },
+  { head: '“Port strike halts deliveries for weeks”', move: 'FE shifts left', color: '#007a5a' },
+  { head: '“Chip breakthrough doubles factory output”', move: 'FE shifts right', color: '#007a5a' },
+  { head: '“Consumer prices jump as companies pass on costs”', move: 'LM shifts left (P rises)', color: '#b84f00' }
+];
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { step: 0, picks: {}, revealed: false }; }
+  renderVals() {
+    const { step, picks, revealed } = this.state;
+    const fe = step >= 1 ? FE_SHIFT : 0, lm = step >= 3 ? LM_C : 0;
+    const A = { Y: 100, r: 5 }, C = { Y: 100 + FE_SHIFT, r: isR(100 + FE_SHIFT) };
+    const pt = (name, p, fill, dx, dy) => ({ name, fill, x: x(p.Y).toFixed(1), y: y(p.r).toFixed(1), lx: (x(p.Y) + dx).toFixed(1), ly: (y(p.r) + dy).toFixed(1) });
+    const points = [pt(step >= 2 ? 'A = B' : 'A', A, step >= 2 ? '#8e3bb0' : '#6b7280', 12, 22)];
+    if (step >= 3) points.push(pt('C', C, '#15181d', -22, -12));
+    return {
+      sections: SECTIONS.map((s, i) => ({ title: s.title, body: s.body, cls: 'sec' + (step === i ? ' on' : ''), btnCls: 'show' + (step === i ? ' on' : ''), btn: step === i ? 'Showing' : 'Show this', show: () => this.setState({ step: i }) })),
+      caption: SECTIONS[step].caption,
+      figLabel: 'Figure for step ' + (step + 1) + ': ' + SECTIONS[step].caption,
+      showGhostFE: step >= 1, ghostFE: 'M' + x(100) + ' 16 V330',
+      showGhostLM: step >= 3, ghostLM: line(lmR, 0),
+      fePath: 'M' + x(100 + fe).toFixed(1) + ' 16 V330', isPath: line(isR, 0), lmPath: line(lmR, lm),
+      feX: (x(100 + fe) + 8).toFixed(1), lmX: (x(Math.min(140, 100 + lm + 62.5)) - 34).toFixed(1),
+      points,
+      quiz: QUIZ.map((q) => ({
+        name: q.name, why: q.why, showWhy: revealed,
+        opts: [['up', '↑', 'rises'], ['down', '↓', 'falls'], ['same', '–', 'no change']].map(([v, sym, word]) => ({
+          sym, label: q.name + ' ' + word,
+          cls: 'pick' + (picks[q.id] === v ? (revealed ? (v === q.answer ? ' right' : ' wrong') : ' on') : (revealed && v === q.answer ? ' right' : '')),
+          pick: () => this.setState({ picks: Object.assign({}, picks, { [q.id]: v }), revealed: false })
+        }))
+      })),
+      reveal: () => this.setState({ revealed: true, step: 3 }),
+      shade: { x: tx(SH).toFixed(1), w: (tx(SH + 22) - tx(SH)).toFixed(1) },
+      tY: tpath((i) => (i < SH ? 0 : FE_SHIFT * kk(i))),
+      tP: tpath((i) => (i < SH ? 0 : (P_C - 100) * kk(i))),
+      tCursor: 'M' + tx([1, SH - 1, SH, SH + 22][step]).toFixed(1) + ' 8 V108',
+      tMarks: [{ name: 'A', x: tx(1).toFixed(1), fill: '#6b7280' }, { name: 'B', x: tx(SH).toFixed(1), fill: '#8e3bb0' }, { name: 'C', x: tx(SH + 22).toFixed(1), fill: '#15181d' }],
+      news: NEWS
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -14,7 +14,7 @@ export default function LearnPage() {
         </p>
       </header>
       {parts.map((part) => (
-        <section key={part.n} className="mt-10 border-t border-ink pt-4">
+        <section key={part.n} className="mt-10 border-t border-rule pt-4">
           <h2 className="text-2xl">Part {part.n}: {part.title}</h2>
           <p className="mt-1 text-muted-foreground">{part.blurb}</p>
           <ol className="mt-3 divide-y divide-rule border-y border-rule">

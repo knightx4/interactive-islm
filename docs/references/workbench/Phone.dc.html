@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>IS-LM simulator on a phone</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Source+Serif+4:opsz,wght@8..60,600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#ffffff}
+a{color:#15181d}a:hover{color:#0072b2}
+.num{font-variant-numeric:tabular-nums}
+.chip{flex-shrink:0;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid #d9dde3;background:#fff;font:500 13px 'IBM Plex Sans',sans-serif;color:#15181d;cursor:pointer;white-space:nowrap}
+.reset{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid #f1b9b3;background:#fdecea;font:600 13px 'IBM Plex Sans',sans-serif;color:#b42318;cursor:pointer;white-space:nowrap}
+.ph{flex:1;min-height:52px;border-radius:10px;border:1px solid #d9dde3;background:#fff;font:inherit;color:#15181d;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.ph.on{border-color:#15181d;box-shadow:inset 0 0 0 1px #15181d}
+.tab{flex:1;min-height:44px;border:0;background:transparent;font:600 14px 'IBM Plex Sans',sans-serif;cursor:pointer;border-bottom:2px solid transparent}
+.tab.on{border-bottom-color:#15181d}
+.rng{width:100%;height:32px;margin:0;min-width:0}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1640px; box-sizing: border-box; position: relative; font-family: 'IBM Plex Sans', sans-serif; color: #15181d; background: #ffffff; display: flex; flex-direction: column;">
+  <header style="height: 56px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e3e6eb;">
+    <a href="#" style="font-family: 'Source Serif 4', serif; font-weight: 600; font-size: 19px; text-decoration: none;">IS-LM</a>
+    <nav style="display: flex; gap: 18px; font-size: 14px;">
+      <a href="#" style="text-decoration: none; font-weight: 600;">Simulator</a>
+      <a href="Lesson.dc.html" style="text-decoration: none; color: #5b6370;">Learn</a>
+    </nav>
+  </header>
+
+  <main style="flex-grow: 1; padding: 16px 16px 120px; display: flex; flex-direction: column; gap: 16px;">
+    <div style="display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px; padding: 0 16px 4px;">
+      <sc-for list="{{presets}}" as="p"><button type="button" class="chip" onClick="{{p.run}}">{{p.name}}</button></sc-for>
+      <button type="button" class="reset" onClick="{{reset}}">Reset all</button>
+    </div>
+
+    <h1 style="margin: 0; font-family: 'Source Serif 4', serif; font-weight: 600; font-size: 24px; line-height: 1.2;">{{headline}}</h1>
+    <sc-if value="{{noMoves}}" hint-placeholder-val="{{true}}">
+      <p style="margin: 0; padding: 12px 14px; border-radius: 10px; background: #f4f6f8; font-size: 14px; line-height: 1.45;">Nothing has moved yet. Pick a scenario, or open <strong>Move the economy</strong> below.</p>
+    </sc-if>
+
+    <figure style="margin: 0 -4px;">
+      <svg viewBox="0 0 360 300" role="img" aria-label="IS, LM and FE curves" style="width: 100%; height: auto; display: block;">
+        <path d="M34 10 V262 H352" fill="none" stroke="#15181d"></path>
+        <sc-for list="{{gridY}}" as="g"><text x="28" y="{{g.ty}}" text-anchor="end" font-size="11" fill="#5b6370" class="num">{{g.label}}</text></sc-for>
+        <text x="193" y="292" text-anchor="middle" font-size="12" fill="#3e4550">Output, Y</text>
+        <text x="10" y="136" font-size="12" fill="#3e4550" transform="rotate(-90 10 136)" text-anchor="middle">r (%)</text>
+        <g fill="none" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.4">
+          <sc-if value="{{moved}}" hint-placeholder-val="{{false}}">
+            <path d="{{ghostIS}}" stroke="#0072b2"></path><path d="{{ghostLM}}" stroke="#d55e00"></path><path d="{{ghostFE}}" stroke="#009e73"></path>
+          </sc-if>
+        </g>
+        <g fill="none" stroke-width="2.75" stroke-linecap="round">
+          <path d="{{fePath}}" stroke="#009e73" stroke-dasharray="9 5"></path>
+          <path d="{{isPath}}" stroke="#0072b2"></path>
+          <path d="{{lmPath}}" stroke="#d55e00"></path>
+        </g>
+        <text x="{{feX}}" y="22" font-size="13" font-weight="600" fill="#007a5a">FE</text>
+        <text x="330" y="250" font-size="13" font-weight="600" fill="#0072b2">IS</text>
+        <text x="328" y="24" font-size="13" font-weight="600" fill="#b84f00">LM</text>
+        <sc-for list="{{points}}" as="pt">
+          <g><circle cx="{{pt.x}}" cy="{{pt.y}}" r="6.5" fill="{{pt.fill}}" stroke="#fff" stroke-width="2"></circle>
+          <text x="{{pt.lx}}" y="{{pt.ly}}" font-size="13" font-weight="600" fill="{{pt.fill}}">{{pt.name}}</text></g>
+        </sc-for>
+      </svg>
+    </figure>
+
+    <div style="display: flex; gap: 8px;">
+      <sc-for list="{{phases}}" as="ph">
+        <button type="button" class="{{ph.cls}}" onClick="{{ph.go}}">
+          <span style="font-size: 12px; font-weight: 600; color: {{ph.color}};">{{ph.letter}}</span>
+          <span style="font-size: 13px;">{{ph.name}}</span>
+        </button>
+      </sc-for>
+    </div>
+    <button type="button" onClick="{{play}}" style="min-height: 48px; border-radius: 10px; border: 0; background: #15181d; color: #fff; font: 600 15px 'IBM Plex Sans', sans-serif; cursor: pointer;">Play A to C</button>
+
+    <figure style="margin: 0; border: 1px solid #e3e6eb; border-radius: 12px; padding: 10px 12px 6px;">
+      <figcaption style="display: flex; justify-content: space-between; font-size: 13px;">
+        <strong>Over time</strong>
+        <span style="color: #5b6370;">Output solid · prices dashed</span>
+      </figcaption>
+      <svg viewBox="0 0 340 120" role="img" aria-label="Output and prices over time" style="width: 100%; height: auto; display: block;">
+        <rect x="{{shade.x}}" y="8" width="{{shade.w}}" height="96" fill="#f4f0f8"></rect>
+        <path d="M24 56 H336" stroke="#c9ced6"></path>
+        <path d="M24 8 V104" stroke="#15181d"></path>
+        <path d="{{tY}}" fill="none" stroke="#15181d" stroke-width="2.25"></path>
+        <path d="{{tP}}" fill="none" stroke="#8e3bb0" stroke-width="2.25" stroke-dasharray="6 4"></path>
+        <sc-for list="{{tMarks}}" as="m"><text x="{{m.x}}" y="118" text-anchor="middle" font-size="11" font-weight="600" fill="{{m.fill}}">{{m.name}}</text></sc-for>
+      </svg>
+    </figure>
+
+    <section style="border: 1px solid #e3e6eb; border-radius: 12px; padding: 12px 14px;">
+      <h2 style="margin: 0 0 6px; font-size: 14px; font-weight: 600;">Scoreboard</h2>
+      <table class="num" style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead><tr style="font-size: 12px; text-align: right;"><th style="text-align: left; font-weight: 500; color: #5b6370; padding: 4px 0;"></th><th style="color: #6b7280; padding: 4px 6px;">A</th><th style="color: #8e3bb0; padding: 4px 6px;">B</th><th style="padding: 4px 0 4px 6px;">C</th></tr></thead>
+        <tbody>
+          <sc-for list="{{board}}" as="r">
+            <tr style="border-top: 1px solid #eef0f3; text-align: right;"><td style="text-align: left; padding: 7px 0;">{{r.name}}</td><td style="padding: 7px 6px;">{{r.a}}</td><td style="padding: 7px 6px;">{{r.b}}</td><td style="padding: 7px 0 7px 6px; font-weight: 600;">{{r.c}}</td></tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </section>
+
+    <section style="border: 1px solid #e3e6eb; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px;">
+      <h2 style="margin: 0; font-size: 14px; font-weight: 600;">Why it moves</h2>
+      <sc-if value="{{noMoves}}" hint-placeholder-val="{{true}}"><p style="margin: 0; font-size: 14px; color: #5b6370;">Each cause you move is explained here, grouped by the curve it shifts.</p></sc-if>
+      <sc-for list="{{why}}" as="w">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 13px; font-weight: 600; color: {{w.color}};">{{w.head}}</span>
+          <sc-for list="{{w.items}}" as="it"><p style="margin: 0; font-size: 14px; line-height: 1.45;"><strong>{{it.lead}}</strong> {{it.text}}</p></sc-for>
+        </div>
+      </sc-for>
+    </section>
+  </main>
+
+  <div style="position: sticky; bottom: 0; padding: 12px 16px 20px; background: linear-gradient(rgba(255,255,255,0), #ffffff 30%);">
+    <button type="button" onClick="{{openSheet}}" style="width: 100%; min-height: 52px; border-radius: 12px; border: 1px solid #15181d; background: #ffffff; font: 600 15px 'IBM Plex Sans', sans-serif; cursor: pointer; box-shadow: 0 6px 20px rgba(21,24,29,0.12);">Move the economy · {{activeCount}}</button>
+  </div>
+
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{false}}">
+    <div style="position: sticky; bottom: 0; margin-top: -560px; height: 560px; background: #ffffff; border-radius: 16px 16px 0 0; box-shadow: 0 -8px 30px rgba(21,24,29,0.18); display: flex; flex-direction: column;" role="dialog" aria-label="Move the economy">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 0;">
+        <strong style="font-size: 16px;">Move the economy</strong>
+        <button type="button" onClick="{{closeSheet}}" style="min-height: 44px; padding: 0 12px; border: 0; background: transparent; font: 600 14px 'IBM Plex Sans', sans-serif; cursor: pointer;">Done</button>
+      </div>
+      <div style="display: flex; padding: 0 8px; border-bottom: 1px solid #e3e6eb;" role="tablist">
+        <sc-for list="{{tabs}}" as="tb"><button type="button" role="tab" class="{{tb.cls}}" onClick="{{tb.go}}" style="color: {{tb.color}};">{{tb.name}}</button></sc-for>
+      </div>
+      <div style="overflow-y: auto; padding: 8px 16px 24px; display: flex; flex-direction: column; gap: 14px;">
+        <sc-for list="{{causes}}" as="c">
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 15px; font-weight: 500;">{{c.name}}</span>
+            <span style="font-size: 12px; color: #5b6370;">{{c.via}}</span>
+            <span style="display: grid; grid-template-columns: auto minmax(0,1fr) auto 40px; gap: 8px; align-items: center; font-size: 12px; color: #5b6370;">
+              <span>falls</span>
+              <input class="rng" type="range" min="-3" max="3" step="0.5" value="{{c.level}}" aria-label="{{c.name}}" onChange="{{c.set}}" style="accent-color: {{c.color}};">
+              <span>rises</span>
+              <span class="num" style="font-size: 14px; font-weight: 600; text-align: right; color: #15181d;">{{c.levelText}}</span>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1640}}'>
+const CAUSES = [
+  { id: 'biz', group: 'IS', name: 'Business confidence', via: 'expected profit on new capital', is: 4, inv: 3, up: ['Firms expect higher profits on new capital', 'They plan more investment at every interest rate'] },
+  { id: 'cons', group: 'IS', name: 'Consumer confidence', via: 'expected future income', is: 3, cons: 3, up: ['Households expect higher income later', 'They save less of today’s income'] },
+  { id: 'wealth', group: 'IS', name: 'House and stock prices', via: 'household wealth', is: 3, cons: 2, up: ['Households feel richer', 'They save less and spend more'] },
+  { id: 'gov', group: 'IS', name: 'Government spending', via: 'government saving falls', is: 4, up: ['The government buys more', 'National saving falls'] },
+  { id: 'tax', group: 'IS', name: 'Taxes', via: 'government saving rises', is: -3, cons: -2, up: ['Households keep less of their income', 'Government saving rises more than private saving falls'] },
+  { id: 'money', group: 'LM', name: 'Central bank adds money', via: 'money supply', lm: 5, up: ['The central bank buys bonds with new money', 'Rates fall until people hold it'] },
+  { id: 'infl', group: 'LM', name: 'Inflation expectations', via: 'cost of holding cash', lm: 2, up: ['Cash is expected to lose value faster', 'People hold less of it'] },
+  { id: 'stress', group: 'LM', name: 'Financial stress', via: 'risk of other assets', lm: -3, up: ['Bonds and stocks look riskier', 'People want to hold more cash'] },
+  { id: 'prod', group: 'FE', name: 'Productivity', via: 'output per worker (A)', fe: 4, up: ['Each worker produces more', 'Firms want more workers at each wage'] },
+  { id: 'oil', group: 'FE', name: 'Oil and energy prices', via: 'productivity (A) falls', fe: -4, inv: -1, up: ['Energy costs more for every firm', 'Each worker produces less for the same cost'] },
+  { id: 'labour', group: 'FE', name: 'Labour force', via: 'labour supply', fe: 3, up: ['More people want to work', 'Employment at the natural rate rises'] },
+  { id: 'foreign', group: 'Open', name: 'Foreign demand', via: 'net exports', is: 3, up: ['Other countries buy more of our goods', 'Net exports rise'] },
+  { id: 'tariff', group: 'Open', name: 'Tariffs on our exports', via: 'net exports', is: -3, up: ['Our goods cost more abroad', 'Net exports fall'] }
+];
+const TABS = [{ id: 'IS', color: '#0072b2' }, { id: 'LM', color: '#b84f00' }, { id: 'FE', color: '#007a5a' }, { id: 'Open', color: '#15181d' }];
+const PRESETS = [
+  { name: '1970s oil shock', levels: { oil: 2 } }, { name: '2008 wealth shock', levels: { wealth: -3, stress: 2, biz: -1 } },
+  { name: '2021 stimulus', levels: { gov: 2, money: 2 } }, { name: '2025 tariffs', levels: { tariff: 2, biz: -1, oil: 1 } }
+];
+const x = (Y) => 34 + (Y - 60) / 80 * 318;
+const y = (r) => 10 + (10 - r) / 10 * 252;
+const isR = (Y, h) => 5 - 0.1 * (Y - 100 - h);
+const lmR = (Y, h) => 5 + 0.08 * (Y - 100 - h);
+const eq = (is, lm) => { const Y = 100 + (0.1 * is + 0.08 * lm) / 0.18; return { Y, r: isR(Y, is) }; };
+const lmAt = (is, fe) => { const Y = 100 + fe; return Y - 100 - (isR(Y, is) - 5) / 0.08; };
+const line = (f, h) => { const p = []; for (let Y = 60; Y <= 140; Y += 2) { const r = f(Y, h); if (r >= -0.5 && r <= 10.5) p.push(x(Y).toFixed(1) + ' ' + y(Math.max(0, Math.min(10, r))).toFixed(1)); } return 'M' + p.join(' L'); };
+const fmt = (v) => (Math.round(v * 10) / 10).toFixed(1);
+const arrow = (v, b) => (v > b + 0.05 ? ' ↑' : v < b - 0.05 ? ' ↓' : '');
+
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { levels: { oil: 2 }, phase: 'B', tab: 'FE', sheet: true, shown: { is: 0, lm: 0, fe: -8 } }; }
+  componentWillUnmount() { cancelAnimationFrame(this.raf); clearTimeout(this.timer); }
+  totals(lv) { const t = { is: 0, lm: 0, fe: 0, cons: 0, inv: 0 }; CAUSES.forEach((c) => { const n = lv[c.id] || 0; ['is', 'lm', 'fe', 'cons', 'inv'].forEach((k) => { t[k] += n * (c[k] || 0); }); }); return t; }
+  target(phase, lv) { const t = this.totals(lv); if (phase === 'A') return { is: 0, lm: 0, fe: 0 }; if (phase === 'B') return { is: t.is, lm: t.lm, fe: t.fe }; return { is: t.is, lm: lmAt(t.is, t.fe), fe: t.fe }; }
+  go(phase, lv) {
+    const levels = lv || this.state.levels, to = this.target(phase, levels), from = this.state.shown;
+    cancelAnimationFrame(this.raf); this.setState({ phase, levels });
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { this.setState({ shown: to }); return; }
+    const start = performance.now(), ms = phase === 'C' ? 1300 : 550;
+    const tick = (now) => { const k = Math.min(1, (now - start) / ms), e = 1 - Math.pow(1 - k, 3);
+      this.setState({ shown: { is: from.is + (to.is - from.is) * e, lm: from.lm + (to.lm - from.lm) * e, fe: from.fe + (to.fe - from.fe) * e } });
+      if (k < 1) this.raf = requestAnimationFrame(tick); };
+    this.raf = requestAnimationFrame(tick);
+  }
+  playAll(lv) { clearTimeout(this.timer); this.setState({ shown: { is: 0, lm: 0, fe: 0 } }); this.go('A', lv); this.timer = setTimeout(() => { this.go('B', lv); this.timer = setTimeout(() => this.go('C', lv), 1200); }, 450); }
+  renderVals() {
+    const { levels, phase, tab, sheet, shown: s } = this.state;
+    const t = this.totals(levels), moved = Object.keys(levels).some((k) => levels[k]);
+    const A = { Y: 100, r: 5 }, B = eq(t.is, t.lm), C = { Y: 100 + t.fe, r: isR(100 + t.fe, t.is) }, lmC = lmAt(t.is, t.fe), gap = B.Y - C.Y;
+    const pt = (name, p, fill, dx, dy) => ({ name, fill, x: x(p.Y).toFixed(1), y: y(p.r).toFixed(1), lx: (x(p.Y) + dx).toFixed(1), ly: (y(p.r) + dy).toFixed(1) });
+    const points = [pt('A', A, '#6b7280', -18, -9)];
+    if (moved && phase !== 'A') points.push(pt('B', B, '#8e3bb0', 10, 20));
+    if (moved && phase === 'C') points.push(pt('C', C, '#15181d', 10, -9));
+    const P = (lm) => 100 * (1 - (lm - t.lm) * 0.012);
+    const vars = (p, lm) => ({ Y: p.Y, r: p.r, P: P(lm), I: 20 - 3 * (p.r - 5) + t.inv, N: 100 + 0.7 * (p.Y - 100) });
+    const va = vars(A, t.lm), vb = vars(B, t.lm), vc = vars(C, lmC);
+    const board = [['Output', 'Y'], ['Interest %', 'r'], ['Prices', 'P'], ['Investment', 'I'], ['Employment', 'N']].map(([name, k]) => ({ name, a: fmt(va[k]), b: moved ? fmt(vb[k]) + arrow(vb[k], va[k]) : '–', c: moved ? fmt(vc[k]) + arrow(vc[k], va[k]) : '–' }));
+    const T = 40, SH = 4, tx = (i) => 24 + (i / T) * 312, k = (i) => (i < SH ? 0 : 1 - Math.exp(-(i - SH) / 8));
+    const outAt = (i) => (i < SH ? 0 : B.Y + (C.Y - B.Y) * k(i) - 100), priceAt = (i) => (i < SH ? 0 : vb.P + (vc.P - vb.P) * k(i) - 100);
+    let m = 1; for (let i = 0; i <= T; i++) m = Math.max(m, Math.abs(outAt(i)), Math.abs(priceAt(i)));
+    const ty = (v) => 56 - (v / Math.ceil(m)) * 44;
+    const tp = (fn) => { const p = []; for (let i = 0; i <= T; i++) p.push(tx(i).toFixed(1) + ' ' + ty(moved ? fn(i) : 0).toFixed(1)); return 'M' + p.join(' L'); };
+    const CUR = { IS: '#0072b2', LM: '#b84f00', FE: '#007a5a' };
+    const curveOf = (c) => (c.fe ? 'FE' : c.lm ? 'LM' : 'IS');
+    const net = { IS: t.is, LM: t.lm, FE: t.fe };
+    const why = ['FE', 'IS', 'LM'].map((kk) => {
+      const act = CAUSES.filter((c) => curveOf(c) === kk && (levels[c.id] || 0) !== 0);
+      if (!act.length) return null;
+      return { color: CUR[kk], head: Math.abs(net[kk]) < 0.05 ? kk + ': the moves cancel out' : kk + ' shifts ' + (net[kk] > 0 ? 'right' : 'left'),
+        items: act.map((c) => { const lvl = levels[c.id], dir = lvl * (c.is || c.lm || c.fe) > 0 ? 'right' : 'left';
+          return { lead: c.name + (lvl > 0 ? ' rises.' : ' falls.'), text: lvl > 0 ? c.up.join('. ') + '. ' + kk + ' shifts ' + dir + '.' : 'The same chain runs in reverse, so ' + kk + ' shifts ' + dir + '.' }; }) };
+    }).filter(Boolean);
+    const tabColor = TABS.find((tb) => tb.id === tab).color;
+    return {
+      presets: PRESETS.map((p) => ({ name: p.name, run: () => this.playAll(Object.assign({}, p.levels)) })),
+      reset: () => { clearTimeout(this.timer); this.go('A', {}); },
+      headline: !moved ? 'The economy at rest' : phase === 'A' ? 'Before the shock' : phase === 'B' ? (gap > 0.05 ? 'Short run: running hot' : gap < -0.05 ? 'Short run: slack' : 'Short run') : 'Long run: back at full employment',
+      noMoves: !moved, moved,
+      gridY: [0, 5, 10].map((v) => ({ ty: y(v) + 4, label: v })),
+      ghostIS: line(isR, 0), ghostLM: line(lmR, 0), ghostFE: 'M' + x(100) + ' 10 V262',
+      isPath: line(isR, s.is), lmPath: line(lmR, s.lm), fePath: 'M' + x(100 + s.fe).toFixed(1) + ' 10 V262', feX: (x(100 + s.fe) + 6).toFixed(1),
+      points,
+      phases: [['A', 'Start', '#6b7280'], ['B', 'Short run', '#8e3bb0'], ['C', 'Prices adjusted', '#15181d']].map(([id, name, color]) => ({ letter: id, name, color, cls: 'ph' + (phase === id ? ' on' : ''), go: () => this.go(id) })),
+      play: () => this.playAll(levels),
+      shade: { x: tx(SH).toFixed(1), w: (tx(Math.min(T, SH + 24)) - tx(SH)).toFixed(1) },
+      tY: tp(outAt), tP: tp(priceAt),
+      tMarks: [{ name: 'A', x: tx(SH - 2).toFixed(1), fill: '#6b7280' }, { name: 'B', x: tx(SH).toFixed(1), fill: '#8e3bb0' }, { name: 'C', x: tx(SH + 24).toFixed(1), fill: '#15181d' }],
+      board, why,
+      activeCount: Object.keys(levels).filter((kk) => levels[kk]).length + ' moved',
+      sheetOpen: sheet, openSheet: () => this.setState({ sheet: true }), closeSheet: () => this.setState({ sheet: false }),
+      tabs: TABS.map((tb) => ({ name: tb.id, color: tb.color, cls: 'tab' + (tab === tb.id ? ' on' : ''), go: () => this.setState({ tab: tb.id }) })),
+      causes: CAUSES.filter((c) => c.group === tab).map((c) => { const n = levels[c.id] || 0; return { name: c.name, via: 'through ' + c.via, level: n, color: tabColor, levelText: n > 0 ? '+' + n : String(n), set: (e) => { const lv = Object.assign({}, levels, { [c.id]: Number(e.target.value) }); this.go('B', lv); } }; })
+    };
+  }
+}
+</script>
+</body>
+</html>

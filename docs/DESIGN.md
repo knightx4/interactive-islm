@@ -4,12 +4,19 @@ The app should read like a considered economics text: a textbook figure or a
 financial-press chart, not a component kit.
 
 ## Principles
-1. **Paper and ink.** Cool off-white background (#f6f7f9; #111317 in dark), near-black ink text, no gradients.
-2. **Rules, not boxes.** Sections are separated by hairline rules and whitespace.
-   No cards, no card-in-card, no drop shadows, no pastel pills. Corner radius is
-   2px at most.
-3. **Type.** Source Serif 4 for headings and reading text; Source Sans 3 for
-   controls, labels and chart text. Numbers use tabular lining figures (`.num`).
+The approved direction is the Workbench (reference artboards in
+`docs/references/workbench/`: Main = desktop, Phone = 390px, Lesson).
+
+1. **White page, grey panels.** The page is white (`--paper` #ffffff; #111317 in
+   dark). Panels have a #e3e6eb hairline (`--rule`) and 12px corners (`.panel`);
+   quiet blocks use the #f4f6f8 wash (`--wash`, `.panel-wash`). No gradients and no
+   drop shadows.
+2. **Hairlines over heavy rules.** Sections are separated by `--rule` hairlines
+   and whitespace. Control borders are the slightly stronger `--rule-control`
+   (#d9dde3). Ink-black borders mark only the active control.
+3. **Type.** IBM Plex Sans for controls, labels and chart text. Source Serif 4
+   only for page titles and lesson reading text (`.reading`, about 19px / 1.65).
+   Numbers use tabular figures (`.num`) so values never jitter.
 4. **One colour per curve**, the same everywhere (charts, legends, prose, tables):
 
    | Curve  | Light     | Dark      | Token        |
@@ -22,7 +29,7 @@ financial-press chart, not a component kit.
 
    The hues follow the Okabe-Ito palette, chosen to stay apart for colour-blind
    readers and to differ in lightness as well as hue, so IS, LM and FE can be told
-   apart at a glance. Curves are drawn 2.5px; ghosts are 1.5px, dashed, at 45%.
+   apart at a glance. Curves are drawn 2.5px; FE is always dashed; ghosts are 1.5px, dashed, at 45%.
    Tailwind: `text-is`, `stroke-lm`, `bg-fe`, etc. Colour is never the only cue:
    curves are also labelled directly.
    **Points.** A (start), B (impact) and C (long run) are grey, purple and black
@@ -41,8 +48,21 @@ financial-press chart, not a component kit.
 
 ## Tokens
 Defined in `app/globals.css`: `--paper`, `--ink`, `--ink-soft`, `--ink-faint`,
-`--rule`, `--wash`, plus the curve colours. shadcn names (`--background`,
+`--rule`, `--rule-control`, `--wash`, the reset-pill tokens (`--reset-bg`, `--reset-fg`, `--reset-border`), plus the curve colours. shadcn names (`--background`,
 `--border`, ...) map onto these.
+
+## Shared controls (`components/ui`)
+Use these rather than restyling buttons per screen.
+
+| Component | File | Look |
+| --- | --- | --- |
+| `ScenarioChip` | `scenario-chip.tsx` | Rounded-full chip, 36px high, 13px medium; `active` fills it with ink. |
+| `ResetPill` | `reset-pill.tsx` | Red pill: fill #fdecea, text #b42318, border #f1b9b3, reset icon, "Reset all". |
+| `PhaseButton` | `phase-button.tsx` | A / B / C button: coloured letter over a short name, 44px min height, `active` adds an ink ring. |
+| `CurveTabs`, `CurveTabPanel` | `curve-tabs.tsx` | IS / LM / FE / Open strip on Radix tabs; each label in its curve colour; ink underline when active. |
+| `CauseSliderRow` | `cause-slider-row.tsx` | Name, "through …" line, then falls / slider / rises / value. The value sits in a fixed 44px slot (`CAUSE_VALUE_SLOT_PX`) so it never clips. Range −3 to +3 in half steps. |
+
+`Slider` takes its colour from the `--slider-color` CSS variable (the curve token).
 
 ## Motion
 Animation never carries information that a still frame lacks. With

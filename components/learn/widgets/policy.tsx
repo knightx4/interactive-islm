@@ -101,7 +101,7 @@ export function Contributions2008() {
             <span className="num text-right">{sgn(c.pp)}</span>
           </div>
         ))}
-        <div className="grid grid-cols-[11rem_1fr_3.5rem] gap-2 border-t border-ink pt-1 text-sm font-semibold">
+        <div className="grid grid-cols-[11rem_1fr_3.5rem] gap-2 border-t border-rule pt-1 text-sm font-semibold">
           <span>Real GDP</span><span /><span className="num text-right">{sgn(total)}</span>
         </div>
       </div>

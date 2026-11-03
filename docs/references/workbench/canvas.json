@@ -1,0 +1,19 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-11-03T15:00:00Z" },
+  "title": "IS-LM redesign mockups",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 1440, "h": 1400, "title": "A · Workbench (chosen)", "expand": "fill", "is_interactive": true },
+    "Phone.dc.html": { "x": 1520, "y": 0, "w": 390, "h": 1640, "title": "A · Workbench on a phone", "is_interactive": true },
+    "Lesson.dc.html": { "x": 0, "y": 1520, "w": 1440, "h": 1500, "title": "Lesson page (supply shocks)", "expand": "fill", "is_interactive": true },
+    "Story.dc.html": { "x": 1990, "y": 1880, "w": 1440, "h": 1000, "title": "B · Guided story (not chosen)", "expand": "fill", "is_interactive": true },
+    "Console.dc.html": { "x": 3510, "y": 1880, "w": 1440, "h": 900, "title": "C · Console (not chosen)", "expand": "fill", "is_interactive": true }
+  },
+  "order": ["Main.dc.html", "Phone.dc.html", "Lesson.dc.html", "Story.dc.html", "Console.dc.html"],
+  "notes": {
+    "title": { "x": 0, "y": -300, "text": "IS-LM simulator: Workbench, final pass", "kind": "title1", "maxW": 4950 }
+  },
+  "designSystems": []
+}

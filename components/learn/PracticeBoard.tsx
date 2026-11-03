@@ -111,7 +111,7 @@ export default function PracticeBoard() {
 
   return (
     <div className="space-y-10">
-      <section aria-label="Mode" className="border-t border-ink pt-4">
+      <section aria-label="Mode" className="border-t border-rule pt-4">
         <h2 className="text-xl">Choose what to practise</h2>
         <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
           <label className="flex items-center gap-2">
@@ -125,7 +125,7 @@ export default function PracticeBoard() {
         </div>
       </section>
 
-      <section aria-label="Question" className="border-t border-ink pt-4">
+      <section aria-label="Question" className="border-t border-rule pt-4">
         <div className="flex items-baseline justify-between">
           <h2 className="text-xl">Question {Math.min(i, pool.length - 1) + 1} of {pool.length}</h2>
           <div className="flex gap-2">
@@ -138,7 +138,7 @@ export default function PracticeBoard() {
         </div>
       </section>
 
-      <section aria-label="Tally" className="border-t border-ink pt-4">
+      <section aria-label="Tally" className="border-t border-rule pt-4">
         <h2 className="text-xl">Your tally by lesson</h2>
         <p className="mt-1 text-sm text-muted-foreground">Kept in this browser only. {loaded ? "" : "Loading…"}</p>
         <table className="num mt-3 w-full max-w-2xl text-sm">

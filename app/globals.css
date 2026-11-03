@@ -15,6 +15,10 @@
   --color-paper: var(--paper);
   --color-ink: var(--ink);
   --color-rule: var(--rule);
+  --color-rule-control: var(--rule-control);
+  --color-wash: var(--wash);
+  --color-reset: var(--reset-bg);
+  --color-reset-fg: var(--reset-fg);
   --color-is: var(--c-is);
   --color-lm: var(--c-lm);
   --color-fe: var(--c-fe);
@@ -62,16 +66,21 @@
   --pane-min-width: 320px;
   --pane-max-width: 540px;
   --controls-density-gap: 1rem;
-  --radius: 0.125rem;
+  --radius: 0.75rem; /* 12px panel corners */
 
   /* Paper and ink (see docs/DESIGN.md) */
-  --paper: #f6f7f9;
+  --paper: #ffffff;
   --ink: #15181d;
   --ink-soft: #3e4550;
-  --ink-faint: #646d7a;
-  --rule: #d7dce3;
+  --ink-faint: #5b6370;
+  --rule: #e3e6eb;
+  --rule-control: #d9dde3;
   --rule-strong: #15181d;
-  --wash: #eceff3;
+  --wash: #f4f6f8;
+  --reset-bg: #fdecea;
+  --reset-bg-hover: #fadad6;
+  --reset-fg: #b42318;
+  --reset-border: #f1b9b3;
 
   /* One fixed colour per curve, used everywhere */
   --c-is: #0072b2;
@@ -138,8 +147,13 @@
   --ink-soft: #b7bdc6;
   --ink-faint: #8a929d;
   --rule: #2b3037;
+  --rule-control: #3a414a;
   --rule-strong: #e7e9ed;
   --wash: #191c21;
+  --reset-bg: #3a1a17;
+  --reset-bg-hover: #4a2420;
+  --reset-fg: #f4a39b;
+  --reset-border: #6b2f2a;
   --c-is: #56b4e9;
   --c-lm: #f5844c;
   --c-fe: #3cc59a;
@@ -188,6 +202,11 @@
     @apply font-serif;
     line-height: 1.6;
   }
+  .reading, .reading p {
+    @apply font-serif;
+    font-size: 1.1875rem; /* 19px */
+    line-height: 1.65;
+  }
   .num, [data-num] {
     font-variant-numeric: tabular-nums lining-nums;
   }
@@ -204,5 +223,18 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Workbench surfaces: a hairline panel with 12px corners, and a grey wash block. */
+@layer components {
+  .panel {
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    background: var(--paper);
+  }
+  .panel-wash {
+    border-radius: 12px;
+    background: var(--wash);
   }
 }

@@ -21,7 +21,7 @@ function One({ c }: { c: ChainCase }) {
   const play = () => { if (reduced) { setStep(n - 1); return; } setStep(0); setPlaying(true); };
   const links = c.links.map((text, i) => ({ text, step: i }));
   return (
-    <aside className="max-w-3xl border-t border-ink pt-3" aria-label={`Case: ${c.heading}`}>
+    <aside className="max-w-3xl border-t border-rule pt-3" aria-label={`Case: ${c.heading}`}>
       <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{c.when}</div>
       <h3 className="mt-0.5 text-lg">{c.heading}</h3>
       <p className="prose-text mt-1 max-w-2xl text-sm">{c.text}</p>

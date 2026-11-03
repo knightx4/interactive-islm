@@ -159,7 +159,7 @@ export function TwoCountry({ run, t }: { run: Run; t: number }) {
     </tr>
   );
   return (
-    <section className="mt-10 border-t border-ink pt-4" aria-label="Two economies sharing one world interest rate">
+    <section className="mt-10 border-t border-rule pt-4" aria-label="Two economies sharing one world interest rate">
       <h2 className="text-2xl">Two economies, one world interest rate</h2>
       <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
         Capital moves freely between the home economy (the US) and a partner (Japan), so both face the same world rate. A future-productivity boom in the US raises

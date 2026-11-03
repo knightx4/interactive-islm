@@ -81,7 +81,7 @@ export default function LessonLab({ lab }: { lab: LabSpec }) {
 
   return (
     <div className="space-y-8">
-      <section className="border-t border-ink pt-4">
+      <section className="border-t border-rule pt-4">
         <h2 className="text-xl">1. Choose a shock</h2>
         <div className="mt-3 space-y-2">
           <div className="flex flex-wrap gap-2" role="group" aria-label="Shock">
@@ -105,14 +105,14 @@ export default function LessonLab({ lab }: { lab: LabSpec }) {
         </div>
       </section>
 
-      <section className="border-t border-ink pt-4">
+      <section className="border-t border-rule pt-4">
         <h2 className="text-xl">2. Predict first</h2>
         <div className="mt-3">
           <PredictCheck key={`${shock.id}-${regime}`} questions={questions} revealed={revealed} onReveal={() => setRevealed(true)} />
         </div>
       </section>
 
-      <section className="border-t border-ink pt-4">
+      <section className="border-t border-rule pt-4">
         <h2 className="text-xl">3. Work it through the recipe</h2>
         <div className="mt-3 space-y-4">
           <div className="grid gap-8 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
@@ -148,7 +148,7 @@ export default function LessonLab({ lab }: { lab: LabSpec }) {
         </div>
       </section>
 
-      <section className="border-t border-ink pt-4">
+      <section className="border-t border-rule pt-4">
         <h2 className="text-xl">4. The markets behind the curves</h2>
         <div className="mt-3 space-y-6">
           <SideMarkets sim={sim} view={view} />

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Source_Serif_4, Source_Sans_3 } from "next/font/google";
+import { Source_Serif_4, IBM_Plex_Sans } from "next/font/google";
 import { Analytics } from '@vercel/analytics/next';
 import "./globals.css";
 import SiteTopBar from "@/components/layout/SiteTopBar";
@@ -10,9 +10,10 @@ const serif = Source_Serif_4({
   display: "swap",
 });
 
-const sans = Source_Sans_3({
+const sans = IBM_Plex_Sans({
   variable: "--font-sans-body",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 

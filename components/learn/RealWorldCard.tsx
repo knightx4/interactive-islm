@@ -5,7 +5,7 @@ export default function RealWorldCard({ shockId }: { shockId: string }) {
   const c = realWorld[shockId];
   if (!c) return null;
   return (
-    <aside className="max-w-2xl border-t border-ink pt-3" aria-label="Real-world note">
+    <aside className="max-w-2xl border-t border-rule pt-3" aria-label="Real-world note">
       <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">In the real world</div>
       <h3 className="mt-0.5 text-lg">{c.heading}</h3>
       <p className="prose-text mt-1 text-sm">{c.text}</p>

@@ -15,7 +15,7 @@ function row(label: string, value: number, strong?: boolean) {
 export default function ExpenditureIdentityCard({ params, frame }: { params: Params; frame: Frame }) {
   const S = frame.Y - frame.C - params.G;
   return (
-    <section className="mt-10 max-w-lg border-t border-ink pt-4">
+    <section className="mt-10 max-w-lg border-t border-rule pt-4">
       <h2 className="text-2xl">Expenditure accounting</h2>
       <p className="mt-1 text-sm text-muted-foreground">
         At the point on show, in the index units of the figures. Consumption is what is left of income after saving, taxes and the other components.
