@@ -81,6 +81,10 @@
   --reset-bg-hover: #fadad6;
   --reset-fg: #b42318;
   --reset-border: #f1b9b3;
+  --right-bg: #e7f5ee;
+  --right-border: #0f7b3e;
+  --wrong-bg: #fdecea;
+  --wrong-border: #b42318;
 
   /* One fixed colour per curve, used everywhere */
   --c-is: #0072b2;
@@ -154,6 +158,10 @@
   --reset-bg-hover: #4a2420;
   --reset-fg: #f4a39b;
   --reset-border: #6b2f2a;
+  --right-bg: #12301f;
+  --right-border: #3cc59a;
+  --wrong-bg: #3a1a17;
+  --wrong-border: #f4a39b;
   --c-is: #56b4e9;
   --c-lm: #f5844c;
   --c-fe: #3cc59a;

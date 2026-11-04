@@ -17,9 +17,9 @@ export default function NewsToModel({ activeShock }: { activeShock?: string }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[40rem] text-left text-sm">
-        <caption className="pb-2 text-left text-xl font-serif font-semibold">From the news to the model</caption>
+        <caption className="pb-2 text-left font-serif text-[22px] font-semibold">From the news to the model</caption>
         <thead>
-          <tr className="border-b border-ink text-xs uppercase tracking-wide text-muted-foreground">
+          <tr className="border-b border-rule text-xs uppercase tracking-wide text-muted-foreground">
             <th scope="col" className="py-1 pr-3 font-semibold">In the news</th>
             <th scope="col" className="py-1 pr-3 font-semibold">Driver</th>
             <th scope="col" className="py-1 pr-3 font-semibold">Curve</th>
@@ -31,11 +31,11 @@ export default function NewsToModel({ activeShock }: { activeShock?: string }) {
           {rows.map(({ n, shock, Y, r, Ylr, P }) => (
             <tr key={n.shockId} aria-current={n.shockId === activeShock ? "true" : undefined}
               className={`border-b border-rule align-top ${n.shockId === activeShock ? "bg-wash font-medium" : ""}`}>
-              <td className="py-1.5 pr-3">{n.headline}</td>
+              <td className="py-2 pr-3 italic">&ldquo;{n.headline}&rdquo;</td>
               <td className="py-1.5 pr-3">{shock.label}</td>
               <td className="py-1.5 pr-3 whitespace-nowrap">
-                <span className={shock.curve === "IS" ? "text-is" : shock.curve === "LM" ? "text-lm" : "text-fe"}>{shock.curve}</span> {shock.dir}
-                {shock.also ? `, ${shock.also.curve} ${shock.also.dir}` : ""}
+                <span className={`font-semibold ${shock.curve === "IS" ? "text-is" : shock.curve === "LM" ? "text-lm" : "text-fe"}`}>{shock.curve} shifts {shock.dir}</span>
+                {shock.also && <span className={`font-semibold ${shock.also.curve === "IS" ? "text-is" : shock.also.curve === "LM" ? "text-lm" : "text-fe"}`}>, {shock.also.curve} shifts {shock.also.dir}</span>}
               </td>
               <td className="num py-1.5 pr-3 whitespace-nowrap" title={`Output ${name[Y]}, interest rate ${name[r]}`}>Y {arrow[Y]} r {arrow[r]}</td>
               <td className="num py-1.5 whitespace-nowrap" title={`Output ${name[Ylr]}, prices ${name[P]}`}>Y {arrow[Ylr]} P {arrow[P]}</td>

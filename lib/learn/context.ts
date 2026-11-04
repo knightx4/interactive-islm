@@ -3,11 +3,21 @@
  * All text is written for this app; the headlines are invented examples, not quotations.
  * Real-world facts are public and approximate; they sit beside the toy model and are never mixed into it.
  */
-export type RealWorld = { heading: string; text: string };
+/** A large figure on a real-world card, taken from the card's own text. */
+export type RealStat = { value: string; label: string };
+export type RealWorld = {
+  heading: string;
+  text: string;
+  /** Large figures for the card; only facts already stated in `text`. */
+  stats?: RealStat[];
+  /** Named source for the figures. Left out until a source has been checked; the card then says "Public facts, approximate". */
+  source?: string;
+};
 
 export const realWorld: Record<string, RealWorld> = {
   "productivity-down": {
     heading: "Oil shocks in the 1970s",
+    stats: [{ value: "1973–74", label: "oil prices rose several-fold" }, { value: "1979", label: "oil prices jumped again" }],
     text: "Oil prices rose several-fold between 1973 and 1974 and jumped again in 1979. In many oil-importing countries output fell while prices rose, the combination a leftward FE shift predicts and a pure demand slump does not. Oil is only one input, so the model's 5% productivity fall is a stand-in for the cost of doing without cheap energy.",
   },
   "money-supply-up": {
@@ -16,6 +26,7 @@ export const realWorld: Record<string, RealWorld> = {
   },
   "gov-spending-up": {
     heading: "Spending programmes",
+    stats: [{ value: "≈$800 bn", label: "US recovery programme, 2009, spread over several years" }],
     text: "Large temporary spending packages, such as the US recovery programme of 2009 (roughly $800 billion spread over several years), aim to lift output when it is below capacity. Estimates of the effect vary widely, partly because it depends on how the central bank and interest rates respond, which is exactly the crowding-out question in the model.",
   },
   "taxes-up": {
@@ -32,6 +43,7 @@ export const realWorld: Record<string, RealWorld> = {
   },
   "investment-outlook-up": {
     heading: "Investment booms",
+    stats: [{ value: "Late 1990s", label: "boom in computing and networks" }],
     text: "Business investment is among the most volatile parts of GDP. Waves of optimism about new technology, such as the late 1990s boom in computing and networks, raise desired investment at any interest rate, which is an IS shift.",
   },
   "labour-tax-up": {

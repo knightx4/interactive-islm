@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ScenarioChip } from "@/components/ui/scenario-chip";
+import OverTime from "@/components/islm/OverTime";
+import { overTime } from "@/lib/macro/overtime";
+import { settleIndex } from "@/lib/macro/playback";
 import type { LabSpec } from "@/lib/learn/lessons";
 import { baselineEconomy, simulate, type Regime } from "@/lib/macro/model";
 import { questionsFor } from "@/lib/macro/predict";
@@ -75,20 +79,23 @@ export default function LessonLab({ lab }: { lab: LabSpec }) {
     setPlaying(true);
   };
 
+  const ot = overTime(sim, settleIndex(sim));
+  const length = sim.frames.length + 1;
+  // the over-time cursor: A before the shock lands, B at the impact, then the period shown, C at the end
+  const otT = step < 3 ? 0 : step < 6 ? 1 : step === 6 ? t : length - 1;
+
   const label =
     view.at === "A" ? "Point A: before the shock" : view.at === "B" ? "Point B: impact, prices not yet moved" :
     view.at === "C" ? "Point C: prices fully adjusted" : `Prices adjusting: period ${view.t}`;
 
   return (
     <div className="space-y-8">
-      <section className="border-t border-rule pt-4">
+      <section className="panel p-5">
         <h2 className="text-xl">1. Choose a shock</h2>
         <div className="mt-3 space-y-2">
           <div className="flex flex-wrap gap-2" role="group" aria-label="Shock">
             {available.map((s) => (
-              <Button key={s.id} type="button" size="sm" variant={s.id === shock.id ? "default" : "outline"} aria-pressed={s.id === shock.id} onClick={() => pick(s.id)}>
-                {s.label}
-              </Button>
+              <ScenarioChip key={s.id} active={s.id === shock.id} onClick={() => pick(s.id)}>{s.label}</ScenarioChip>
             ))}
           </div>
           <p className="text-sm text-muted-foreground">{shock.blurb}</p>
@@ -96,23 +103,23 @@ export default function LessonLab({ lab }: { lab: LabSpec }) {
             <div className="flex items-center gap-2 text-sm" role="group" aria-label="Economy">
               <span className="text-muted-foreground">Economy:</span>
               {toggle.map((r) => (
-                <Button key={r} type="button" size="sm" variant={regime === r ? "default" : "outline"} aria-pressed={regime === r} onClick={() => pickRegime(r)}>
+                <ScenarioChip key={r} active={regime === r} onClick={() => pickRegime(r)}>
                   {r === "closed" ? "Closed" : r === "floating" ? "Open, floating rate" : "Open, pegged rate"}
-                </Button>
+                </ScenarioChip>
               ))}
             </div>
           )}
         </div>
       </section>
 
-      <section className="border-t border-rule pt-4">
+      <section className="panel p-5">
         <h2 className="text-xl">2. Predict first</h2>
         <div className="mt-3">
           <PredictCheck key={`${shock.id}-${regime}`} questions={questions} revealed={revealed} onReveal={() => setRevealed(true)} />
         </div>
       </section>
 
-      <section className="border-t border-rule pt-4">
+      <section className="panel p-5">
         <h2 className="text-xl">3. Work it through the recipe</h2>
         <div className="mt-3 space-y-4">
           <div className="grid gap-8 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
@@ -133,7 +140,8 @@ export default function LessonLab({ lab }: { lab: LabSpec }) {
               {reduced && <p className="text-xs text-muted-foreground">Reduced motion is on: the figures jump between A, B and C instead of animating.</p>}
             </div>
             <div>
-              <CurvesFigure sim={sim} view={view} />
+              <CurvesFigure sim={sim} view={view} animateMs={450} />
+              <div className="mt-3"><OverTime ot={ot} t={otT} length={length} moved atOnce={false} compact caption={`· ${shock.label}`} /></div>
               <div className="mt-2"><OpenInSimulator shockId={shock.id} regime={regime} /></div>
               <p className="num mt-1 text-sm font-semibold" aria-live="polite">{label}</p>
               <p className="mt-0.5 text-sm text-muted-foreground">
@@ -148,7 +156,7 @@ export default function LessonLab({ lab }: { lab: LabSpec }) {
         </div>
       </section>
 
-      <section className="border-t border-rule pt-4">
+      <section className="panel p-5">
         <h2 className="text-xl">4. The markets behind the curves</h2>
         <div className="mt-3 space-y-6">
           <SideMarkets sim={sim} view={view} />

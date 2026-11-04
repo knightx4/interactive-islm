@@ -68,6 +68,17 @@ Use these rather than restyling buttons per screen.
 
 `Slider` takes its colour from the `--slider-color` CSS variable (the curve token).
 
+## Lessons
+Reading text is Source Serif 4 at about 19px (`.reading`) in a 680px column on the left; the
+figure sits on the right and stays in view (`StickyFigure`, `components/learn/LessonStage.tsx`).
+Each section's "Show this" button (`ShowThis`) moves the figure to one of four stages (start,
+the shock moves a curve, short run, after prices adjust; `lib/learn/figures.ts`), and the
+over-time strip under the figure has its cursor at that stage. `PickButton` (`components/ui`) is
+the ↑ ↓ – prediction button with right (green) and wrong (red) colouring, used by the lab, the
+multiple-choice checks and the practice page. `RealWorldCard` is a grey panel with large
+figures (only facts already in its text) and a source line; the headline-to-model tables name
+each curve in its colour.
+
 ## Phone (390px)
 Order: scenario chips (scroll sideways, Reset pill last), headline, chart, A / B / C
 buttons, Play, over time, scoreboard, Why it moves, then the market charts. A sticky

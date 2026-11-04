@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PickButton } from "@/components/ui/pick-button";
 import { variables, type Direction, type Horizon, type Question, type Variable } from "@/lib/macro/predict";
 
-const opts: { v: Direction; label: string }[] = [
-  { v: "up", label: "↑ rises" },
-  { v: "same", label: "– no change" },
-  { v: "down", label: "↓ falls" },
+const opts: { v: Direction; sym: string; label: string }[] = [
+  { v: "up", sym: "↑", label: "rises" },
+  { v: "down", sym: "↓", label: "falls" },
+  { v: "same", sym: "–", label: "no change" },
 ];
 const mark: Record<Direction, string> = { up: "↑", down: "↓", same: "–" };
 const num = (x: number) => (Math.abs(x) < 10 ? x.toFixed(2) : x.toFixed(1));
@@ -30,7 +31,7 @@ export default function PredictCheck({
       <div className="overflow-x-auto">
         <table className="w-full min-w-[34rem] text-sm">
           <thead>
-            <tr className="border-b border-ink text-left text-xs uppercase tracking-wide text-muted-foreground">
+            <tr className="border-b border-rule text-left text-xs uppercase tracking-wide text-muted-foreground">
               <th scope="col" className="py-1 pr-3 font-semibold">Variable</th>
               <th scope="col" className="py-1 pr-3 font-semibold">At B, prices not yet moved</th>
               <th scope="col" className="py-1 font-semibold">At C, prices fully adjusted</th>
@@ -38,24 +39,26 @@ export default function PredictCheck({
           </thead>
           <tbody>
             {vars.map((v) => (
-              <tr key={v.id} className="border-b border-rule align-top">
-                <th scope="row" className="py-1.5 pr-3 text-left font-normal">{v.label}</th>
+              <tr key={v.id} className="border-b border-rule align-middle">
+                <th scope="row" className="py-2 pr-3 text-left font-normal">{v.label}</th>
                 {(["short", "long"] as const).map((h) => {
                   const q = get(v.id, h);
                   const g = guess[q.id] ?? "";
                   const right = revealed && g === q.answer;
                   const wrong = revealed && g && g !== q.answer;
                   return (
-                    <td key={h} className="py-1.5 pr-3">
-                      <select aria-label={`${v.label}, ${h === "short" ? "at B" : "at C"}`} disabled={revealed} value={g}
-                        onChange={(e) => setGuess((s) => ({ ...s, [q.id]: e.target.value as Direction }))}
-                        className={`h-8 border bg-transparent px-1 ${right ? "border-fe" : wrong ? "border-lm" : "border-rule"}`}>
-                        <option value="">Choose…</option>
-                        {opts.map((o) => <option key={o.v} value={o.v}>{o.label}</option>)}
-                      </select>
+                    <td key={h} className="py-2 pr-3">
+                      <span className="inline-flex gap-1.5" role="group" aria-label={`${v.label}, ${h === "short" ? "at B" : "at C"}`}>
+                        {opts.map((o) => (
+                          <PickButton key={o.v} aria-label={`${v.label} ${o.label}`} chosen={g === o.v} disabled={revealed}
+                            right={revealed && o.v === q.answer} wrong={revealed && g === o.v && o.v !== q.answer}
+                            onClick={() => setGuess((st) => ({ ...st, [q.id]: o.v }))}>{o.sym}</PickButton>
+                        ))}
+                      </span>
                       {revealed && (
-                        <span className={`num ml-2 ${right ? "font-semibold text-fe" : wrong ? "text-lm" : ""}`}>
+                        <span className={`num ml-2 ${right ? "font-semibold" : ""}`}>
                           {mark[q.answer]} <span className="text-muted-foreground">{num(q.from)} → {num(q.to)}</span>
+                          {wrong && <span className="sr-only"> (your answer was wrong)</span>}
                         </span>
                       )}
                     </td>

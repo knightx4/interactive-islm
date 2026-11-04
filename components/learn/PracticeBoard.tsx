@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PickButton } from "@/components/ui/pick-button";
 import { lessons } from "@/lib/learn/lessons";
 import { practiceQuestions, resolve, type PracticeQuestion } from "@/lib/learn/practice";
 import { variables, type Direction } from "@/lib/macro/predict";
@@ -12,7 +13,7 @@ import useReducedMotion from "./useReducedMotion";
 const KEY = "islm-practice-tally-v1";
 type Tally = Record<string, { right: number; total: number }>;
 const numbered = lessons.filter((l) => l.n > 0);
-const opts: { v: Direction; l: string }[] = [{ v: "up", l: "Up" }, { v: "same", l: "Same" }, { v: "down", l: "Down" }];
+const opts: { v: Direction; l: string; n: string }[] = [{ v: "up", l: "↑", n: "Up" }, { v: "down", l: "↓", n: "Down" }, { v: "same", l: "–", n: "Same" }];
 
 const readTally = (): Tally => {
   try {
@@ -51,11 +52,10 @@ function Question({ pq, onAnswer }: { pq: PracticeQuestion; onAnswer: (right: bo
         <p className="prose-text mt-2 text-lg">{pq.brief}</p>
         <p className="mt-3 font-semibold">Predict: {v.label}, {when}.</p>
         <div className="mt-2 flex gap-2" role="radiogroup" aria-label="Your prediction">
-          {opts.map((o) => {
-            const chosen = pick === o.v;
-            const mark = done ? (o.v === r.truth ? "border-fe font-semibold" : chosen ? "border-lm" : "border-rule text-muted-foreground") : chosen ? "border-ink font-semibold" : "border-rule text-muted-foreground";
-            return <button key={o.v} type="button" role="radio" aria-checked={chosen} disabled={done} onClick={() => setPick(o.v)} className={`min-w-16 border-b-2 px-3 py-1 text-left ${mark}`}>{o.l}</button>;
-          })}
+          {opts.map((o) => (
+            <PickButton key={o.v} role="radio" aria-checked={pick === o.v} aria-label={o.n} chosen={pick === o.v} disabled={done}
+              right={done && o.v === r.truth} wrong={done && pick === o.v && o.v !== r.truth} onClick={() => setPick(o.v)}>{o.l}</PickButton>
+          ))}
         </div>
         {!done ? (
           <Button type="button" size="sm" className="mt-3" disabled={!pick} onClick={check}>Check</Button>

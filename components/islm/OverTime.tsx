@@ -2,8 +2,7 @@
 
 import { cursorTau, LEAD, T_SPAN, type OverTime as OT } from "@/lib/macro/overtime";
 
-const W = 680, H = 170, X0 = 40, X1 = 670, Y0 = 10, Y1 = 140, YM = (Y0 + Y1) / 2;
-const x = (tau: number) => X0 + ((tau + LEAD) / (T_SPAN + LEAD)) * (X1 - X0);
+const H = 170, X0 = 40, Y0 = 10, Y1 = 140, YM = (Y0 + Y1) / 2;
 
 type Props = {
   ot: OT;
@@ -15,10 +14,14 @@ type Props = {
   /** Whether anything has moved (otherwise the lines are flat). */
   moved: boolean;
   atOnce: boolean;
+  /** A narrower drawing (480 wide) for a column beside the text, so its labels stay legible. */
+  compact?: boolean;
 };
 
 /** Output (solid) and prices (dashed purple) as percent from the start, with A, B and C marked. */
-export default function OverTime({ ot, t, length, caption, moved, atOnce }: Props) {
+export default function OverTime({ ot, t, length, caption, moved, atOnce, compact = false }: Props) {
+  const W = compact ? 480 : 680, X1 = W - 10;
+  const x = (tau: number) => X0 + ((tau + LEAD) / (T_SPAN + LEAD)) * (X1 - X0);
   const y = (v: number) => YM - (v / ot.span) * ((Y1 - Y0) / 2 - 5);
   const path = (key: "output" | "prices") => ot.points.map((p, i) => `${i ? "L" : "M"}${x(p.tau).toFixed(1)} ${y(moved ? p[key] : 0).toFixed(1)}`).join(" ");
   const cur = x(cursorTau(t, length, ot));
