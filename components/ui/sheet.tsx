@@ -44,12 +44,14 @@ interface SheetContentProps
   extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>,
     VariantProps<typeof sheetVariants> {
   overlay?: boolean
+  /** The built-in corner X; turn off when the sheet has its own Done button. */
+  closeButton?: boolean
 }
 
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   SheetContentProps
->(({ side = "right", overlay = true, className, children, ...props }, ref) => (
+>(({ side = "right", overlay = true, closeButton = true, className, children, ...props }, ref) => (
   <SheetPortal>
     {overlay && <SheetOverlay />}
     <DialogPrimitive.Content
@@ -58,9 +60,11 @@ const SheetContent = React.forwardRef<
       {...props}
     >
       {children}
-      <SheetClose className="absolute top-4 right-4 rounded-sm opacity-70 hover:opacity-100">
-        <X className="h-4 w-4" />
-      </SheetClose>
+      {closeButton && (
+        <SheetClose className="absolute top-4 right-4 rounded-sm opacity-70 hover:opacity-100">
+          <X className="h-4 w-4" />
+        </SheetClose>
+      )}
     </DialogPrimitive.Content>
   </SheetPortal>
 ))

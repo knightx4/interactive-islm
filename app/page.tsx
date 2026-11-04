@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { SlidersHorizontal } from "lucide-react";
-import { Sheet, SheetTrigger, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { Sheet, SheetClose, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import CausePanel from "@/components/islm/CausePanel";
 import WhyItMoves from "@/components/islm/WhyItMoves";
 import ExpenditureIdentityCard from "@/components/islm/ExpenditureIdentityCard";
@@ -96,6 +95,13 @@ export default function HomePage() {
 
   const isDesktop = useIsDesktop();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const chartRef = useRef<HTMLElement>(null);
+  const movedCount = Object.values(state.causes).filter((v) => v !== 0).length + Object.values(state.offsets).filter((v) => Math.abs(v) > 0.005).length;
+  // opening the sheet brings the chart to the top of the page, so it stays visible above the sheet
+  const openSheet = (open: boolean) => {
+    setSheetOpen(open);
+    if (open) requestAnimationFrame(() => chartRef.current?.scrollIntoView({ block: "start", behavior: "smooth" }));
+  };
   const controls = <CausePanel state={state} focus={focus} onCause={onCause} onFocus={setFocus} onOpen={onOpen} onRegime={onRegime} onMobility={onMobility} onPartner={onPartner} price={view.frame.P} />;
 
   const headline = headlineFor(state, view.at, view.frame.Y, view.frame.Ystar);
@@ -122,11 +128,11 @@ export default function HomePage() {
           {atRest && (
             <div className="panel-wash mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3.5">
               <span className="text-[15px] font-semibold">Nothing has moved yet…</span>
-              <span className="text-sm text-ink-soft">Pick a scenario above, or move a driver to shift a curve and watch the economy go from A to B to C.</span>
+              <span className="text-sm text-ink-soft">{isDesktop ? "Pick a scenario above, or move any slider on the right to shift a curve and watch the economy go from A to B to C." : "Pick a scenario above, or open Move the economy below, to shift a curve and watch the economy go from A to B to C."}</span>
             </div>
           )}
 
-          <figure className="panel mt-4 px-3 pb-1 pt-3">
+          <figure ref={chartRef} className="panel mt-4 scroll-mt-16 px-3 pb-1 pt-3">
             <CurvesFigure sim={rn.sim} view={view} animateMs={player.playing ? 120 : 500} aspect={0.58} />
           </figure>
           <figcaption className="mt-2 text-sm text-muted-foreground">
@@ -142,7 +148,12 @@ export default function HomePage() {
               caption={atRest ? "· nothing moved yet" : scenario ? `· ${scenarios.find((q) => q.id === scenario.id)!.name}${scenario.edited ? " (edited)" : ""}` : "· your changes"} />
           </div>
 
-          {!isDesktop && <div className="mt-6"><WhyItMoves run={rn} at={view.at} /></div>}
+          {!isDesktop && (
+            <>
+              <div className="mt-6"><Scoreboard sim={rn.sim} moved={!atRest} /></div>
+              <div className="mt-6"><WhyItMoves run={rn} at={view.at} /></div>
+            </>
+          )}
 
         </div>
 
@@ -155,7 +166,7 @@ export default function HomePage() {
       </div>
 
       <section className="mt-10" aria-label="What every variable does, and the markets behind the curves">
-        <SideMarkets sim={rn.sim} view={view} sNX lead={<Scoreboard sim={rn.sim} moved={!atRest} />} />
+        <SideMarkets sim={rn.sim} view={view} sNX lead={isDesktop ? <Scoreboard sim={rn.sim} moved={!atRest} /> : undefined} />
       </section>
 
       <div className="max-w-4xl">
@@ -202,20 +213,22 @@ export default function HomePage() {
       </div>
 
       {!isDesktop && (
-        <Sheet open={sheetOpen} onOpenChange={setSheetOpen} modal={false}>
-          <div className="fixed inset-x-0 bottom-0 z-40 border-t border-ink bg-paper px-4 py-2">
-            <SheetTrigger className="flex h-11 w-full items-center justify-center gap-2 border border-ink font-sans text-sm font-semibold">
-              <SlidersHorizontal className="h-4 w-4" aria-hidden />
-              Drivers
-            </SheetTrigger>
-          </div>
-          <SheetContent side="bottom" overlay={false} onInteractOutside={(e) => e.preventDefault()}
-            className="flex h-[88dvh] flex-col gap-0 border-t border-ink bg-paper p-0 shadow-none">
-            <SheetTitle className="sr-only">Model drivers</SheetTitle>
-            <div className="shrink-0 border-b border-rule bg-paper px-4 pb-2 pt-3">
-              <CurvesFigure sim={rn.sim} view={view} />
+        <Sheet open={sheetOpen} onOpenChange={openSheet} modal={false}>
+          {!sheetOpen && (
+            <div className="fixed inset-x-0 bottom-0 z-40 bg-gradient-to-b from-transparent to-paper to-30% px-4 pb-5 pt-3">
+              <button type="button" onClick={() => openSheet(true)}
+                className="min-h-[52px] w-full rounded-xl border border-ink bg-paper text-[15px] font-semibold shadow-[0_6px_20px_rgba(21,24,29,0.12)]">
+                Move the economy · {movedCount} moved
+              </button>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto">{controls}</div>
+          )}
+          <SheetContent side="bottom" overlay={false} closeButton={false} onInteractOutside={(e) => e.preventDefault()}
+            className="flex h-[54dvh] flex-col gap-0 rounded-t-2xl border-t border-rule bg-paper p-0 shadow-[0_-8px_30px_rgba(21,24,29,0.18)]">
+            <div className="flex shrink-0 items-center justify-between px-4 pt-3">
+              <SheetTitle className="font-sans text-base">Move the economy{movedCount ? ` · ${movedCount} moved` : ""}</SheetTitle>
+              <SheetClose className="min-h-11 px-3 text-sm font-semibold">Done</SheetClose>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto pb-6">{controls}</div>
           </SheetContent>
         </Sheet>
       )}

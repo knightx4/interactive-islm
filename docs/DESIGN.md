@@ -68,6 +68,13 @@ Use these rather than restyling buttons per screen.
 
 `Slider` takes its colour from the `--slider-color` CSS variable (the curve token).
 
+## Phone (390px)
+Order: scenario chips (scroll sideways, Reset pill last), headline, chart, A / B / C
+buttons, Play, over time, scoreboard, Why it moves, then the market charts. A sticky
+"Move the economy · N moved" bar opens a non-modal bottom sheet with the curve tabs and
+sliders and a Done button; opening it scrolls the chart to the top so it stays visible
+above the sheet. Nothing but the chips scrolls sideways.
+
 ## Motion
 Animation never carries information that a still frame lacks. With
 `prefers-reduced-motion: reduce`, transitions are off and the lab jumps between
