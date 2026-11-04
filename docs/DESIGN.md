@@ -62,6 +62,8 @@ Use these rather than restyling buttons per screen.
 | `CurveTabs`, `CurveTabPanel` | `curve-tabs.tsx` | IS / LM / FE / Open strip on Radix tabs; each label in its curve colour; ink underline when active. |
 | `CauseSliderRow` | `cause-slider-row.tsx` | Name, "through …" line, then falls / slider / rises / value. The value sits in a fixed 44px slot (`CAUSE_VALUE_SLOT_PX`) so it never clips. Range −3 to +3 in half steps. |
 
+`CausePanel` (`components/islm`) puts every cause as a `CauseSliderRow` under the IS / LM / FE / Open tabs; `WhyItMoves` lists every moved cause under the curve it shifts (logic in `lib/macro/why.ts`).
+
 `Slider` takes its colour from the `--slider-color` CSS variable (the curve token).
 
 ## Motion

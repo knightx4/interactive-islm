@@ -22,6 +22,12 @@ type CauseSliderRowProps = {
   max?: number
   step?: number
   active?: boolean
+  /** The slider cannot be moved; `note` says why. */
+  disabled?: boolean
+  /** A short extra line under the slider (why it is disabled, what it switches on). */
+  note?: React.ReactNode
+  /** Called when the row's name is pressed (to focus the cause). */
+  onFocusRow?: () => void
   className?: string
 }
 
@@ -50,6 +56,9 @@ function CauseSliderRow({
   max = 3,
   step = 0.5,
   active = false,
+  disabled = false,
+  note,
+  onFocusRow,
   className,
 }: CauseSliderRowProps) {
   return (
@@ -70,6 +79,8 @@ function CauseSliderRow({
         <span>{low}</span>
         <Slider
           aria-label={name}
+          disabled={disabled}
+          onPointerDown={onFocusRow}
           min={min}
           max={max}
           step={step}
@@ -86,6 +97,7 @@ function CauseSliderRow({
           {formatLevel(value)}
         </span>
       </div>
+      {note && <p className="text-xs text-muted-foreground" aria-live="polite">{note}</p>}
     </div>
   )
 }

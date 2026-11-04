@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { Sheet, SheetTrigger, SheetContent, SheetTitle } from "@/components/ui/sheet";
-import ModelControls from "@/components/islm/ModelControls";
+import CausePanel from "@/components/islm/CausePanel";
+import WhyItMoves from "@/components/islm/WhyItMoves";
 import ExpenditureIdentityCard from "@/components/islm/ExpenditureIdentityCard";
 import PhaseBar from "@/components/islm/PhaseBar";
 import { GLIDE_FAST_MS, GLIDE_SLOW_MS, usePlayer } from "@/components/islm/usePlayer";
@@ -14,7 +15,7 @@ import SideMarkets from "@/components/learn/SideMarkets";
 import { ExchangeRateCard, NetExportsCard, PegCard, SavingIdentityCard, TwoCountry } from "@/components/islm/OpenPanels";
 import TimePath from "@/components/learn/TimePath";
 import {
-  baselineState, isBaseline, run, setCause, setParent, viewAt, isHardPeg, type ParentId, type RegimeChoice, type SimState,
+  baselineState, isBaseline, run, setCause, viewAt, isHardPeg, type RegimeChoice, type SimState,
 } from "@/lib/macro/sim";
 import { scenarios, stateForScenario } from "@/lib/macro/scenarios";
 import { SPEED_FAST, SPEED_SLOW, adjustsAtOnce, headlineFor, settleIndex, type Phase } from "@/lib/macro/playback";
@@ -66,13 +67,13 @@ export default function HomePage() {
   const onT = useCallback((t: number) => setState((s) => ({ ...s, t })), []);
   const player = usePlayer(onT);
   const edit = useCallback((f: (s: SimState) => SimState) => { player.stop(); setScenario((c) => (c ? { ...c, edited: true } : c)); setState(f); }, [player]);
-  const onParent = (id: ParentId, v: number) => edit((s) => setParent(s, id, v));
-  const onCause = (id: string, v: number) => edit((s) => setCause(s, id, v));
+  const [focus, setFocus] = useState<string | null>(null);
+  const onCause = (id: string, v: number) => { setFocus(id); edit((s) => setCause(s, id, v)); };
   const onOpen = (open: boolean) => edit((s) => ({ ...s, open, t: 1 }));
   const onRegime = (regime: RegimeChoice) => edit((s) => ({ ...s, regime, t: 1 }));
   const onMobility = (mobility: number) => edit((s) => ({ ...s, mobility, t: 1 }));
   const onPartner = (partner: boolean) => edit((s) => ({ ...s, partner, t: 1 }));
-  const onReset = () => { player.stop(); setScenario(null); setState((s) => ({ ...baselineState(), speed: s.speed, t: 0 })); };
+  const onReset = () => { player.stop(); setScenario(null); setFocus(null); setState((s) => ({ ...baselineState(), speed: s.speed, t: 0 })); };
   const onAdjust = (fast: boolean) => setState((s) => ({ ...s, speed: fast ? SPEED_FAST : SPEED_SLOW }));
 
   const playScenario = (id: string) => {
@@ -92,7 +93,7 @@ export default function HomePage() {
 
   const isDesktop = useIsDesktop();
   const [sheetOpen, setSheetOpen] = useState(false);
-  const controls = <ModelControls state={state} onParent={onParent} onCause={onCause} onOpen={onOpen} onRegime={onRegime} onMobility={onMobility} onPartner={onPartner} onReset={onReset} price={view.frame.P} />;
+  const controls = <CausePanel state={state} focus={focus} onCause={onCause} onFocus={setFocus} onOpen={onOpen} onRegime={onRegime} onMobility={onMobility} onPartner={onPartner} price={view.frame.P} />;
 
   const headline = headlineFor(state, view.at, view.frame.Y, view.frame.Ystar);
   const subline = `Y ${view.frame.Y.toFixed(1)} · Y* ${view.frame.Ystar.toFixed(1)} · index units, not real data`;
@@ -132,6 +133,8 @@ export default function HomePage() {
           <span className="sr-only">{chartLabel}</span>
 
           <div className="mt-4"><PhaseBar at={view.at} playing={player.playing} atOnce={atOnce} onPhase={onPhase} onPlay={onPlay} onAdjust={onAdjust} /></div>
+
+          {!isDesktop && <div className="mt-6"><WhyItMoves run={rn} at={view.at} /></div>}
 
           <section className="mt-10 border-t border-rule pt-4" aria-label="The markets behind the curves">
             <h2 className="text-2xl">The markets behind the curves</h2>
@@ -185,8 +188,9 @@ export default function HomePage() {
         </div>
 
         {isDesktop && (
-          <aside aria-label="Model controls" className="panel w-full max-w-[26rem] shrink-0 p-4 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:flex-[1_1_360px] lg:overflow-y-auto">
-            {controls}
+          <aside aria-label="Move the economy" className="flex w-full max-w-[27.5rem] shrink-0 flex-col gap-4 lg:flex-[1_1_360px]">
+            <div className="panel overflow-hidden">{controls}</div>
+            <WhyItMoves run={rn} at={view.at} />
           </aside>
         )}
       </div>
@@ -205,7 +209,7 @@ export default function HomePage() {
             <div className="shrink-0 border-b border-rule bg-paper px-4 pb-2 pt-3">
               <CurvesFigure sim={rn.sim} view={view} />
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">{controls}</div>
+            <div className="min-h-0 flex-1 overflow-y-auto">{controls}</div>
           </SheetContent>
         </Sheet>
       )}
