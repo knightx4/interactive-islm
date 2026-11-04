@@ -64,6 +64,8 @@ Use these rather than restyling buttons per screen.
 
 `CausePanel` (`components/islm`) puts every cause as a `CauseSliderRow` under the IS / LM / FE / Open tabs; `WhyItMoves` lists every moved cause under the curve it shifts (logic in `lib/macro/why.ts`).
 
+`OverTime` draws output (solid) and prices (dashed purple) as percent from the start from the lesson model's path (`lib/macro/overtime.ts`); `Scoreboard` lists Y, r, P, C, I and N at A, B and C; `SideMarkets` draws the three market charts.
+
 `Slider` takes its colour from the `--slider-color` CSS variable (the curve token).
 
 ## Motion

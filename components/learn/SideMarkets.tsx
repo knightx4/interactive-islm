@@ -15,7 +15,7 @@ const differs = (a: number[], b: number[]) => a.some((v, i) => Math.abs(v - b[i]
 
 function Panel({ title, note, children }: { title: string; note: string; children: React.ReactNode }) {
   return (
-    <figure>
+    <figure className="panel min-w-0 p-3">
       <figcaption className="text-sm font-semibold">{title}</figcaption>
       {children}
       <p className="mt-0.5 text-sm text-muted-foreground">{note}</p>
@@ -86,13 +86,14 @@ type Ctx = { p: Params; f: Frame; p0: Params; f0: Frame; ghosts: boolean; color:
 
 /** The three side markets: saving and investment, money, and labour, plus the balance of payments when open. */
 /** `sNX` draws the open-economy goods market as S - NX against I (the simulator); the lessons keep S against I + NX. */
-export default function SideMarkets({ sim, view, sNX = false }: { sim: Simulation; view: View; sNX?: boolean }) {
+export default function SideMarkets({ sim, view, sNX = false, lead }: { sim: Simulation; view: View; sNX?: boolean; lead?: React.ReactNode }) {
   const ctx: Ctx = { p: view.params, f: view.frame, p0: sim.before, f0: sim.baseline, ghosts: view.ghosts, color: pointColor(view.at), sNX };
   const s = sideMarkets(view.params, view.frame);
   const open = view.params.regime !== "closed";
   return (
     <div className="space-y-4">
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className={lead ? "grid gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1.35fr)_repeat(3,minmax(0,1fr))]" : "grid gap-6 md:grid-cols-3"}>
+        {lead}
         <Panel title="Saving and investment" note={sNX && open ? `Rate ${view.frame.r.toFixed(2)}%; I = S - NX = ${s.investment.toFixed(1)}. A higher NX lowers S - NX and moves IS right.` : `Rate ${view.frame.r.toFixed(2)}%; investment ${s.investment.toFixed(1)}.`}>
           <SavingInvestment {...ctx} />
         </Panel>

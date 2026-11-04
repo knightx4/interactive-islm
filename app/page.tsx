@@ -13,7 +13,9 @@ import { ResetPill } from "@/components/ui/reset-pill";
 import CurvesFigure from "@/components/learn/CurvesFigure";
 import SideMarkets from "@/components/learn/SideMarkets";
 import { ExchangeRateCard, NetExportsCard, PegCard, SavingIdentityCard, TwoCountry } from "@/components/islm/OpenPanels";
-import TimePath from "@/components/learn/TimePath";
+import OverTime from "@/components/islm/OverTime";
+import Scoreboard from "@/components/islm/Scoreboard";
+import { overTime } from "@/lib/macro/overtime";
 import {
   baselineState, isBaseline, run, setCause, viewAt, isHardPeg, type RegimeChoice, type SimState,
 } from "@/lib/macro/sim";
@@ -61,6 +63,7 @@ export default function HomePage() {
   // nothing has moved: the economy sits at A whatever the playback position says
   const shownT = atRest ? 0 : Math.min(state.t, last);
   const view = viewAt(rn.sim, shownT);
+  const ot = useMemo(() => overTime(rn.sim, settle), [rn, settle]);
   const atOnce = adjustsAtOnce(state.speed);
   const glideMs = atOnce ? GLIDE_FAST_MS : GLIDE_SLOW_MS;
 
@@ -134,57 +137,13 @@ export default function HomePage() {
 
           <div className="mt-4"><PhaseBar at={view.at} playing={player.playing} atOnce={atOnce} onPhase={onPhase} onPlay={onPlay} onAdjust={onAdjust} /></div>
 
+          <div className="mt-6">
+            <OverTime ot={ot} t={shownT} length={rn.length} moved={!atRest} atOnce={atOnce}
+              caption={atRest ? "· nothing moved yet" : scenario ? `· ${scenarios.find((q) => q.id === scenario.id)!.name}${scenario.edited ? " (edited)" : ""}` : "· your changes"} />
+          </div>
+
           {!isDesktop && <div className="mt-6"><WhyItMoves run={rn} at={view.at} /></div>}
 
-          <section className="mt-10 border-t border-rule pt-4" aria-label="The markets behind the curves">
-            <h2 className="text-2xl">The markets behind the curves</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Saving and investment, money and labour, all at the point on show above.</p>
-            <div className="mt-4 space-y-6">
-              <SideMarkets sim={rn.sim} view={view} sNX />
-              <TimePath sim={rn.sim} index={view.t} />
-            </div>
-          </section>
-
-          {state.open && (
-            <section className="mt-10 border-t border-rule pt-4" aria-label="The open economy">
-              <h2 className="text-2xl">The open economy</h2>
-              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-                {rn.defended
-                  ? `A ${state.regime === "band" ? "band" : "crawling band"} is being defended: the shock was too big for the rate to float freely.`
-                  : isHardPeg(state.regime) ? "Hard peg: the exchange rate is fixed, so the balance of payments sets the money supply." : "Floating inside the regime you chose: the exchange rate moves to keep the balance of payments in balance."}
-                {" "}All at the point on show above.
-              </p>
-              <div className="mt-4 space-y-8">
-                <ExchangeRateCard params={view.params} frame={view.frame} />
-                <div className="grid gap-8 md:grid-cols-2">
-                  <NetExportsCard params={view.params} frame={view.frame} />
-                  <SavingIdentityCard params={view.params} frame={view.frame} />
-                </div>
-                <PegCard run={rn} frame={view.frame} />
-              </div>
-            </section>
-          )}
-
-          {state.open && state.partner && <TwoCountry run={rn} t={state.t} />}
-
-          <ExpenditureIdentityCard params={view.params} frame={view.frame} />
-
-          <section className="mt-10 max-w-2xl border-t border-rule pt-4">
-            <h2 className="text-2xl">About this model</h2>
-            <div className="prose-text mt-3 space-y-4">
-              <p>
-                The <span className="font-semibold text-is">IS curve</span> is where desired saving equals desired investment
-                (plus net exports when the economy is open) for each output; the{" "}
-                <span className="font-semibold text-lm">LM curve</span> is where real money supplied equals money demanded; the{" "}
-                <span className="font-semibold text-fe">FE line</span> is the output the labour market supports.
-              </p>
-              <p>
-                A driver moves one curve. Output then sits above or below FE, so prices rise or fall, real money balances change, and
-                LM shifts until output returns to FE. Slow prices (sticky) make that take longer.
-              </p>
-              <p>Axes are index units for teaching, not calibrated data.</p>
-            </div>
-          </section>
         </div>
 
         {isDesktop && (
@@ -193,6 +152,53 @@ export default function HomePage() {
             <WhyItMoves run={rn} at={view.at} />
           </aside>
         )}
+      </div>
+
+      <section className="mt-10" aria-label="What every variable does, and the markets behind the curves">
+        <SideMarkets sim={rn.sim} view={view} sNX lead={<Scoreboard sim={rn.sim} moved={!atRest} />} />
+      </section>
+
+      <div className="max-w-4xl">
+        {state.open && (
+          <section className="mt-10 border-t border-rule pt-4" aria-label="The open economy">
+            <h2 className="text-2xl">The open economy</h2>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+              {rn.defended
+                ? `A ${state.regime === "band" ? "band" : "crawling band"} is being defended: the shock was too big for the rate to float freely.`
+                : isHardPeg(state.regime) ? "Hard peg: the exchange rate is fixed, so the balance of payments sets the money supply." : "Floating inside the regime you chose: the exchange rate moves to keep the balance of payments in balance."}
+              {" "}All at the point on show above.
+            </p>
+            <div className="mt-4 space-y-8">
+              <ExchangeRateCard params={view.params} frame={view.frame} />
+              <div className="grid gap-8 md:grid-cols-2">
+                <NetExportsCard params={view.params} frame={view.frame} />
+                <SavingIdentityCard params={view.params} frame={view.frame} />
+              </div>
+              <PegCard run={rn} frame={view.frame} />
+            </div>
+          </section>
+        )}
+
+        {state.open && state.partner && <TwoCountry run={rn} t={state.t} />}
+
+        <ExpenditureIdentityCard params={view.params} frame={view.frame} />
+
+        <section className="mt-10 max-w-2xl border-t border-rule pt-4">
+          <h2 className="text-2xl">About this model</h2>
+          <div className="prose-text mt-3 space-y-4">
+            <p>
+              The <span className="font-semibold text-is">IS curve</span> is where desired saving equals desired investment
+              (plus net exports when the economy is open) for each output; the{" "}
+              <span className="font-semibold text-lm">LM curve</span> is where real money supplied equals money demanded; the{" "}
+              <span className="font-semibold text-fe">FE line</span> is the output the labour market supports.
+            </p>
+            <p>
+              A driver moves one curve. Output then sits above or below FE, so prices rise or fall, real money balances change, and
+              LM shifts until output returns to FE. Slow prices (sticky) make that take longer.
+            </p>
+            <p>Axes are index units for teaching, not calibrated data.</p>
+          </div>
+        </section>
       </div>
 
       {!isDesktop && (
